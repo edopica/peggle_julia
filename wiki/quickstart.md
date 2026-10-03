@@ -1,7 +1,7 @@
 # julia_clone — Quickstart
 
 **julia_clone** is the simulation platform for
-[Peggle Evolved](../peggle_evolved): a portable Julia program that generates
+[Peggle Evolved](../../peggle_evolved): a portable Julia program that generates
 levels, runs bot games, and measures level behavior at a scale the Lua game
 cannot reach. The governing plan is
 `../peggle_evolved/temp/julia_port/implementation-plan.md`; the goal notes are
