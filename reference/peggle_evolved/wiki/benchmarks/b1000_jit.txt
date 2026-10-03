@@ -1,0 +1,15 @@
+--- BENCHMARK MODE ENABLED ---
+LuaJIT: true | version=LuaJIT 2.1.1774896198 | arch=x64 | status=true
+Vsync disabled for benchmarking
+BENCH | fps=178 | avg_dt=2.447ms | update=0.037ms | draw=0.757ms | peg_checks=0 | collisions=0 | active_balls=0 | jit=true
+BENCH | fps=474 | avg_dt=2.085ms | update=0.025ms | draw=0.649ms | peg_checks=0 | collisions=0 | active_balls=0 | jit=true
+BENCH | fps=482 | avg_dt=2.138ms | update=0.025ms | draw=0.675ms | peg_checks=0 | collisions=0 | active_balls=0 | jit=true
+BENCH | fps=427 | avg_dt=2.127ms | update=0.027ms | draw=0.693ms | peg_checks=0 | collisions=0 | active_balls=0 | jit=true
+BENCH | fps=491 | avg_dt=2.200ms | update=0.047ms | draw=0.697ms | peg_checks=37240 | collisions=7 | active_balls=1 | jit=true
+BENCH | fps=439 | avg_dt=2.309ms | update=0.056ms | draw=0.763ms | peg_checks=69580 | collisions=11 | active_balls=1 | jit=true
+BENCH | fps=444 | avg_dt=2.313ms | update=0.056ms | draw=0.758ms | peg_checks=74480 | collisions=16 | active_balls=1 | jit=true
+BENCH | fps=409 | avg_dt=2.424ms | update=0.059ms | draw=0.853ms | peg_checks=63307 | collisions=5 | active_balls=1 | jit=true
+BENCH | fps=411 | avg_dt=2.462ms | update=0.066ms | draw=0.863ms | peg_checks=79994 | collisions=22 | active_balls=1 | jit=true
+BENCH | fps=404 | avg_dt=2.455ms | update=0.062ms | draw=0.864ms | peg_checks=70940 | collisions=13 | active_balls=1 | jit=true
+BENCH | fps=426 | avg_dt=2.298ms | update=0.048ms | draw=0.757ms | peg_checks=59780 | collisions=1 | active_balls=1 | jit=true
+BENCH | fps=426 | avg_dt=2.348ms | update=0.035ms | draw=0.805ms | peg_checks=35280 | collisions=0 | active_balls=1 | jit=true

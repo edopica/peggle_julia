@@ -1,0 +1,8 @@
+TODOS.md
+temp/
+src/replays/*
+!src/replays/.gitkeep
+replays/
+debug_trace.jsonl
+benchmark_results.csv
+profile_dump.txt

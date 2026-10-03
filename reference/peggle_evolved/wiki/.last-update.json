@@ -1,0 +1,7 @@
+{
+  "updatedAt": "2026-07-25T00:00:00.000Z",
+  "command": "manual",
+  "gitHead": "606a6b7c6f7cb96a5a0e685e988d550cdc4e0ea7",
+  "model": "deepseek-v4-pro",
+  "notes": "Coherence pass: updated test count (169→191), aim_discretization_steps default (720→2000), context/current.md rewrite for accuracy, added exportable.lua documentation, fixed failures/0001 modernization note, fixed src/states.lua typo"
+}

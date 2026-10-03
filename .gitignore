@@ -1,0 +1,6 @@
+# Raw per-candidate benchmark output (large, regenerable). Summaries are kept.
+results/raw/
+
+# Local scratch
+tmp/
+*.log

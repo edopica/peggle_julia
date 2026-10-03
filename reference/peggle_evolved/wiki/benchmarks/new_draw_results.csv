@@ -1,0 +1,5 @@
+level,balls,jit,total_time,frames,avg_fps,avg_update_ms,avg_draw_ms,peg_checks,collisions
+benchmark_lasagna,200,true,21.283,9388,441.10,0.353,0.441,23007632,4193
+benchmark_lasagna,200,true,21.283,9228,433.59,0.375,0.451,23007632,4193
+benchmark_lasagna,200,true,56.665,24175,426.63,0.469,0.407,88575485,15792
+benchmark_lasagna,100,false,19.949,8478,424.99,0.453,0.418,12501997,2296
