@@ -6,17 +6,17 @@ Lua game cannot reach. See the implementation plan in
 `../peggle_evolved/temp/julia_port/implementation-plan.md`.
 
 M0 (this milestone) defines the workload and freezes the reference. It does
-not contain Julia code yet.
+not contain Julia code yet. Start with the [wiki quickstart](wiki/quickstart.md).
 
 ## Layout
 
 | Path | Purpose |
 | --- | --- |
+| `wiki/` | Project documentation: quickstart, context notes, benchmarks, devlog ([layout](wiki/quickstart.md#wiki-layout)) |
 | `reference/peggle_evolved/` | Byte-for-byte export of the frozen Lua reference revision (`reference/PIN.md`) |
 | `reference/files.sha256` | Per-file hash manifest of the pinned tree |
 | `harness/` | LÖVE-based baseline sweep harness (candidate grid, phase timings) |
 | `scripts/` | Reference verification, headless LÖVE wrapper, baseline runner |
-| `docs/` | M0 reference, workload, and inventory documents |
 | `results/` | Baseline summaries; raw per-candidate output goes to `results/raw/` (gitignored) |
 
 ## Quickstart
@@ -49,6 +49,6 @@ sweep.
 
 Each candidate is evaluated from an identical fresh state (level setup, turn
 reset). Timings are split into `init`, `reset`, `sim`, `extract`, and `output`
-phases. See `docs/reference.md`, `docs/workload.md`, and `docs/inventory.md`.
-Measured baseline numbers and the campaign sizing they imply are in
-`docs/baseline-metrics.md`.
+phases. See `wiki/context/reference.md`, `wiki/context/workload.md`, and
+`wiki/context/inventory.md`. Measured baseline numbers and the campaign sizing
+they imply are in `wiki/benchmarks/baseline-metrics.md`.

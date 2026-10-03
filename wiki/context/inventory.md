@@ -33,7 +33,7 @@ simple LCG and neutralizes graphics/timer/input calls, so its RNG sequences are
 | `test_replay_library.lua` | saved-replay library |
 | `test_contact_presentation.lua` | render-only contact presenter |
 
-Runner result on the pinned tree: see `docs/baseline-metrics.md`
+Runner result on the pinned tree: see `wiki/benchmarks/baseline-metrics.md`
 (`make test`).
 
 ## 2. Replay corpus (local, not committed upstream)

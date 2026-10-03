@@ -6,7 +6,7 @@ decision state, which candidates, which seeds, and which metrics.
 ## 1. What a workload is
 
 A workload is one static level plus one decision state plus the full legal aim
-grid (`docs/reference.md` §3). The unit of work is one **candidate**: launch
+grid (`wiki/context/reference.md` §3). The unit of work is one **candidate**: launch
 the idle ball(s) at one grid angle, simulate fixed steps to shot completion,
 and extract features. All candidates in a workload start from an identical
 fresh decision state.
@@ -138,4 +138,4 @@ scripts/run_baseline.sh --repeat 3
 
 Results live in `results/` (summary JSON) and `results/raw/` (per-candidate
 JSONL, gitignored). The measured numbers and analysis are in
-`docs/baseline-metrics.md`.
+`wiki/benchmarks/baseline-metrics.md`.
