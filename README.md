@@ -3,40 +3,52 @@
 A portable simulation platform for [Peggle Evolved](../peggle_evolved). It
 generates levels, runs bot games, and measures level behavior at scales the
 Lua game cannot reach. See the implementation plan in
-`../peggle_evolved/temp/julia_port/implementation-plan.md`.
+`temp/implementation-plan.md`.
 
-M0 (this milestone) defines the workload and freezes the reference. It does
-not contain Julia code yet. Start with the [wiki quickstart](wiki/quickstart.md).
+M0 defined the workload and froze the reference. M1 defines the versioned
+interchange formats, exports every static level with SVG previews, and
+captures the reference fixture matrix. M2 adds the Julia package
+(`julia/PeggleSim`): a pinned environment, the deterministic math backend and
+exact LÖVE 11.5 RNG, the level/state/checkpoint types, and cross-machine
+parity tooling. Start with the [wiki quickstart](wiki/quickstart.md).
 
 ## Layout
 
 | Path | Purpose |
 | --- | --- |
-| `wiki/` | Project documentation: quickstart, context notes, benchmarks, devlog ([layout](wiki/quickstart.md#wiki-layout)) |
+| `wiki/` | Project documentation: quickstart, context notes, benchmarks, audits, devlog ([layout](wiki/quickstart.md#wiki-layout)) |
 | `reference/peggle_evolved/` | Byte-for-byte export of the frozen Lua reference revision (`reference/PIN.md`) |
-| `reference/files.sha256` | Per-file hash manifest of the pinned tree |
-| `harness/` | LÖVE-based baseline sweep harness (candidate grid, phase timings) |
-| `scripts/` | Reference verification, headless LÖVE wrapper, baseline runner |
-| `results/` | Baseline summaries; raw per-candidate output goes to `results/raw/` (gitignored) |
+| `harness/` | LÖVE harness: M0 candidate sweep, fixture capture, candidate search, M2 captures |
+| `julia/PeggleSim/` | Julia package: math/RNG/state foundation, checkpoint contract, parity tools |
+| `tools/` | Lua interchange tools: canonical JSON, level/config exporters, M2 captures |
+| `schemas/` | Versioned interchange schemas and examples |
+| `interchange/` | Generated level/config artifacts, SVG previews, manifest |
+| `fixtures/` | Fixture catalog, expected records, gameplay traces, `rng/`, `checkpoints/`, `math_census/` |
+| `scripts/` | Reference verification, export, fixture capture, previews, baseline runner, M2 captures |
+| `results/` | Baseline summaries plus M2 benchmark/census/parity results; `results/raw/` is gitignored |
 
 ## Quickstart
 
-Requirements: LÖVE 11.x, LuaJIT, and a display (or `xvfb-run` for unattended
-runs). Verification and the test suite need no display.
+Requirements: LÖVE 11.x, LuaJIT, Python 3, and a display (`xvfb-run` for
+unattended runs). Verification, schema checks, and the test suite need no
+display. M2 additionally needs Julia 1.12.6; the pinned environment is
+reproduced with
+`julia --project=julia/PeggleSim -e 'using Pkg; Pkg.instantiate()'`.
 
 ```bash
-make verify                 # check the pinned reference against hashes
-make list                   # list baseline workloads
-make self-check             # grid identity + candidate determinism
-make quick                  # short sweep (every 20th index)
-make baseline               # full-grid baseline (long)
-make test                   # run the reference test suite
-```
-
-Run a focused sweep directly:
-
-```bash
-scripts/run_baseline.sh --workload circles_small --stride 50
+make verify       # check the pinned reference against hashes
+make export       # regenerate interchange artifacts and SVG previews
+make fixtures     # capture reference fixture records (needs LÖVE/display)
+make check        # interchange reproducibility + schema validation
+make check-all    # check plus fixture re-capture comparison
+make list         # list baseline workloads
+make self-check   # grid identity + candidate determinism
+make quick        # short sweep (every 20th index)
+make baseline     # full-grid baseline (long)
+make test         # run the reference test suite
+make julia-test   # run the Julia package test suite
+make julia-parity # recompute the cross-machine parity manifest
+make julia-bench  # checkpoint/reset benchmark
 ```
 
 ## The M0 workload
@@ -52,3 +64,33 @@ reset). Timings are split into `init`, `reset`, `sim`, `extract`, and `output`
 phases. See `wiki/context/reference.md`, `wiki/context/workload.md`, and
 `wiki/context/inventory.md`. Measured baseline numbers and the campaign sizing
 they imply are in `wiki/benchmarks/baseline-metrics.md`.
+
+## The M1 interchange, previews, and fixtures
+
+- `wiki/context/interchange.md` — the versioned level, config, checkpoint,
+  action-log, result, and fixture formats, plus the static-level subset and
+  motion-rejection rules.
+- `wiki/context/fixtures.md` — the reference fixture matrix (grazes, shape
+  boundaries, near-ties, overlap correction, clearing, fever, powers, style
+  awards), capture protocol, and the assessment of the upstream "42-case
+  matrix" that does not exist.
+- `interchange/previews/` — standalone SVG previews for every static level,
+  rendered without the game or Julia.
+
+## The M2 math and state foundation
+
+- `wiki/context/julia.md` — the pinned `julia/PeggleSim` package: DetMath
+  backends (system libm on Linux, Julia Base fallback, experimental
+  `core_math`), the exact LÖVE 11.5 RNG port, level/config/state types, and
+  the ready-to-aim checkpoint contract.
+- `wiki/audits/m2-math-census.md` — 15,794 math cases over recorded and
+  boundary inputs; zero bit mismatches against the LuaJIT reference under
+  system libm (`results/m2-math-census.json`).
+- `wiki/audits/m2-rng-geometry.md` — RNG fixture coverage (initial color
+  assignment and purple-queue rebuilds), byte-identical initialized geometry
+  for all 9 checkpoints, and reset determinism without aliasing.
+- `wiki/benchmarks/m2-checkpoint.md` — checkpoint/reset cost
+  (`results/m2-checkpoint-bench.json`): the dense annular checkpoint restores
+  in ~14 µs against the M0 ~82 ms per-candidate `setupLevel` rebuild.
+- `results/parity/local.json` plus `scripts/compare_parity.sh` — the
+  cross-machine parity manifest and first-difference comparison tool.

@@ -1,0 +1,25 @@
+{
+  "format": "peggle.action_log",
+  "schema_version": 1,
+  "game": {
+    "mode": "solo",
+    "level_sha256": "8432b14c888aaa7746aa9ca5fe65ffba5b52f5fe552fc7cd513b25fe92d960a7",
+    "config_sha256": "455757c900c604563865b5195eda2f31cfeba3d8666b6d782390e38c47e91d4d"
+  },
+  "actions": [
+    {
+      "seq": 0,
+      "player": 1,
+      "turn": 1,
+      "decision_step": 0,
+      "action": { "aim_index": 900, "delay": 0 }
+    },
+    {
+      "seq": 1,
+      "player": 1,
+      "turn": 2,
+      "decision_step": 768,
+      "action": { "aim_index": 406, "delay": 0 }
+    }
+  ]
+}

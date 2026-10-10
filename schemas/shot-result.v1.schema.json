@@ -1,0 +1,45 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "peggle/shot-result.v1.schema.json",
+  "title": "Peggle Evolved ShotResult v1",
+  "description": "Authoritative summary of one evaluated candidate shot, matching the M0 harness feature set.",
+  "type": "object",
+  "required": [
+    "format", "schema_version", "action", "steps", "completed", "reason",
+    "score", "peg_score", "bonus", "style_points", "styles",
+    "pegs_hit", "reds_hit", "multiplier", "is_fever", "balls"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "format": { "enum": ["peggle.shot_result"] },
+    "schema_version": { "enum": [1] },
+    "action": {
+      "type": "object",
+      "required": ["aim_index", "delay"],
+      "additionalProperties": false,
+      "properties": {
+        "aim_index": { "type": "integer", "minimum": 0, "maximum": 1800 },
+        "delay": { "type": "integer", "minimum": 0 }
+      }
+    },
+    "angle": { "type": "number" },
+    "steps": { "type": "integer", "minimum": 0 },
+    "completed": { "type": "boolean" },
+    "reason": { "type": "string", "minLength": 1 },
+    "score": { "type": "number" },
+    "peg_score": { "type": "number" },
+    "bonus": { "type": "number" },
+    "style_points": { "type": "number" },
+    "styles": {
+      "type": "object",
+      "additionalProperties": { "type": "integer", "minimum": 1 }
+    },
+    "pegs_hit": { "type": "integer", "minimum": 0 },
+    "reds_hit": { "type": "integer", "minimum": 0 },
+    "multiplier": { "type": "integer", "minimum": 1 },
+    "is_fever": { "type": "boolean" },
+    "balls": { "type": "integer", "minimum": 1 },
+    "balls_spawned": { "type": "integer", "minimum": 0 },
+    "trace_sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" }
+  }
+}

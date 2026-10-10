@@ -48,7 +48,7 @@ but are not present in the vendored pin.
 
 | Tool | Purpose | Reusable for the port? |
 | --- | --- | --- |
-| `tools/dump_level.lua` | converts a level table to JSON, drops runtime caches, flattens compiled paths | partial: no full interchange contract, converts `path_fn` circuits to `kind=unknown`, omits compiled path caches; M1 extends it |
+| `tools/dump_level.lua` | converts a level table to JSON, drops runtime caches, flattens compiled paths | superseded in M1 by `../julia_clone/tools/export_level.lua` (versioned, static-only, hard-fails on motion) |
 | `tools/check_level.lua` | level validation via `src/systems/level_checker.lua` | yes, as a geometry check reference |
 | `tools/export_trace.lua` | replays a shot headlessly and exports physics/gameplay traces | yes, the trace schema is the cross-engine comparison basis |
 | `tools/test_style_shot.lua` | brute-forces a style shot over a 0.1° angle loop with snapping disabled | no: not the bot action space; strategy only |
@@ -94,9 +94,10 @@ one place (1v1 bucket bonus), so the pinned source wins.
 ## 7. The "42-case matrix"
 
 The strategy document proposes a 42-case level × angle validation matrix, but
-no such artifact exists anywhere in the pinned tree. M1 must define it (level
-families × boundary cases) and may exceed it; it cannot be treated as existing
-coverage.
+no such artifact exists anywhere in the pinned tree. M1 assessed it as a
+planning placeholder and defined the replacement mechanism-oriented matrix in
+`wiki/context/fixtures.md` (14 natural shot cases, 11 boundary scenarios, 25
+captured records). The matrix is not treated as existing upstream coverage.
 
 ## 8. Source map for later milestones
 

@@ -15,25 +15,36 @@ in `../peggle_evolved/wiki/`.
 | Milestone | State |
 | --- | --- |
 | M0 — define the workload and select the reference | **Done** |
-| M1 — interchange, fixtures, level previews | Not started |
-| M2 — math and state foundations (first Julia code) | Not started |
+| M1 — interchange, fixtures, level previews | **Done** |
+| M2 — math and state foundations (first Julia code) | **Done** |
 | M3 — minimal shot evaluator and early measurement | Not started |
 
-The repository currently contains the frozen Lua reference, the baseline
-sweep harness, and documentation. **There is no Julia code yet.** M2 creates
-the Julia package.
+The repository contains the frozen Lua reference, the baseline sweep harness,
+the versioned interchange artifacts and fixtures, the M2 Julia package
+(`julia/PeggleSim`) with its pinned math/RNG/state foundation, and the
+documentation. M3 builds the first shot evaluator on top of the checkpoint
+contract.
 
 ## Requirements
 
 - LuaJIT and LÖVE 11.x for the baseline harness (LÖVE needs a display, or
   `xvfb-run` on headless servers; `scripts/love.sh` handles both).
-- No Julia toolchain is required until M2.
-- `make verify` and `make test` need neither a display nor LÖVE.
+- Python 3 for SVG previews and schema validation.
+- Julia 1.12.6 for the `julia/PeggleSim` package (M2); the pinned environment
+  is reproduced with `julia --project=julia/PeggleSim -e 'using Pkg; Pkg.instantiate()'`.
+  The Lua checks do not need Julia.
+- `make verify`, `make check`, and `make test` need neither a display nor
+  LÖVE (fixture capture does).
 
 ## Common commands
 
 ```bash
 make verify       # verify the pinned reference against reference/files.sha256
+make export       # regenerate interchange artifacts and SVG previews
+make fixtures     # capture reference fixture records (needs LÖVE/display)
+make fixture-list # list the reference fixture catalog
+make check        # interchange reproducibility + schema validation
+make check-all    # check plus fixture re-capture and corpus-integrity tests
 make list         # list baseline workloads
 make self-check   # grid identity + candidate-evaluation determinism
 make quick        # short sweep (every 20th aim index)
@@ -41,12 +52,37 @@ make baseline     # full-grid baseline (long; writes results/ and results/raw/)
 make test         # run the pinned reference test suite in a scratch copy
 ```
 
+M2 Julia targets:
+
+```bash
+make julia-test          # run the Julia package test suite (pinned env)
+make julia-parity        # recompute results/parity/local.json
+make julia-bench         # checkpoint/reset benchmark (writing results/)
+make capture-m2          # capture RNG/peg-color/checkpoint fixtures (needs LÖVE)
+make capture-m2-check    # re-capture the M2 fixtures and require equality
+make math-census         # capture the math census fixture and Julia summary
+make math-census-check   # re-capture the math census fixture and compare
+make wpd-math            # CORE-MATH vs system libm vs MPFR oracle (WP-D)
+make wpd-state           # Lua core_math state capture + Julia comparison (WP-D)
+make wpd-trace           # gameplay traces/candidate samples, single host (WP-E)
+make wpd-perf            # math/checkpoint/sweep performance comparison (WP-F)
+```
+
+The `wpd-*` targets are the experimental CORE-MATH comparison; their outputs
+and acceptance records live under `tmp/core-math/` (see
+`tmp/core-math/wpc-acceptance.md`, `wpd-acceptance.md`,
+`wpef-acceptance.md`). They do not change the historical fixtures or the
+default `system_libm` backend.
+
 Focused commands:
 
 ```bash
 scripts/run_baseline.sh --workload circles_small --stride 50
 scripts/render_summary.py results/RUN.summary.json
 scripts/verify_reference.sh
+scripts/export_interchange.sh
+scripts/capture_fixtures.sh --id slide_rail_graze
+scripts/validate_interchange.py
 ```
 
 ## Repository layout
@@ -57,9 +93,14 @@ scripts/verify_reference.sh
 | `reference/peggle_evolved/` | Byte-for-byte export of the frozen Lua revision; **read-only** |
 | `reference/PIN.md` | Reference revision, tree hash, config hash, manifest rules |
 | `reference/files.sha256` | Per-file hash manifest of the pinned tree |
-| `harness/` | LÖVE baseline sweep harness: candidate grid, phase timings |
-| `scripts/` | Reference verification, headless LÖVE wrapper, baseline runner, summary renderer |
-| `results/` | Baseline summary JSON (committed); `results/raw/` per-candidate JSONL (gitignored) |
+| `harness/` | LÖVE sweep harness: candidate grid, phase timings, fixture capture, search |
+| `julia/PeggleSim/` | Julia package: pinned math/RNG/state foundation, checkpoint contract, parity tools |
+| `tools/` | Lua interchange tools: canonical JSON, level/config exporters, M2 captures |
+| `schemas/` | Versioned interchange schemas and examples |
+| `interchange/` | Generated level/config artifacts, SVG previews, manifest |
+| `fixtures/` | Fixture catalog, expected records, gameplay traces, `rng/`, `checkpoints/`, `math_census/` |
+| `scripts/` | Verification, export, fixture capture, previews, baseline runner, M2 captures, parity compare |
+| `results/` | Baseline summary JSON (committed); `results/parity/`, M2 benchmark/census summaries; `results/raw/` per-candidate JSONL (gitignored) |
 | `tmp/` | Local scratch (gitignored) |
 
 ## Wiki layout
@@ -76,11 +117,18 @@ mirrors `../peggle_evolved/wiki/` so material can move between the projects.
 | `wiki/context/reference.md` | Frozen revision, config, candidate grid, decision boundary, action/result schemas | current |
 | `wiki/context/workload.md` | Representative workloads, seeds, phase definitions, measurement protocol, campaign sizing | current |
 | `wiki/context/inventory.md` | Inventory of the existing Lua corpus, tools, and plumbing | current |
+| `wiki/context/interchange.md` | Versioned level/config/checkpoint/action/result formats, static subset, verification | current |
+| `wiki/context/fixtures.md` | Reference fixture matrix, capture protocol, the 42-case assessment | current |
+| `wiki/context/julia.md` | M2 Julia package: pinned env, DetMath backends, RNG, state, checkpoint contract | current |
 | `wiki/benchmarks/` | Measured performance and parity results | current |
 | `wiki/benchmarks/baseline-metrics.md` | M0 Lua candidate-sweep baseline and continuing-metric protocol | current |
+| `wiki/benchmarks/m2-checkpoint.md` | M2 checkpoint/reset benchmark and M0 init comparison | current |
 | `wiki/devlog/` | Dated engineering log, one file per date (`YYYY-MM-DD.md`) | current |
-| `wiki/decisions/` | ADRs for port decisions (math contract, storage, scheduler, ...) | reserved |
-| `wiki/audits/` | Correctness audits (math census, determinism, RNG) | reserved |
+| `wiki/decisions/` | ADRs for port decisions (math contract, storage, scheduler, ...) | current |
+| `wiki/decisions/0001-math-backend.md` | Math backend decision: system libm default, Julia Base fallback, experimental `core_math` | current |
+| `wiki/audits/` | Correctness audits (math census, determinism, RNG) | current |
+| `wiki/audits/m2-math-census.md` | M2 math census: 15,794 cases, 0 system-libm mismatches | current |
+| `wiki/audits/m2-rng-geometry.md` | M2 RNG, initialized geometry, reset determinism audit | current |
 | `wiki/failures/` | Post-mortems for notable bugs and campaign failures | reserved |
 | `wiki/templates/` | Document templates (devlog, ADR) | current |
 
@@ -114,7 +162,12 @@ Conventions:
 | What is frozen, and what is a legal action? | `wiki/context/reference.md` |
 | What exactly is measured? | `wiki/context/workload.md` |
 | What already exists in Lua? | `wiki/context/inventory.md` |
+| What do the interchange artifacts contain? | `wiki/context/interchange.md` |
+| Which reference fixtures exist and why? | `wiki/context/fixtures.md` |
+| How is the Julia side built? | `wiki/context/julia.md` |
 | How fast is Lua today? | `wiki/benchmarks/baseline-metrics.md` |
+| How fast is the M2 checkpoint/reset? | `wiki/benchmarks/m2-checkpoint.md` |
+| Is the Julia math/RNG bit-identical? | `wiki/audits/m2-math-census.md`, `wiki/audits/m2-rng-geometry.md` |
 | What happened on a given day? | `wiki/devlog/` |
 | Why was a port decision made? | `wiki/decisions/` |
 | What is the overall plan? | `../peggle_evolved/temp/julia_port/implementation-plan.md` |

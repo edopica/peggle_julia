@@ -1,0 +1,19 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "peggle/action.v1.schema.json",
+  "title": "Peggle Evolved ShotAction v1",
+  "type": "object",
+  "required": ["aim_index", "delay"],
+  "additionalProperties": false,
+  "properties": {
+    "aim_index": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 1800
+    },
+    "delay": {
+      "type": "integer",
+      "minimum": 0
+    }
+  }
+}

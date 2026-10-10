@@ -105,6 +105,10 @@ Moving-level checkpoints enter the workload in the motion phase (M8).
 
 ## 5. Action and result schemas
 
+The M1 versioned forms of these schemas are defined in
+`wiki/context/interchange.md` and `schemas/action.v1.schema.json`,
+`schemas/shot-result.v1.schema.json`.
+
 `ShotAction` (M0 form):
 
 ```text

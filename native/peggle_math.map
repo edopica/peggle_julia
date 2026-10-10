@@ -1,0 +1,23 @@
+/*
+ * Linker version script: export exactly the peggle_math ABI version 1
+ * symbols and hide everything else (including CORE-MATH cr_* entry points
+ * and the internal sqrt shim).
+ */
+{
+  global:
+    peggle_math_abi_version;
+    peggle_math_identity;
+    peggle_math_sin;
+    peggle_math_cos;
+    peggle_math_tan;
+    peggle_math_asin;
+    peggle_math_acos;
+    peggle_math_atan;
+    peggle_math_atan2;
+    peggle_math_exp;
+    peggle_math_log;
+    peggle_math_pow;
+    peggle_math_sqrt;
+  local:
+    *;
+};

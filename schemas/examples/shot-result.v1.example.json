@@ -1,0 +1,20 @@
+{
+  "format": "peggle.shot_result",
+  "schema_version": 1,
+  "action": { "aim_index": 900, "delay": 0 },
+  "angle": 1.5707963267948966,
+  "steps": 768,
+  "completed": true,
+  "reason": "fell_out",
+  "score": 47300,
+  "peg_score": 42300,
+  "bonus": 0,
+  "style_points": 5000,
+  "styles": { "slide": 1 },
+  "pegs_hit": 45,
+  "reds_hit": 0,
+  "multiplier": 1,
+  "is_fever": false,
+  "balls": 1,
+  "balls_spawned": 0
+}

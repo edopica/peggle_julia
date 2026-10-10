@@ -1,0 +1,317 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "peggle/checkpoint.v1.schema.json",
+  "title": "Peggle Evolved DecisionCheckpoint v1",
+  "description": "Minimum contract for a restorable decision checkpoint. Version 1 advertises only the ready_to_aim boundary (after Engine:resetTurn, before Engine:launchBalls). Mid-shot capture is intentionally not advertised by v1: arbitrary continuation would change the required continuation state and needs a schema version bump (M8 motion phase if needed). Encoders MUST serialize every authoritative field, so mutable sub-objects allow additional properties; unknown fields are authoritative, not ignorable. A checkpoint that passes schema validation is additionally checked for cross-field invariants by scripts/validate_interchange.py.",
+  "type": "object",
+  "required": [
+    "format", "schema_version", "boundary", "provenance",
+    "engine", "rng", "purple_queue", "trackers", "match"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "format": { "enum": ["peggle.checkpoint"] },
+    "schema_version": { "enum": [1] },
+    "boundary": {
+      "enum": ["ready_to_aim"],
+      "description": "Only the ready-to-aim turn boundary is supported by v1."
+    },
+    "provenance": {
+      "type": "object",
+      "required": ["reference_revision", "reference_tree", "config_sha256", "level_sha256"],
+      "additionalProperties": false,
+      "properties": {
+        "reference_revision": { "type": "string", "pattern": "^[0-9a-f]{40}$" },
+        "reference_tree": { "type": "string", "pattern": "^[0-9a-f]{40}$" },
+        "config_sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+        "level_sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" }
+      }
+    },
+    "engine": {
+      "type": "object",
+      "required": [
+        "step_id", "shot_id", "level_name", "is_fever",
+        "current_multiplier", "hit_counter", "total_red_pegs",
+        "red_pegs_hit_amount", "bonus_score", "style_score", "pegs", "balls",
+        "bucket", "next_ball_id", "used_ball_ids", "turn_pegs_hit",
+        "clearing", "fever_buckets"
+      ],
+      "additionalProperties": true,
+      "properties": {
+        "step_id": { "type": "integer", "minimum": 0 },
+        "shot_id": { "type": "integer", "minimum": 0 },
+        "level_name": { "type": "string", "minLength": 1 },
+        "is_fever": {
+          "type": "boolean",
+          "description": "Derived: true iff current_multiplier == 100 (Engine:updateMultiplier, core.lua:319). Must be recomputed from current_multiplier and checked at ready_to_aim."
+        },
+        "current_multiplier": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Derived from red_pegs_hit_amount / total_red_pegs by Engine:updateMultiplier (core.lua:306-320): total_red_pegs == 0 -> 1; otherwise pct >= 1.0 -> 100, >= 0.88 -> 10, >= 0.75 -> 5, >= 0.60 -> 3, >= 0.40 -> 2, else 1. Survives resetTurn; recompute and check at ready_to_aim."
+        },
+        "hit_counter": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Authoritative continuation state: increments per scored peg and assigns peg.hit_order (Engine:scorePeg, core.lua:816-817); survives Engine:resetTurn (core.lua:510-554) and is reset only by setupLevel (core.lua:389). Serialize verbatim: hit pegs are removed by clearing (Engine:removePeg, core.lua:1025-1047), so it cannot be reconstructed from the remaining engine.pegs."
+        },
+        "total_red_pegs": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Authoritative continuation state: level red-peg count captured at setupLevel (core.lua:384); survives Engine:resetTurn and is reset only by setupLevel. Serialize verbatim: the current red count in engine.pegs is not the level total because hit pegs are removed by clearing (core.lua:1025-1047)."
+        },
+        "red_pegs_hit_amount": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Authoritative continuation state: cumulative scored-red count (Engine:scorePeg, core.lua:820); survives Engine:resetTurn and is reset only by setupLevel (core.lua:395). Serialize verbatim: it drives Engine:updateMultiplier and cannot be reconstructed from the remaining engine.pegs because hit pegs are removed by clearing (core.lua:1025-1047)."
+        },
+        "bonus_score": {
+          "type": "number",
+          "description": "Per-turn accumulator zeroed by Engine:resetTurn (core.lua:544); must be 0 at ready_to_aim."
+        },
+        "style_score": {
+          "type": "number",
+          "description": "Per-turn accumulator zeroed by Engine:resetTurn (core.lua:545); must be 0 at ready_to_aim."
+        },
+        "next_ball_id": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Next permanent ball-ID candidate; always greater than every used id."
+        },
+        "used_ball_ids": {
+          "type": "array",
+          "items": { "type": "integer", "minimum": 1 },
+          "description": "Permanently consumed ball ids, in allocation order; ids are never reused."
+        },
+        "turn_pegs_hit": {
+          "type": "array",
+          "items": { "type": "integer", "minimum": 1 },
+          "description": "Peg ids scored this turn in hit order; empty at ready_to_aim."
+        },
+        "clearing": {
+          "type": "object",
+          "required": ["active", "is_end_of_turn", "timer"],
+          "additionalProperties": false,
+          "properties": {
+            "active": { "type": "boolean" },
+            "is_end_of_turn": {
+              "type": "boolean",
+              "description": "Retained from the last startClearing() call (Engine:resetTurn does not reset it) and inert while active is false, so it may be true at ready_to_aim."
+            },
+            "timer": { "type": "number", "minimum": 0 }
+          }
+        },
+        "pegs": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["id", "type", "hit", "x", "y", "shape"],
+            "additionalProperties": true,
+            "properties": {
+              "id": { "type": "integer", "minimum": 1 },
+              "type": { "enum": ["blue", "green", "purple", "red"] },
+              "hit": { "type": "boolean" },
+              "x": { "type": "number" },
+              "y": { "type": "number" },
+              "shape": { "enum": ["circle", "rectangle", "annular"] },
+              "base_x": { "type": "number" },
+              "base_y": { "type": "number" },
+              "radius": { "type": "number" },
+              "width": { "type": "number" },
+              "height": { "type": "number" },
+              "angle": { "type": "number" },
+              "r_in": { "type": "number" },
+              "r_out": { "type": "number" },
+              "segments": { "type": "integer", "minimum": 1 },
+              "hit_order": { "type": "integer", "minimum": 1 },
+              "multiplier_at_hit": { "type": "integer", "minimum": 1 }
+            }
+          }
+        },
+        "balls": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["id", "x", "y", "vx", "vy", "launched", "radius"],
+            "additionalProperties": true,
+            "properties": {
+              "id": { "type": "integer", "minimum": 1 },
+              "x": { "type": "number" },
+              "y": { "type": "number" },
+              "vx": { "type": "number" },
+              "vy": { "type": "number" },
+              "launched": { "type": "boolean" },
+              "radius": { "type": "number" },
+              "prev_x": { "type": "number" },
+              "prev_y": { "type": "number" }
+            }
+          }
+        },
+        "bucket": {
+          "type": "object",
+          "required": ["x", "phase"],
+          "additionalProperties": true,
+          "properties": {
+            "x": { "type": "number" },
+            "phase": { "type": "number" },
+            "prev_x": { "type": "number" },
+            "top": { "type": "number" },
+            "hole": { "type": "number" },
+            "edge": { "type": "number" },
+            "height": { "type": "number" }
+          }
+        },
+        "fever_buckets": {
+          "type": "object",
+          "required": ["top", "height", "animating", "buckets", "dividers"],
+          "additionalProperties": true,
+          "properties": {
+            "top": { "type": "number" },
+            "target_top": { "type": "number" },
+            "height": { "type": "number" },
+            "animating": { "type": "boolean" },
+            "buckets": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "required": ["x", "width", "value"],
+                "additionalProperties": true,
+                "properties": {
+                  "x": { "type": "number" },
+                  "width": { "type": "number" },
+                  "value": { "type": "number" }
+                }
+              }
+            },
+            "dividers": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "required": ["x", "y", "radius", "is_divider"],
+                "additionalProperties": true,
+                "properties": {
+                  "x": { "type": "number" },
+                  "y": { "type": "number" },
+                  "radius": { "type": "number" },
+                  "is_divider": { "type": "boolean" }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "rng": {
+      "type": "object",
+      "required": ["generator", "seed", "state_b64"],
+      "additionalProperties": false,
+      "properties": {
+        "generator": { "enum": ["love.math.newRandomGenerator"] },
+        "seed": { "type": "integer" },
+        "state_b64": {
+          "type": "string",
+          "minLength": 1,
+          "pattern": "^[A-Za-z0-9+/]+={0,2}$",
+          "description": "Base64 of love.math.RandomGenerator:getState(); the authoritative continuation input."
+        }
+      }
+    },
+    "purple_queue": {
+      "type": "object",
+      "required": ["queue", "active"],
+      "additionalProperties": false,
+      "properties": {
+        "queue": { "type": "array", "items": { "type": "integer", "minimum": 1 } },
+        "active": { "type": "array", "items": { "type": "integer", "minimum": 1 } }
+      }
+    },
+    "trackers": {
+      "type": "object",
+      "required": ["style_shots", "ball_state", "slide_inversion"],
+      "additionalProperties": true,
+      "properties": {
+        "style_shots": {
+          "type": "object",
+          "required": [
+            "last_impact", "qualifying_streak", "last_qualifying_seq",
+            "bucket_bounced", "bounced_after_bucket", "side_wall_hit",
+            "hit_any_peg", "awarded", "slide_runs", "slide_awarded"
+          ],
+          "additionalProperties": true,
+          "properties": {
+            "last_impact": { "type": "object", "additionalProperties": true },
+            "qualifying_streak": { "type": "object", "additionalProperties": true },
+            "last_qualifying_seq": { "type": "object", "additionalProperties": true },
+            "bucket_bounced": { "type": "object", "additionalProperties": true },
+            "bounced_after_bucket": { "type": "object", "additionalProperties": true },
+            "side_wall_hit": { "type": "object", "additionalProperties": true },
+            "hit_any_peg": { "type": "object", "additionalProperties": true },
+            "awarded": { "type": "object", "additionalProperties": true },
+            "slide_runs": { "type": "object", "additionalProperties": true },
+            "slide_awarded": { "type": "object", "additionalProperties": true }
+          }
+        },
+        "ball_state": {
+          "type": "object",
+          "required": [
+            "idle", "idle_timer", "reacted", "all_idle_latch",
+            "no_score_timer", "no_score_timeout_fired"
+          ],
+          "additionalProperties": true,
+          "properties": {
+            "idle": { "type": "object", "additionalProperties": true },
+            "idle_timer": { "type": "object", "additionalProperties": true },
+            "reacted": { "type": "object", "additionalProperties": true },
+            "all_idle_latch": { "type": "boolean" },
+            "no_score_timer": { "type": "number", "minimum": 0 },
+            "no_score_timeout_fired": { "type": "boolean" }
+          }
+        },
+        "slide_inversion": {
+          "type": "object",
+          "required": ["line_hits", "hit_seen", "removed", "track"],
+          "additionalProperties": true,
+          "properties": {
+            "line_hits": { "type": "object", "additionalProperties": true },
+            "hit_seen": { "type": "object", "additionalProperties": true },
+            "removed": { "type": "object", "additionalProperties": true },
+            "track": { "type": "object", "additionalProperties": true }
+          }
+        }
+      }
+    },
+    "match": {
+      "type": "object",
+      "required": [
+        "mode", "players", "current_player_index", "shared_bucket_hits",
+        "game_over"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "mode": { "enum": ["solo", "1v1"] },
+        "players": {
+          "type": "array",
+          "minItems": 2,
+          "items": {
+            "type": "object",
+            "required": ["score", "balls", "bucket_hits"],
+            "additionalProperties": false,
+            "properties": {
+              "score": { "type": "number" },
+              "balls": { "type": "integer", "minimum": 0 },
+              "bucket_hits": { "type": "integer", "minimum": 0 }
+            }
+          }
+        },
+        "current_player_index": { "type": "integer", "minimum": 1, "maximum": 2 },
+        "shared_bucket_hits": { "type": "integer", "minimum": 0 },
+        "game_over": { "type": "boolean" },
+        "winner": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "0 = draw; absent until the game ends."
+        }
+      }
+    }
+  }
+}

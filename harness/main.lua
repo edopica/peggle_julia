@@ -24,6 +24,40 @@
 --   --list               list workloads and exit
 --   --self-check         validate the grid, print the report, and exit
 --
+-- Fixture tooling:
+--   --search             sweep a level's aim grid and report matching candidates
+--                        (requires --level; --match FILTER, --limit N)
+--                        filters: style:NAME, pegs:N, reds:N, spawn:N, score:N,
+--                                 fever, bucket, completed, spawned
+--   --fixtures           capture the reference fixture catalog
+--   --list-fixtures      list catalog entries and exit
+--   --catalog PATH       fixture catalog (default: fixtures/catalog.lua)
+--   --fixtures-out DIR   expected-record output dir (default: fixtures/expected)
+--   --fixtures-traces DIR gameplay-trace dir (default: fixtures/traces); check
+--                        mode reads reference traces here and never writes
+--   --fixtures-snapshots include the full authoritative per-step snapshot in
+--                        captured traces (capture mode only; check mode stays
+--                        snapshot-free)
+--   --id ID              capture only this fixture
+--   --check              with --fixtures: verify records and traces match the
+--                        re-captured ones; never writes into either corpus dir
+--
+-- M2 reference captures (real LÖVE RNG + vendored reference engine):
+--   --m2-capture         capture RNG sequences, peg-color init, checkpoints
+--   --m2-rng             only fixtures/rng/rng_sequences.v1.json
+--   --m2-peg-colors      only fixtures/rng/peg_colors.v1.json
+--   --m2-checkpoints     only fixtures/checkpoints/*.json
+--   --levels LIST        comma-separated static level names (passed by
+--                        scripts/capture_m2.sh; discovered from
+--                        interchange/files.sha256 when omitted)
+--   --rng-out DIR        RNG fixture output dir (default: fixtures/rng)
+--   --checkpoints-out DIR checkpoint output dir (default: fixtures/checkpoints)
+--   --id ID              RNG sequence filter (seed-N or N) and checkpoint
+--                        record id (level or slide.multiball3)
+--   --level NAME         level filter for peg-color and checkpoint records
+--   --check              re-capture in memory and require byte-identical
+--                        canonical records; never writes to the corpus
+--
 -- Run metadata (reference revision, config hash) is supplied by the caller:
 --   --reference-revision, --reference-tree, --config-sha256, --run-id,
 --   --host-label
@@ -70,12 +104,14 @@ local source_dir = love.filesystem.getSource()
 if source_dir:sub(1, 1) ~= "/" then
   source_dir = love.filesystem.getWorkingDirectory() .. "/" .. source_dir
 end
+local repo_root = source_dir .. "/.."
 
 local ref_root = args["reference-dir"] or (source_dir .. "/../reference/peggle_evolved")
 if ref_root:sub(1, 1) ~= "/" then
   ref_root = love.filesystem.getWorkingDirectory() .. "/" .. ref_root
 end
-package.path = ref_root .. "/?.lua;" .. ref_root .. "/?/init.lua;" .. package.path
+package.path = repo_root .. "/tools/?.lua;" .. ref_root .. "/?.lua;"
+  .. ref_root .. "/?/init.lua;" .. package.path
 
 -- ===========================================================================
 -- Reference modules
@@ -86,7 +122,9 @@ local Physics = require("src.systems.physics")
 local LevelManager = require("src.systems.level_manager")
 local Ball = require("src.entities.ball")
 local Replay = require("src.systems.replay")
+local GameplayTraceExporter = require("src.systems.gameplay_trace_exporter")
 local JSON = require("tools.json")
+local CanonicalJSON = require("canonical_json")
 
 -- The reference only runs presentation code when asked; disable it so the
 -- authoritative simulation is measured without rendering side effects.
@@ -321,7 +359,19 @@ end
 -- ===========================================================================
 -- Candidate evaluation
 -- ===========================================================================
-local function run_candidate(workload, index)
+-- Evaluate one candidate from an identical fresh decision state.
+--
+-- opts (all optional):
+--   max_steps       fixed-step cap (default MAX_STEPS)
+--   clearing        continue through end-of-turn clearing (default CLEARING)
+--   trace_path      write a canonical gameplay trace (no snapshots by default)
+--   trace_snapshot  include per-step snapshots in the trace (default false)
+local function run_candidate(workload, index, opts)
+  opts = opts or {}
+  local max_steps = opts.max_steps or MAX_STEPS
+  local clearing = opts.clearing
+  if clearing == nil then clearing = CLEARING end
+  local trace_path = opts.trace_path
   local angle = angle_for_index(index)
   local style_counts = {}
   local shot_done = false
@@ -340,7 +390,7 @@ local function run_candidate(workload, index)
     onAllBallsDepleted = function()
       -- true ends the shot immediately (bench semantics); false lets the
       -- end-of-turn clearing cascade run to the next ready-to-aim boundary.
-      return not CLEARING
+      return not clearing
     end,
     onBucketCatch = function(eng)
       eng.bonusScore = eng.bonusScore + Config.bucket_bonus
@@ -354,10 +404,11 @@ local function run_candidate(workload, index)
   local t1 = now()
 
   local initial_balls = nil
-  if workload.balls > 1 then
+  local registered_balls = workload.balls or 1
+  if registered_balls > 1 then
     initial_balls = {}
-    for i = 1, workload.balls do
-      local x = (i / (workload.balls + 1)) * LevelManager.virtual_width
+    for i = 1, registered_balls do
+      local x = (i / (registered_balls + 1)) * LevelManager.virtual_width
       initial_balls[#initial_balls + 1] = Ball.new(x, 50)
     end
   end
@@ -365,13 +416,26 @@ local function run_candidate(workload, index)
 
   local t2 = now()
 
+  if trace_path then
+    GameplayTraceExporter.init(trace_path, { include_snapshot = opts.trace_snapshot == true })
+    if not GameplayTraceExporter.file then
+      error("cannot open trace file: " .. trace_path)
+    end
+    engine.trace_exporter = GameplayTraceExporter
+  end
+
   engine.current_aim_angle = angle
   engine:launchBalls()
 
   local steps = 0
-  while not shot_done and steps < MAX_STEPS do
+  while not shot_done and steps < max_steps do
     engine:update(FIXED_DT)
     steps = steps + 1
+  end
+
+  if trace_path then
+    GameplayTraceExporter.close()
+    engine.trace_exporter = nil
   end
 
   local t3 = now()
@@ -398,7 +462,8 @@ local function run_candidate(workload, index)
     reds_hit = engine.redPegsHitAmount,
     multiplier = engine.currentMultiplier,
     is_fever = engine.isFever,
-    balls = workload.balls,
+    balls = registered_balls,
+    spawned = (engine.next_ball_id - 1) - registered_balls,
     mem_kb = collectgarbage("count"),
   }
 
@@ -408,6 +473,7 @@ local function run_candidate(workload, index)
     index = index,
     angle = angle,
     features = features,
+    styles_map = style_counts,
     t_init = math.floor((t1 - t0) * 1e6 + 0.5),
     t_reset = math.floor((t2 - t1) * 1e6 + 0.5),
     t_sim = math.floor((t3 - t2) * 1e6 + 0.5),
@@ -587,6 +653,525 @@ local function sweep(workload, repeat_index, indices, raw_file, progress)
 end
 
 -- ===========================================================================
+-- Candidate search: fixture authoring aid over the legal aim grid
+-- ===========================================================================
+local function matches_filter(features, filter)
+  if filter == nil or filter == true then return true end
+  local kind, value = tostring(filter):match("^([%a_]+):(.*)$")
+  if kind == "style" then
+    return features.styles:find(value, 1, true) ~= nil
+  elseif kind == "pegs" then
+    return features.pegs_hit >= (tonumber(value) or 1)
+  elseif kind == "reds" then
+    return features.reds_hit >= (tonumber(value) or 1)
+  elseif kind == "spawn" then
+    return features.spawned >= (tonumber(value) or 1)
+  elseif kind == "score" then
+    return features.score >= (tonumber(value) or 1)
+  end
+  if filter == "fever" then return features.is_fever end
+  if filter == "bucket" then return features.reason == "bucket_caught" end
+  if filter == "completed" then return features.completed end
+  if filter == "spawned" then return features.spawned > 0 end
+  error("unknown --match filter: " .. tostring(filter))
+end
+
+local function run_search()
+  local level = args["level"]
+  if type(level) ~= "string" then
+    print("ERROR: --search requires --level NAME")
+    love.event.quit(1)
+    return
+  end
+  local balls = arg_number("balls", 1)
+  local max_steps = arg_number("max-steps", MAX_STEPS)
+  local limit = arg_number("limit", 0)
+  local filter = args["match"]
+  local workload = { id = "search_" .. level, level = level, balls = balls }
+  local indices = build_index_list()
+  print(string.format("search: level=%s balls=%d indices=%d filter=%s",
+    level, balls, #indices, tostring(filter)))
+  local matches = 0
+  for _, index in ipairs(indices) do
+    local result = run_candidate(workload, index, { max_steps = max_steps })
+    local f = result.features
+    if matches_filter(f, filter) then
+      matches = matches + 1
+      if limit == 0 or matches <= limit then
+        print(JSON.stringify({
+          index = index,
+          angle = result.angle,
+          steps = f.steps,
+          completed = f.completed,
+          reason = f.reason,
+          score = f.score,
+          peg_score = f.peg_score,
+          bonus = f.bonus,
+          style_points = f.style_points,
+          styles = f.styles,
+          is_fever = f.is_fever,
+          pegs_hit = f.pegs_hit,
+          reds_hit = f.reds_hit,
+          spawned = f.spawned,
+        }))
+        io.stdout:flush()
+      end
+    end
+  end
+  print(string.format("search: %d match(es)", matches))
+end
+
+-- ===========================================================================
+-- Reference fixture capture
+-- ===========================================================================
+local FIXTURE_CATEGORIES = {
+  shape_boundary = true, near_tie = true, graze = true,
+  overlap_correction = true, clearing = true, fever = true, power = true,
+  style = true, line_metadata = true, bucket = true, multiball = true,
+  completion = true,
+}
+
+local function shell_quote(path)
+  return "'" .. tostring(path):gsub("'", "'\\''") .. "'"
+end
+
+local function read_file_bytes(path)
+  local f, err = io.open(path, "rb")
+  if not f then return nil, err end
+  local data = f:read("*a")
+  f:close()
+  return data
+end
+
+-- Hash a file. Prefers LÖVE's built-in digest (io.popen is unavailable under
+-- LÖVE); the popen path keeps the helper usable from plain LuaJIT.
+local function sha256_file(path)
+  if love and love.data and love.data.hash and love.data.encode then
+    local data, err = read_file_bytes(path)
+    if not data then return nil, err end
+    return love.data.encode("string", "hex", love.data.hash("sha256", data))
+  end
+  local pipe = io.popen("sha256sum " .. shell_quote(path) .. " 2>/dev/null")
+  if not pipe then return nil, "no hash backend" end
+  local line = pipe:read("*l")
+  pipe:close()
+  return line and line:match("^(%x+)$") or nil
+end
+
+local function count_lines(path)
+  local f = io.open(path, "r")
+  if not f then return 0 end
+  local count = 0
+  for _ in f:lines() do count = count + 1 end
+  f:close()
+  return count
+end
+
+local function load_table_file(path, what)
+  local chunk, err = loadfile(path)
+  if not chunk then
+    error("cannot load " .. what .. " at " .. path .. ": " .. tostring(err))
+  end
+  local ok, value = pcall(chunk)
+  if not ok then
+    error("error running " .. what .. " at " .. path .. ": " .. tostring(value))
+  end
+  return value
+end
+
+local function read_level_artifact(level)
+  local path = repo_root .. "/interchange/levels/" .. level .. ".v1.json"
+  local ok, data = pcall(CanonicalJSON.decode_file, path)
+  if not ok then
+    error("missing level artifact " .. path
+      .. " (run scripts/export_interchange.sh first): " .. tostring(data))
+  end
+  return data, path
+end
+
+local function validate_fixture_catalog(catalog)
+  if type(catalog) ~= "table" or catalog.version ~= 1 then
+    error("fixture catalog must be a table with version = 1")
+  end
+  if type(catalog.fixtures) ~= "table" then
+    error("fixture catalog must contain a fixtures array")
+  end
+  local seen = {}
+  for i, fx in ipairs(catalog.fixtures) do
+    local where = "fixtures[" .. i .. "]"
+    if type(fx.id) ~= "string" or fx.id == "" then
+      error(where .. ".id must be a non-empty string")
+    end
+    if seen[fx.id] then error("duplicate fixture id " .. fx.id) end
+    seen[fx.id] = true
+    if not FIXTURE_CATEGORIES[fx.category] then
+      error(where .. " has unknown category " .. tostring(fx.category))
+    end
+    if fx.kind ~= "shot" and fx.kind ~= "scenario" then
+      error(where .. ".kind must be shot or scenario")
+    end
+    if fx.trace ~= nil and type(fx.trace) ~= "boolean" then
+      error(where .. ".trace must be a boolean")
+    end
+    if fx.kind == "shot" then
+      if type(fx.level) ~= "string" then
+        error(where .. ".level is required for shot fixtures")
+      end
+      if type(fx.aim_index) ~= "number" or fx.aim_index ~= math.floor(fx.aim_index)
+        or fx.aim_index < 0 or fx.aim_index > AIM_STEPS then
+        error(where .. ".aim_index must be an integer in 0.." .. AIM_STEPS)
+      end
+      if fx.delay ~= nil and fx.delay ~= 0 then
+        error(where .. ".delay must be 0 in fixture schema v1 (timing search is M8)")
+      end
+      if fx.balls ~= nil and (type(fx.balls) ~= "number" or fx.balls < 1) then
+        error(where .. ".balls must be >= 1")
+      end
+      fx.balls = fx.balls or 1
+      fx.completion = fx.completion or "bench"
+      if fx.completion ~= "bench" and fx.completion ~= "clearing" then
+        error(where .. ".completion must be bench or clearing")
+      end
+    else
+      if fx.trace then
+        error(where .. " scenario fixtures cannot capture gameplay traces")
+      end
+      if fx.level ~= nil or fx.aim_index ~= nil or fx.balls ~= nil then
+        error(where .. " scenario fixtures must not declare level/aim_index/balls")
+      end
+    end
+  end
+end
+
+local function fixture_provenance(level)
+  local revision = args["reference-revision"]
+  local tree = args["reference-tree"]
+  local config_sha = args["config-sha256"]
+  if type(revision) ~= "string" or type(tree) ~= "string" or type(config_sha) ~= "string" then
+    error("fixture capture requires --reference-revision, --reference-tree, --config-sha256")
+  end
+  local source = {
+    reference_revision = revision,
+    reference_tree = tree,
+    config_sha256 = config_sha,
+  }
+  if level then
+    local artifact, artifact_path = read_level_artifact(level)
+    source.level = level
+    local hash, hash_err = sha256_file(artifact_path)
+    if not hash then
+      error("cannot hash level artifact for fixture capture: " .. tostring(hash_err))
+    end
+    source.level_sha256 = hash
+    return source, artifact
+  end
+  return source, nil
+end
+
+local function capture_shot_fixture(fx, opts)
+  opts = opts or {}
+  local source, artifact = fixture_provenance(fx.level)
+  local trace_rel, trace_path
+  if fx.trace then
+    trace_rel = "fixtures/traces/" .. fx.id .. ".jsonl"
+    if opts.check then
+      trace_path = os.tmpname()
+    else
+      trace_path = opts.traces_dir .. "/" .. fx.id .. ".jsonl"
+    end
+  end
+  local workload = { id = fx.id, level = fx.level, balls = fx.balls }
+  local result = run_candidate(workload, fx.aim_index, {
+    max_steps = fx.max_steps or MAX_STEPS,
+    clearing = fx.completion == "clearing",
+    trace_path = trace_path,
+    trace_snapshot = opts.trace_snapshot == true,
+  })
+  local f = result.features
+  local record = {
+    format = "peggle.fixture",
+    schema_version = 1,
+    id = fx.id,
+    category = fx.category,
+    kind = "shot",
+    source = source,
+    seed = {
+      level_seed = artifact.level_seed,
+      type_counts = artifact.type_counts,
+    },
+    action = {
+      kind = "shot",
+      aim_index = fx.aim_index,
+      angle = result.angle,
+      delay = 0,
+      balls = fx.balls,
+    },
+    completion = {
+      rule = fx.completion,
+      completed = f.completed,
+      reason = f.reason,
+      steps = f.steps,
+      max_steps = fx.max_steps or MAX_STEPS,
+    },
+    result = {
+      score = f.score,
+      peg_score = f.peg_score,
+      bonus = f.bonus,
+      style_points = f.style_points,
+      styles = CanonicalJSON.object(result.styles_map),
+      pegs_hit = f.pegs_hit,
+      reds_hit = f.reds_hit,
+      multiplier = f.multiplier,
+      is_fever = f.is_fever,
+      balls = f.balls,
+      balls_spawned = f.spawned,
+    },
+  }
+  if trace_path then
+    local trace_hash, hash_err = sha256_file(trace_path)
+    if not trace_hash then
+      error("cannot hash fixture trace: " .. tostring(hash_err))
+    end
+    record.trace = {
+      path = trace_rel,
+      sha256 = trace_hash,
+      events = count_lines(trace_path) - 1,
+    }
+  end
+  return record, trace_path
+end
+
+local function snapshot_config()
+  local snap = {}
+  for k, v in pairs(Config) do
+    if type(v) ~= "table" then snap[k] = v end
+  end
+  return snap
+end
+
+local function restore_config(snap)
+  for k in pairs(Config) do
+    if type(Config[k]) ~= "table" then Config[k] = nil end
+  end
+  for k, v in pairs(snap) do Config[k] = v end
+end
+
+local function capture_scenario_fixture(fx, scenario)
+  local source = fixture_provenance(nil)
+  local saved_config = snapshot_config()
+  local saved_width, saved_height = LevelManager.virtual_width, LevelManager.virtual_height
+  local ok, outcome = pcall(scenario.run)
+  restore_config(saved_config)
+  LevelManager.virtual_width, LevelManager.virtual_height = saved_width, saved_height
+  if not ok then
+    error("scenario " .. fx.id .. " failed: " .. tostring(outcome))
+  end
+  return {
+    format = "peggle.fixture",
+    schema_version = 1,
+    id = fx.id,
+    category = fx.category,
+    kind = "scenario",
+    source = source,
+    seed = {
+      level_seed = scenario.seed or 1,
+      type_counts = scenario.type_counts or { red = 0, green = 0 },
+    },
+    action = { kind = "scenario", name = fx.id },
+    completion = {
+      rule = "scenario",
+      completed = outcome.completed ~= false,
+      reason = outcome.reason or "probe_complete",
+      steps = outcome.steps or 0,
+      max_steps = outcome.max_steps or outcome.steps or 0,
+    },
+    result = CanonicalJSON.object(outcome.result or {}),
+  }
+end
+
+local function fixture_record_text(record)
+  return CanonicalJSON.encode(record) .. "\n"
+end
+
+local function read_expected_fixture(out_dir, id)
+  local path = out_dir .. "/" .. id .. ".json"
+  local data, err = read_file_bytes(path)
+  if not data then
+    error("missing expected fixture " .. path
+      .. " (capture it with scripts/capture_fixtures.sh): " .. tostring(err))
+  end
+  local ok, decoded = pcall(CanonicalJSON.decode, data)
+  if not ok then
+    error("cannot decode expected fixture " .. path .. ": " .. tostring(decoded))
+  end
+  return decoded, data, path
+end
+
+local function verify_fixture_record(record, expected_text, expected_path)
+  local text = fixture_record_text(record)
+  if text ~= expected_text then
+    error("fixture " .. record.id .. ": regenerated record differs from "
+      .. expected_path)
+  end
+  return expected_path
+end
+
+local function verify_reference_trace(traces_dir, id, expected_record)
+  local expected_trace = expected_record.trace
+  if type(expected_trace) ~= "table" then
+    error("fixture " .. id .. ": expected record has no trace metadata")
+  end
+  local path = traces_dir .. "/" .. id .. ".jsonl"
+  local hash, hash_err = sha256_file(path)
+  if not hash then
+    error("fixture " .. id .. ": missing reference trace " .. path
+      .. " (" .. tostring(hash_err) .. ")")
+  end
+  if hash ~= expected_trace.sha256 then
+    error(string.format(
+      "fixture %s: reference trace hash mismatch in %s (expected %s, got %s)",
+      id, path, tostring(expected_trace.sha256), hash))
+  end
+  local lines = count_lines(path)
+  if lines ~= expected_trace.events + 1 then
+    error(string.format(
+      "fixture %s: reference trace event count mismatch in %s"
+        .. " (expected %d events + 1 header line, got %d lines)",
+      id, path, expected_trace.events, lines))
+  end
+  return path
+end
+
+local function verify_regenerated_trace(id, generated_path, reference_path, record)
+  local generated, gerr = read_file_bytes(generated_path)
+  if not generated then
+    error("fixture " .. id .. ": cannot read regenerated trace "
+      .. tostring(generated_path) .. ": " .. tostring(gerr))
+  end
+  local reference, rerr = read_file_bytes(reference_path)
+  if not reference then
+    error("fixture " .. id .. ": cannot read reference trace "
+      .. reference_path .. ": " .. tostring(rerr))
+  end
+  if generated ~= reference then
+    local reference_hash = sha256_file(reference_path)
+    if record.trace.sha256 ~= reference_hash then
+      error(string.format(
+        "fixture %s: trace hash mismatch (regenerated %s vs reference %s)",
+        id, tostring(record.trace.sha256), tostring(reference_hash)))
+    end
+    error("fixture " .. id .. ": trace byte mismatch despite equal SHA-256")
+  end
+end
+
+local function write_fixture_record(out_dir, record)
+  local path = out_dir .. "/" .. record.id .. ".json"
+  local text = fixture_record_text(record)
+  local f, err = io.open(path, "w")
+  if not f then error("cannot write " .. path .. ": " .. tostring(err)) end
+  f:write(text)
+  f:close()
+  return path
+end
+
+local function load_scenarios()
+  local path = repo_root .. "/fixtures/scenarios.lua"
+  local scenarios = load_table_file(path, "scenario module")
+  if type(scenarios) ~= "table" then
+    error("scenario module must return a table")
+  end
+  local by_id = {}
+  for _, scenario in ipairs(scenarios) do
+    if type(scenario.id) ~= "string" or type(scenario.run) ~= "function" then
+      error("scenario entries need an id and a run function")
+    end
+    if by_id[scenario.id] then
+      error("duplicate scenario id " .. scenario.id)
+    end
+    by_id[scenario.id] = scenario
+  end
+  return by_id
+end
+
+local function selected_fixtures(catalog)
+  local wanted = args["id"]
+  local out = {}
+  for _, fx in ipairs(catalog.fixtures) do
+    if wanted == nil or wanted == true or fx.id == wanted then
+      out[#out + 1] = fx
+    end
+  end
+  if #out == 0 then error("no fixtures selected") end
+  return out
+end
+
+local function list_fixtures(catalog)
+  for _, fx in ipairs(catalog.fixtures) do
+    print(string.format("%-34s %-18s %s", fx.id, fx.category, fx.kind))
+  end
+end
+
+local function run_fixtures()
+  local catalog_path = (args["catalog"] ~= true and args["catalog"]) or (repo_root .. "/fixtures/catalog.lua")
+  local out_dir = (args["fixtures-out"] ~= true and args["fixtures-out"]) or (repo_root .. "/fixtures/expected")
+  local traces_dir = (args["fixtures-traces"] ~= true and args["fixtures-traces"])
+    or (repo_root .. "/fixtures/traces")
+  local catalog = load_table_file(catalog_path, "fixture catalog")
+  validate_fixture_catalog(catalog)
+
+  if args["list-fixtures"] then
+    list_fixtures(catalog)
+    return
+  end
+
+  local scenarios = load_scenarios()
+  local check = args["check"] == true
+  local snapshots = args["fixtures-snapshots"] == true
+  local fixtures = selected_fixtures(catalog)
+  local written = 0
+  for _, fx in ipairs(fixtures) do
+    if fx.kind == "shot" then
+      if check then
+        local expected_record, expected_text = read_expected_fixture(out_dir, fx.id)
+        local record, tmp_trace = capture_shot_fixture(fx, { check = true })
+        local ok, err = pcall(function()
+          if fx.trace then
+            local reference_trace = verify_reference_trace(traces_dir, fx.id, expected_record)
+            verify_regenerated_trace(fx.id, tmp_trace, reference_trace, record)
+          end
+          verify_fixture_record(record, expected_text,
+            out_dir .. "/" .. fx.id .. ".json")
+        end)
+        if tmp_trace then os.remove(tmp_trace) end
+        if not ok then error(err, 0) end
+        print(string.format("verified %-34s %s/%s.json", fx.id, out_dir, fx.id))
+      else
+        local record = capture_shot_fixture(fx, { traces_dir = traces_dir, trace_snapshot = snapshots })
+        local path = write_fixture_record(out_dir, record)
+        print(string.format("captured %-34s %s", fx.id, path))
+      end
+    else
+      local scenario = scenarios[fx.id]
+      if scenario == nil then
+        error("no scenario implementation for fixture " .. fx.id)
+      end
+      if check then
+        local _, expected_text, expected_path = read_expected_fixture(out_dir, fx.id)
+        local record = capture_scenario_fixture(fx, scenario)
+        verify_fixture_record(record, expected_text, expected_path)
+        print(string.format("verified %-34s %s", fx.id, expected_path))
+      else
+        local record = capture_scenario_fixture(fx, scenario)
+        local path = write_fixture_record(out_dir, record)
+        print(string.format("captured %-34s %s", fx.id, path))
+      end
+    end
+    written = written + 1
+  end
+  print(string.format("fixtures: %d record(s) %s", written, check and "verified" or "written"))
+end
+
+-- ===========================================================================
 -- Report / output
 -- ===========================================================================
 local function print_workloads()
@@ -642,6 +1227,61 @@ function love.load()
     print(string.format("  first mismatch: i=%d angle=%.17g snapped=%.17g",
       m.index, m.angle, m.snapped))
     love.event.quit(1)
+    return
+  end
+
+  if args["search"] then
+    local ok, err = pcall(run_search)
+    if not ok then
+      print("ERROR: " .. tostring(err))
+      io.stdout:flush()
+      love.event.quit(1)
+      return
+    end
+    love.event.quit()
+    return
+  end
+
+  if args["fixtures"] or args["list-fixtures"] then
+    local ok, err = pcall(run_fixtures)
+    if not ok then
+      print("ERROR: " .. tostring(err))
+      io.stdout:flush()
+      love.event.quit(1)
+      return
+    end
+    love.event.quit()
+    return
+  end
+
+  if args["m2-capture"] or args["m2-rng"] or args["m2-peg-colors"] or args["m2-checkpoints"] then
+    local ok, err = pcall(function()
+      local capture_m2 = require("capture_m2_fixtures")
+      local levels = {}
+      if type(args["levels"]) == "string" then
+        for tok in args["levels"]:gmatch("[^,]+") do
+          tok = tok:match("^%s*(.-)%s*$")
+          if tok ~= "" then levels[#levels + 1] = tok end
+        end
+      end
+      capture_m2.run({
+        repo_root = repo_root,
+        args = args,
+        levels = levels,
+        rng_out = (args["rng-out"] ~= true and args["rng-out"]) or (repo_root .. "/fixtures/rng"),
+        checkpoints_out = (args["checkpoints-out"] ~= true and args["checkpoints-out"])
+          or (repo_root .. "/fixtures/checkpoints"),
+        read_file_bytes = read_file_bytes,
+        sha256_file = sha256_file,
+      })
+    end)
+    if not ok then
+      print("ERROR: " .. tostring(err))
+      io.stdout:flush()
+      love.event.quit(1)
+      return
+    end
+    love.event.quit()
     return
   end
 

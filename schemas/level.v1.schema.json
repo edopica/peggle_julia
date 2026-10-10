@@ -1,0 +1,121 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "peggle/level.v1.schema.json",
+  "title": "Peggle Evolved LevelDefinition v1 (static subset)",
+  "type": "object",
+  "required": [
+    "format", "schema_version", "name", "motion",
+    "virtual_width", "virtual_height", "level_seed",
+    "type_counts", "default_peg_type", "pegs", "provenance"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "format": { "enum": ["peggle.level"] },
+    "schema_version": { "enum": [1] },
+    "name": { "type": "string", "minLength": 1, "pattern": "^[A-Za-z0-9_]+$" },
+    "motion": { "enum": ["static"] },
+    "virtual_width": { "type": "number", "minimum": 1 },
+    "virtual_height": { "type": "number", "minimum": 1 },
+    "level_seed": { "type": "integer" },
+    "type_counts": {
+      "type": "object",
+      "required": ["blue", "green", "purple", "red"],
+      "additionalProperties": false,
+      "properties": {
+        "blue": { "type": "integer", "minimum": 0 },
+        "green": { "type": "integer", "minimum": 0 },
+        "purple": { "type": "integer", "minimum": 0 },
+        "red": { "type": "integer", "minimum": 0 }
+      }
+    },
+    "default_peg_type": { "enum": ["blue", "green", "purple", "red"] },
+    "pegs": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "oneOf": [
+          { "$ref": "#/definitions/circlePeg" },
+          { "$ref": "#/definitions/rectanglePeg" },
+          { "$ref": "#/definitions/annularPeg" }
+        ]
+      }
+    },
+    "provenance": { "$ref": "#/definitions/provenance" }
+  },
+  "definitions": {
+    "provenance": {
+      "type": "object",
+      "required": ["reference_revision", "reference_tree", "config_sha256", "level_source"],
+      "additionalProperties": false,
+      "properties": {
+        "reference_revision": { "type": "string", "pattern": "^[0-9a-f]{40}$" },
+        "reference_tree": { "type": "string", "pattern": "^[0-9a-f]{40}$" },
+        "config_sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+        "level_source": { "type": "string", "minLength": 1 }
+      }
+    },
+    "line": {
+      "type": "object",
+      "required": ["id", "index", "count", "closed", "gap"],
+      "additionalProperties": false,
+      "properties": {
+        "id": { "type": "string", "minLength": 1 },
+        "index": { "type": "integer", "minimum": 1 },
+        "count": { "type": "integer", "minimum": 1 },
+        "closed": { "type": "boolean" },
+        "gap": { "type": "number", "minimum": 0 }
+      }
+    },
+    "circlePeg": {
+      "type": "object",
+      "required": ["id", "shape", "type", "x", "y", "radius"],
+      "additionalProperties": false,
+      "properties": {
+        "id": { "type": "integer", "minimum": 1 },
+        "shape": { "enum": ["circle"] },
+        "type": { "enum": ["blue", "green", "purple", "red"] },
+        "x": { "type": "number" },
+        "y": { "type": "number" },
+        "radius": { "type": "number", "minimum": 0 },
+        "line": { "$ref": "#/definitions/line" }
+      }
+    },
+    "rectanglePeg": {
+      "type": "object",
+      "required": ["id", "shape", "type", "x", "y", "width", "height", "angle"],
+      "additionalProperties": false,
+      "properties": {
+        "id": { "type": "integer", "minimum": 1 },
+        "shape": { "enum": ["rectangle"] },
+        "type": { "enum": ["blue", "green", "purple", "red"] },
+        "x": { "type": "number" },
+        "y": { "type": "number" },
+        "width": { "type": "number", "minimum": 0 },
+        "height": { "type": "number", "minimum": 0 },
+        "angle": { "type": "number" },
+        "line": { "$ref": "#/definitions/line" }
+      }
+    },
+    "annularPeg": {
+      "type": "object",
+      "required": [
+        "id", "shape", "type", "x", "y",
+        "r_in", "r_out", "theta_start", "theta_end_abs", "segments"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "id": { "type": "integer", "minimum": 1 },
+        "shape": { "enum": ["annular"] },
+        "type": { "enum": ["blue", "green", "purple", "red"] },
+        "x": { "type": "number" },
+        "y": { "type": "number" },
+        "r_in": { "type": "number", "minimum": 0 },
+        "r_out": { "type": "number", "minimum": 0 },
+        "theta_start": { "type": "number" },
+        "theta_end_abs": { "type": "number" },
+        "segments": { "type": "integer", "minimum": 4 },
+        "line": { "$ref": "#/definitions/line" }
+      }
+    }
+  }
+}

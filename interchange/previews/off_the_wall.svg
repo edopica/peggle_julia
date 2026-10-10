@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="880" height="550" viewBox="0 0 880 550" data-level="off_the_wall" data-schema-version="1">
+<title>off_the_wall level preview</title>
+<rect x="0" y="0" width="880" height="550" fill="#1a1a26"/>
+<circle cx="40" cy="100" r="10" fill="rgb(76,140,255)" stroke="#0d0d14" stroke-width="0.8"/>
+<circle cx="40" cy="150" r="10" fill="rgb(76,140,255)" stroke="#0d0d14" stroke-width="0.8"/>
+<circle cx="40" cy="200" r="10" fill="rgb(76,140,255)" stroke="#0d0d14" stroke-width="0.8"/>
+<circle cx="40" cy="250" r="10" fill="rgb(76,140,255)" stroke="#0d0d14" stroke-width="0.8"/>
+<circle cx="40" cy="300" r="10" fill="rgb(76,140,255)" stroke="#0d0d14" stroke-width="0.8"/>
+<circle cx="40" cy="350" r="10" fill="rgb(76,140,255)" stroke="#0d0d14" stroke-width="0.8"/>
+<circle cx="40" cy="400" r="10" fill="rgb(76,140,255)" stroke="#0d0d14" stroke-width="0.8"/>
+<circle cx="40" cy="450" r="10" fill="rgb(76,140,255)" stroke="#0d0d14" stroke-width="0.8"/>
+<circle cx="840" cy="100" r="10" fill="rgb(76,140,255)" stroke="#0d0d14" stroke-width="0.8"/>
+<circle cx="840" cy="150" r="10" fill="rgb(76,140,255)" stroke="#0d0d14" stroke-width="0.8"/>
+<circle cx="840" cy="200" r="10" fill="rgb(76,140,255)" stroke="#0d0d14" stroke-width="0.8"/>
+<circle cx="840" cy="250" r="10" fill="rgb(76,140,255)" stroke="#0d0d14" stroke-width="0.8"/>
+<circle cx="840" cy="300" r="10" fill="rgb(76,140,255)" stroke="#0d0d14" stroke-width="0.8"/>
+<circle cx="840" cy="350" r="10" fill="rgb(76,140,255)" stroke="#0d0d14" stroke-width="0.8"/>
+<circle cx="840" cy="400" r="10" fill="rgb(76,140,255)" stroke="#0d0d14" stroke-width="0.8"/>
+<circle cx="840" cy="450" r="10" fill="rgb(76,140,255)" stroke="#0d0d14" stroke-width="0.8"/>
+<path d="M 433 38 L 447 38 L 440 52 Z" fill="#e8e8f0" opacity="0.85"/>
+<text x="10" y="538" fill="#8a8aa0" font-family="monospace" font-size="13">off_the_wall | 880x550 | 16 pegs | static | seed 345</text>
+</svg>

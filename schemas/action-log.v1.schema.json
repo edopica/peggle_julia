@@ -1,0 +1,47 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "peggle/action-log.v1.schema.json",
+  "title": "Peggle Evolved action log v1",
+  "description": "Ordered record of the actions applied to a match or solo run. One entry per applied action, in simulation step order.",
+  "type": "object",
+  "required": ["format", "schema_version", "game", "actions"],
+  "additionalProperties": false,
+  "properties": {
+    "format": { "enum": ["peggle.action_log"] },
+    "schema_version": { "enum": [1] },
+    "game": {
+      "type": "object",
+      "required": ["mode", "level_sha256", "config_sha256"],
+      "additionalProperties": false,
+      "properties": {
+        "mode": { "enum": ["solo", "1v1"] },
+        "level_sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+        "config_sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+        "initial_checkpoint_sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" }
+      }
+    },
+    "actions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["seq", "player", "turn", "action"],
+        "additionalProperties": false,
+        "properties": {
+          "seq": { "type": "integer", "minimum": 0 },
+          "player": { "type": "integer", "minimum": 1 },
+          "turn": { "type": "integer", "minimum": 1 },
+          "decision_step": { "type": "integer", "minimum": 0 },
+          "action": {
+            "type": "object",
+            "required": ["aim_index", "delay"],
+            "additionalProperties": false,
+            "properties": {
+              "aim_index": { "type": "integer", "minimum": 0, "maximum": 1800 },
+              "delay": { "type": "integer", "minimum": 0 }
+            }
+          }
+        }
+      }
+    }
+  }
+}

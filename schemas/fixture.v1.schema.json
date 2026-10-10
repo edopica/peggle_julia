@@ -1,0 +1,77 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "peggle/fixture.v1.schema.json",
+  "title": "Peggle Evolved reference fixture v1",
+  "description": "Captured reference behavior for one targeted case. Expected values are always captured by running the pinned reference, never hand-written.",
+  "type": "object",
+  "required": [
+    "format", "schema_version", "id", "category", "kind",
+    "source", "seed", "action", "completion", "result"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "format": { "enum": ["peggle.fixture"] },
+    "schema_version": { "enum": [1] },
+    "id": { "type": "string", "minLength": 1, "pattern": "^[A-Za-z0-9_]+$" },
+    "category": {
+      "enum": [
+        "shape_boundary", "near_tie", "graze", "overlap_correction",
+        "clearing", "fever", "power", "style", "line_metadata",
+        "bucket", "multiball", "completion"
+      ]
+    },
+    "kind": { "enum": ["shot", "scenario"] },
+    "source": {
+      "type": "object",
+      "required": ["reference_revision", "reference_tree", "config_sha256"],
+      "additionalProperties": false,
+      "properties": {
+        "reference_revision": { "type": "string", "pattern": "^[0-9a-f]{40}$" },
+        "reference_tree": { "type": "string", "pattern": "^[0-9a-f]{40}$" },
+        "config_sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+        "level": { "type": "string", "minLength": 1 },
+        "level_sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" }
+      }
+    },
+    "seed": {
+      "type": "object",
+      "required": ["level_seed", "type_counts"],
+      "additionalProperties": false,
+      "properties": {
+        "level_seed": { "type": "integer" },
+        "type_counts": { "type": "object", "additionalProperties": true }
+      }
+    },
+    "action": {
+      "type": "object",
+      "required": ["kind"],
+      "additionalProperties": true,
+      "properties": {
+        "kind": { "enum": ["shot", "scenario"] }
+      }
+    },
+    "completion": {
+      "type": "object",
+      "required": ["rule", "completed", "reason", "steps", "max_steps"],
+      "additionalProperties": false,
+      "properties": {
+        "rule": { "enum": ["bench", "clearing", "scenario"] },
+        "completed": { "type": "boolean" },
+        "reason": { "type": "string", "minLength": 1 },
+        "steps": { "type": "integer", "minimum": 0 },
+        "max_steps": { "type": "integer", "minimum": 0 }
+      }
+    },
+    "result": { "type": "object", "additionalProperties": true },
+    "trace": {
+      "type": "object",
+      "required": ["path", "sha256", "events"],
+      "additionalProperties": false,
+      "properties": {
+        "path": { "type": "string", "minLength": 1 },
+        "sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+        "events": { "type": "integer", "minimum": 0 }
+      }
+    }
+  }
+}

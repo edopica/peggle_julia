@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="880" height="550" viewBox="0 0 880 550" data-level="lucky_bounce" data-schema-version="1">
+<title>lucky_bounce level preview</title>
+<rect x="0" y="0" width="880" height="550" fill="#1a1a26"/>
+<circle cx="140" cy="450" r="10" fill="rgb(76,140,255)" stroke="#0d0d14" stroke-width="0.8"/>
+<circle cx="182.8571429" cy="450" r="10" fill="rgb(76,140,255)" stroke="#0d0d14" stroke-width="0.8"/>
+<circle cx="225.7142857" cy="450" r="10" fill="rgb(76,140,255)" stroke="#0d0d14" stroke-width="0.8"/>
+<circle cx="268.5714286" cy="450" r="10" fill="rgb(76,140,255)" stroke="#0d0d14" stroke-width="0.8"/>
+<circle cx="311.4285714" cy="450" r="10" fill="rgb(76,140,255)" stroke="#0d0d14" stroke-width="0.8"/>
+<circle cx="354.2857143" cy="450" r="10" fill="rgb(76,140,255)" stroke="#0d0d14" stroke-width="0.8"/>
+<circle cx="397.1428571" cy="450" r="10" fill="rgb(76,140,255)" stroke="#0d0d14" stroke-width="0.8"/>
+<circle cx="440" cy="450" r="10" fill="rgb(76,140,255)" stroke="#0d0d14" stroke-width="0.8"/>
+<circle cx="482.8571429" cy="450" r="10" fill="rgb(76,140,255)" stroke="#0d0d14" stroke-width="0.8"/>
+<circle cx="525.7142857" cy="450" r="10" fill="rgb(76,140,255)" stroke="#0d0d14" stroke-width="0.8"/>
+<circle cx="568.5714286" cy="450" r="10" fill="rgb(76,140,255)" stroke="#0d0d14" stroke-width="0.8"/>
+<circle cx="611.4285714" cy="450" r="10" fill="rgb(76,140,255)" stroke="#0d0d14" stroke-width="0.8"/>
+<circle cx="654.2857143" cy="450" r="10" fill="rgb(76,140,255)" stroke="#0d0d14" stroke-width="0.8"/>
+<circle cx="697.1428571" cy="450" r="10" fill="rgb(76,140,255)" stroke="#0d0d14" stroke-width="0.8"/>
+<circle cx="740" cy="450" r="10" fill="rgb(76,140,255)" stroke="#0d0d14" stroke-width="0.8"/>
+<path d="M 433 38 L 447 38 L 440 52 Z" fill="#e8e8f0" opacity="0.85"/>
+<text x="10" y="538" fill="#8a8aa0" font-family="monospace" font-size="13">lucky_bounce | 880x550 | 15 pegs | static | seed 345</text>
+</svg>

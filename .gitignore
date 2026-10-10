@@ -4,3 +4,7 @@ results/raw/
 # Local scratch
 tmp/
 *.log
+__pycache__/
+
+# Generated native build products (identity header, smoke test binary)
+native/build_generated/

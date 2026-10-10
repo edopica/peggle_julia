@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="1900" viewBox="0 0 1200 1900" data-level="long_shot" data-schema-version="1">
+<title>long_shot level preview</title>
+<rect x="0" y="0" width="1200" height="1900" fill="#1a1a26"/>
+<circle cx="200" cy="200" r="10" fill="rgb(76,140,255)" stroke="#0d0d14" stroke-width="0.8"/>
+<circle cx="200" cy="800" r="10" fill="rgb(76,140,255)" stroke="#0d0d14" stroke-width="0.8"/>
+<path d="M 593 38 L 607 38 L 600 52 Z" fill="#e8e8f0" opacity="0.85"/>
+<text x="10" y="1888" fill="#8a8aa0" font-family="monospace" font-size="13">long_shot | 1200x1900 | 2 pegs | static | seed 345</text>
+</svg>
