@@ -61,6 +61,9 @@
 -- Run metadata (reference revision, config hash) is supplied by the caller:
 --   --reference-revision, --reference-tree, --config-sha256, --run-id,
 --   --host-label
+--   --config-file PATH   load PATH as src.config before any reference module
+--                        requires it; used to overlay the pinned config on a
+--                        dev tree without editing it
 
 local HARNESS_VERSION = 1
 
@@ -112,6 +115,32 @@ if ref_root:sub(1, 1) ~= "/" then
 end
 package.path = repo_root .. "/tools/?.lua;" .. ref_root .. "/?.lua;"
   .. ref_root .. "/?/init.lua;" .. package.path
+
+-- Optional runtime config override (--config-file). The table is installed in
+-- package.loaded before any reference module requires src.config, so every
+-- module sees the same authoritative config; the file on disk is not modified.
+local config_file = args["config-file"]
+if config_file == true then
+  error("--config-file requires a path")
+end
+if config_file ~= nil then
+  local path = config_file
+  if path:sub(1, 1) ~= "/" then
+    path = love.filesystem.getWorkingDirectory() .. "/" .. path
+  end
+  local chunk, load_err = loadfile(path)
+  if not chunk then
+    error("cannot load --config-file " .. path .. ": " .. tostring(load_err))
+  end
+  local ok, loaded = pcall(chunk)
+  if not ok then
+    error("cannot load --config-file " .. path .. ": " .. tostring(loaded))
+  end
+  if type(loaded) ~= "table" then
+    error("cannot load --config-file " .. path .. ": chunk did not return a table")
+  end
+  package.loaded["src.config"] = loaded
+end
 
 -- ===========================================================================
 -- Reference modules

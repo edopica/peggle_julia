@@ -26,29 +26,49 @@
 #   script failure. The script fails only on an unclean control or a failed
 #   capture/comparison.
 #
+# Config override:
+#   A pre-existing src/config.lua edit in the dev tree is not a refusal
+#   condition. The script verifies reference/peggle_evolved/src/config.lua
+#   against the pinned hash and overlays that pinned config at runtime
+#   (--config-file) for every dev-tree capture and sweep. The dev tree file
+#   is never modified, and the override is recorded in the comparison
+#   environment (config_override, dev_config_sha256, pinned_config_sha256).
+#
 # Trace snapshots:
 #   Fresh WP-E captures include the full authoritative per-step snapshot
 #   (--fixtures-snapshots); the reference-vs-system_libm control therefore
-#   compares full simulation state, not only events and results. The
-#   historical fixtures/traces comparison is event/result agreement only
-#   because those files predate snapshot capture; the snapshot scope
-#   mismatch is recorded, not a failure. scripts/capture_fixtures.sh still
-#   captures the pinned corpus snapshot-free and byte-identical.
+#   compares full simulation state, not only events and results. Full state
+#   (state_comparison == "full": a snapshot at every recorded step on both
+#   sides with identical step-id sets) is required for every trace-enabled
+#   fixture, i.e. the 6 catalog entries that declare trace = true; a guard
+#   after the control fails if any of them is not full or its trace is
+#   missing. The other fixtures are result-only expected-record
+#   comparisons. The expected set is derived from the committed corpus, so
+#   a missing trace fails the guard instead of lowering the count.
+#   Incomplete coverage (missing steps, one-sided holes, or an
+#   include_snapshot header the records do not support) is a failure, not
+#   partial agreement. The historical fixtures/traces comparison stays
+#   snapshot-free because those files predate snapshot capture; it is
+#   recorded as scope_mismatch event/result agreement, not a failure.
+#   scripts/capture_fixtures.sh still captures the pinned corpus
+#   snapshot-free and byte-identical.
 #
 # Volatile fields:
-#   WP-C found that src/engine/core.lua updates fever-bucket animation with
-#   the variable frame delta, so fever-bucket animation state can vary
-#   run-to-run under load (wpc-acceptance.md item 3). In this harness every
-#   authoritative update uses Config.fixed_dt, so the fresh pinned-reference
-#   capture is expected byte-identical to the historical fixtures/traces.
-#   The script compares fixtures/traces (a second identical-reference
-#   sample; no re-capture) against the fresh reference capture with
-#   compare_traces.py --strict-reference: any historical-vs-fresh difference
-#   outside the explicit volatile allowlist is a hard failure. Allowed
-#   paths, recorded in trace-volatile-paths.json and in
-#   trace-compare.json:control.volatile_paths, are the only paths a control
-#   difference may touch; they are classified volatile_animation. On this
-#   host the discovered set was empty. No other volatile field is allowed.
+#   There are NO exempt volatile fields. Fever-bucket state is
+#   authoritative, not animation-only: src/engine/core.lua passes
+#   feverBuckets.dividers into Physics.update as collision geometry, and
+#   src/entities/fever_buckets.lua uses animating to gate the per-step
+#   bucket/divider update. In this harness every authoritative update uses
+#   Config.fixed_dt, so the fixed-step captures require exact equality. Any
+#   difference in snapshot.fever_buckets.animating or
+#   snapshot.fever_buckets.dividers[].y is classified state_bit_difference /
+#   state_structure and is a failure, never volatile_animation. The script
+#   compares fixtures/traces (a second identical-reference sample; no
+#   re-capture) against the fresh reference capture with compare_traces.py
+#   --strict-reference: any historical-vs-fresh difference other than the
+#   recorded snapshot scope mismatch is a hard failure. --volatile-out
+#   writes [] (trace-volatile-paths.json), and only an empty volatile
+#   report is accepted; --volatile-report rejects every path, exit 2.
 #
 # Environment matrix (step 8): hosts=1, os=["linux"], complete=false. This is
 # single-host, single-OS evidence. Cross-machine and cross-OS exact agreement
@@ -68,7 +88,7 @@ candidates_root="$out_dir/candidates"
 pin="$repo_root/reference/PIN.md"
 ref_dir="$repo_root/reference/peggle_evolved"
 
-environment_json='{"hosts":1,"os":["linux"],"complete":false,"note":"On-host WP-E evidence only (single Linux x86-64 host). Cross-machine and cross-OS exact agreement remain open WP-E items; no cross-machine claim is made."}'
+environment_note="On-host WP-E evidence only (single Linux x86-64 host). Cross-machine and cross-OS exact agreement remain open WP-E items; no cross-machine claim is made."
 
 for tool in python3 diff sha256sum; do
   command -v "$tool" > /dev/null 2>&1 || {
@@ -98,19 +118,38 @@ if [[ -z "$revision" || -z "$tree" ]]; then
 fi
 config_sha="$(sha256sum "$ref_dir/src/config.lua" | awk '{print $1}')"
 
-# The control requires the dev tree to use the pinned authoritative config.
-# A pre-existing working-tree edit (e.g. ball_ball_restitution) changes
-# gameplay independently of the math backend; resolving it is a manual
-# decision, never something this script may do.
+# The control requires the dev tree to behave exactly like the pinned
+# authoritative config. A pre-existing working-tree edit (e.g.
+# ball_ball_restitution) changes gameplay independently of the math backend;
+# it is overlaid at runtime with the pinned config instead of being
+# reconciled in the dev tree. The dev tree file is never modified.
+config_override_args=()
 dev_config_sha="$(sha256sum "$dev_tree/src/config.lua" | awk '{print $1}')"
 if [[ "$dev_config_sha" != "$config_sha" ]]; then
-  echo "ERROR: dev tree config.lua differs from the pinned reference config" >&2
+  echo "WARNING: dev tree config.lua differs from the pinned reference config" >&2
   echo "  dev tree: $dev_config_sha" >&2
   echo "  pin:      $config_sha" >&2
-  echo "The WP-E control requires identical authoritative configuration." >&2
-  echo "Reconcile the pre-existing dev-tree edit (it is not a math-backend" >&2
-  echo "difference), then re-run." >&2
-  exit 1
+  echo "The dev tree has a pre-existing config edit. The pinned config is" >&2
+  echo "overlaid at runtime (--config-file) for all dev-tree captures and" >&2
+  echo "sweeps; the dev tree file is not modified. The override is recorded" >&2
+  echo "in the comparison environment (config_override=true)." >&2
+  override_file="$ref_dir/src/config.lua"
+  if [[ ! -f "$override_file" ]]; then
+    echo "ERROR: config override file missing: $override_file" >&2
+    exit 1
+  fi
+  override_sha="$(sha256sum "$override_file" | awk '{print $1}')"
+  if [[ "$override_sha" != "$config_sha" ]]; then
+    echo "ERROR: config override $override_file sha256 $override_sha" >&2
+    echo "  does not match the pinned config sha256 $config_sha" >&2
+    exit 1
+  fi
+  config_override_args=(--config-file "$override_file")
+  environment_json="$(printf '{"hosts":1,"os":["linux"],"complete":false,"note":"%s","config_override":true,"dev_config_sha256":"%s","pinned_config_sha256":"%s"}' \
+    "$environment_note" "$dev_config_sha" "$config_sha")"
+else
+  environment_json="$(printf '{"hosts":1,"os":["linux"],"complete":false,"note":"%s","config_override":false,"pinned_config_sha256":"%s"}' \
+    "$environment_note" "$config_sha")"
 fi
 
 mkdir -p "$out_dir"
@@ -139,6 +178,7 @@ capture_backend() {
   local backend="$1"
   local reference_arg="$2"
   local target="$3"
+  shift 3
   local -a env_args ref_args
   if [[ "$backend" == "reference" ]]; then
     env_args=(env -u PEGGLE_MATH_BACKEND -u PEGGLE_MATH_LIB)
@@ -158,21 +198,25 @@ capture_backend() {
     --reference-revision "$revision" \
     --reference-tree "$tree" \
     --config-sha256 "$config_sha" \
-    "${ref_args[@]}"
+    "${ref_args[@]}" \
+    "$@"
 }
 
 echo "[2/8] capture fixtures with the pinned reference"
 capture_backend reference "" "$traces_root/reference"
 
 echo "[3/8] capture fixtures with the dev tree (system_libm control)"
-capture_backend system_libm "$dev_tree_arg" "$traces_root/system_libm"
+capture_backend system_libm "$dev_tree_arg" "$traces_root/system_libm" \
+  "${config_override_args[@]+"${config_override_args[@]}"}"
 
 echo "[4/8] capture fixtures with the dev tree (core_math)"
-capture_backend core_math "$dev_tree_arg" "$traces_root/core_math"
+capture_backend core_math "$dev_tree_arg" "$traces_root/core_math" \
+  "${config_override_args[@]+"${config_override_args[@]}"}"
 
 # ---------------------------------------------------------------------------
 # 4. Control: reference vs system_libm
 # ---------------------------------------------------------------------------
+# Guard below: every trace-enabled fixture must be a full-state comparison.
 echo "[5/8] control comparison (reference vs system_libm)"
 volatile_sample="$out_dir/trace-volatile-sample.json"
 volatile_paths="$out_dir/trace-volatile-paths.json"
@@ -231,6 +275,92 @@ if [[ "$control_status" -ne 0 ]]; then
   echo "ERROR: control (reference vs system_libm) failed; see $out_dir/trace-control.json" >&2
   exit 1
 fi
+
+# The control must be full-state for every trace-enabled fixture (the
+# catalog entries that declare trace = true); the remaining fixtures are
+# result-only expected-record comparisons. The expected set is derived from
+# the committed corpus (expected records carrying a "trace" object,
+# cross-checked against the committed .jsonl traces), so a missing
+# committed trace fails the guard instead of lowering the expected count.
+python3 - "$out_dir/trace-control.json" "$repo_root/fixtures/expected" \
+  "$repo_root/fixtures/traces" <<'PY'
+import glob
+import json
+import os
+import sys
+
+report_path, expected_dir, traces_dir = sys.argv[1:4]
+
+trace_enabled = set()
+for path in sorted(glob.glob(os.path.join(expected_dir, "*.json"))):
+    try:
+        with open(path, "r", encoding="utf-8") as handle:
+            record = json.load(handle)
+    except (OSError, ValueError) as exc:
+        print("ERROR: cannot read %s: %s" % (path, exc), file=sys.stderr)
+        sys.exit(1)
+    if isinstance(record, dict) and isinstance(record.get("trace"), dict):
+        trace_enabled.add(os.path.basename(path)[:-len(".json")])
+if not trace_enabled:
+    print("ERROR: no trace-enabled fixtures found in %s" % expected_dir,
+          file=sys.stderr)
+    sys.exit(1)
+
+committed_traces = {
+    os.path.basename(path)[:-len(".jsonl")]
+    for path in glob.glob(os.path.join(traces_dir, "*.jsonl"))}
+if trace_enabled != committed_traces:
+    missing = sorted(trace_enabled - committed_traces)
+    extra = sorted(committed_traces - trace_enabled)
+    if missing:
+        print("ERROR: committed traces missing for trace-enabled "
+              "fixture(s): " + ", ".join(missing), file=sys.stderr)
+    if extra:
+        print("ERROR: committed trace(s) exist for non-trace fixture(s): "
+              + ", ".join(extra), file=sys.stderr)
+    sys.exit(1)
+
+with open(report_path, "r", encoding="utf-8") as handle:
+    doc = json.load(handle)
+fixtures = doc["fixtures"]
+
+problems = []
+for fixture_id in sorted(trace_enabled):
+    entry = fixtures.get(fixture_id)
+    if entry is None:
+        problems.append(
+            "%s: no comparison result (trace missing?)" % fixture_id)
+        continue
+    if entry.get("traces_compared") is not True:
+        problems.append("%s: trace not compared" % fixture_id)
+    if entry.get("state_comparison") != "full":
+        problems.append("%s: state_comparison=%r (expected \"full\")"
+                        % (fixture_id, entry.get("state_comparison")))
+    steps = entry.get("snapshot_steps_compared", 0)
+    if not isinstance(steps, int) or steps <= 0:
+        problems.append("%s: snapshot_steps_compared=%r (expected > 0)"
+                        % (fixture_id, steps))
+
+stray = sorted(
+    fixture_id for fixture_id, entry in fixtures.items()
+    if entry.get("traces_compared") is True
+    and fixture_id not in trace_enabled)
+if stray:
+    problems.append(
+        "trace produced for non-trace fixture(s): " + ", ".join(stray))
+
+if problems:
+    print("ERROR: control is not a full-state comparison:", file=sys.stderr)
+    for problem in problems:
+        print("  " + problem, file=sys.stderr)
+    sys.exit(1)
+
+result_only = sum(
+    1 for fixture_id in fixtures if fixture_id not in trace_enabled)
+print("control full-state: %d/%d trace-enabled fixtures; %d result-only"
+      % (len(trace_enabled), len(trace_enabled), result_only))
+PY
+
 if [[ "$expected_byte_identical" != true ]]; then
   echo "WARNING: control expected records are not byte-identical; differences"
   echo "  are allowed only as volatile trace hashes (see trace-control.json)" >&2
@@ -276,6 +406,7 @@ run_sweep() {
   local backend="$1"
   local name="$2"
   local reference_arg="$3"
+  shift 3
   local -a env_args ref_args
   if [[ "$backend" == "reference" ]]; then
     env_args=(env -u PEGGLE_MATH_BACKEND -u PEGGLE_MATH_LIB)
@@ -293,14 +424,17 @@ run_sweep() {
     --stride 20 --repeat 1 \
     --out "$candidates_root/$name/raw" \
     --summary-out "$candidates_root/$name/summary" \
-    "${ref_args[@]}"
+    "${ref_args[@]}" \
+    "$@"
 }
 
 echo "[7/8] candidate sweeps (stride 20, repeat 1, all workloads)"
 sweep_start=$SECONDS
 run_sweep reference reference ""
-run_sweep system_libm system_libm "$dev_tree_arg"
-run_sweep core_math core_math "$dev_tree_arg"
+run_sweep system_libm system_libm "$dev_tree_arg" \
+  "${config_override_args[@]+"${config_override_args[@]}"}"
+run_sweep core_math core_math "$dev_tree_arg" \
+  "${config_override_args[@]+"${config_override_args[@]}"}"
 sweep_seconds=$((SECONDS - sweep_start))
 
 python3 "$repo_root/tools/compare_candidates.py" \

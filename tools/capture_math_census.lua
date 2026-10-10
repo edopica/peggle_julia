@@ -61,6 +61,21 @@
 --       [--out PATH] [--check]
 --   --check recomputes and byte-compares with the committed fixture and
 --   never writes it.
+--
+-- Opt-in dev-tree mode (WP-D experimental path; the historical mode above is
+-- byte-identical when these flags are absent):
+--   PEGGLE_MATH_BACKEND=core_math PEGGLE_MATH_LIB=/path/libpeggle_math.so \
+--   luajit tools/capture_math_census.lua \
+--       --reference-revision REV --reference-tree TREE --config-sha256 SHA \
+--       --detmath-root ../peggle_evolved --out PATH
+--   Expected values are then computed through <detmath-root>/src/detmath
+--   under the backend selected by PEGGLE_MATH_BACKEND (default
+--   "system_libm"), which loads PEGGLE_MATH_LIB. The input corpus is
+--   unchanged; the document gains a platform-independent
+--   `source.math_backend` provenance block (backend, CORE-MATH revision/tag,
+--   ABI version). Host-specific fields (library path, compiler, platform,
+--   artifact bytes) are deliberately excluded so the fixture bytes are
+--   identical across hosts that run the same pinned component.
 
 local ffi = require("ffi")
 local bit = require("bit")
@@ -541,6 +556,9 @@ local function parse_args(argv)
         elseif a == "--config-sha256" then
             i = i + 1
             opts.config_sha = argv[i]
+        elseif a == "--detmath-root" then
+            i = i + 1
+            opts.detmath_root = argv[i]
         elseif a == "--help" or a == "-h" then
             opts.help = true
         else
@@ -556,10 +574,15 @@ if opts.help then
     io.write([[
 Usage: luajit tools/capture_math_census.lua \
   --reference-revision REV --reference-tree TREE --config-sha256 SHA \
-  [--out PATH] [--check]
+  [--out PATH] [--check] [--detmath-root PATH]
 
 Captures fixtures/math_census/math_census.v1.json from the LuaJIT system
 libm. --check recomputes and byte-compares without writing.
+
+With --detmath-root PATH the expected values come from the dev tree's
+src.detmath under PEGGLE_MATH_BACKEND (default system_libm) and
+PEGGLE_MATH_LIB; the input corpus is unchanged and a platform-independent
+source.math_backend provenance block is added.
 ]])
     os.exit(0)
 end
@@ -569,6 +592,53 @@ if not (opts.revision and opts.tree and opts.config_sha) then
     os.exit(2)
 end
 opts.out = opts.out or (repo_root .. "/fixtures/math_census/math_census.v1.json")
+
+-- ===========================================================================
+-- Math backend selection
+-- ===========================================================================
+--
+-- Without --detmath-root every expected value comes from the LuaJIT `math.*`
+-- functions (the historical system-libm mode, byte-identical to previous
+-- captures). With it, expected values come from the dev tree's src.detmath
+-- under PEGGLE_MATH_BACKEND; the selected backend must match the request and
+-- FFI/artifact failures abort (never fall back).
+
+local MATH
+if opts.detmath_root == nil then
+    MATH = {
+        mode = "luajit_system_libm",
+        backend = "system_libm",
+        sin = math.sin, cos = math.cos, atan = math.atan,
+        asin = math.asin, exp = math.exp, log = math.log, sqrt = math.sqrt,
+        atan2 = math.atan2,
+        pow = function(a, b) return a ^ b end,
+    }
+else
+    local detmath_root = opts.detmath_root
+    package.path = detmath_root .. "/?.lua;" .. package.path
+    local requested = os.getenv("PEGGLE_MATH_BACKEND")
+    if requested == nil or requested == "" then requested = "system_libm" end
+    local ok, detmath = pcall(require, "src.detmath")
+    if not ok then
+        io.stderr:write("capture_math_census: cannot load src.detmath from '"
+            .. tostring(detmath_root) .. "': " .. tostring(detmath) .. "\n")
+        os.exit(1)
+    end
+    if detmath.backend ~= requested then
+        io.stderr:write("capture_math_census: detmath selected backend '"
+            .. tostring(detmath.backend) .. "' but PEGGLE_MATH_BACKEND requested '"
+            .. requested .. "'\n")
+        os.exit(1)
+    end
+    MATH = {
+        mode = "detmath",
+        backend = detmath.backend,
+        identity = detmath.identity(),
+        sin = detmath.sin, cos = detmath.cos, atan = detmath.atan,
+        asin = detmath.asin, exp = detmath.exp, log = detmath.log,
+        sqrt = detmath.sqrt, atan2 = detmath.atan2, pow = detmath.pow,
+    }
+end
 
 -- ===========================================================================
 -- Build the census
@@ -618,38 +688,38 @@ end
 
 local trig = append(trig_boundaries(), recorded_values())
 
-add_unary("sin", trig, math.sin)
-add_unary("cos", trig, math.cos)
-add_unary("atan", trig, math.atan)
+add_unary("sin", trig, MATH.sin)
+add_unary("cos", trig, MATH.cos)
+add_unary("atan", trig, MATH.atan)
 
 local atan2_recorded = cap_pairs(
     append(cyclic_pairs(recorded, MAX_RECORDED_PAIRS),
         mirror_pairs(recorded, MAX_RECORDED_PAIRS)),
     MAX_RECORDED_PAIRS)
 local atan2_pairs = append(atan2_boundary_pairs(), atan2_recorded)
-add_binary("atan2", "atan2_y", "atan2_x", atan2_pairs, math.atan2)
+add_binary("atan2", "atan2_y", "atan2_x", atan2_pairs, MATH.atan2)
 
 local asin_inputs = append(asin_boundaries(),
     filter_values(recorded_values(), function(x) return math.abs(x) <= 1.0 end))
-add_unary("asin", asin_inputs, math.asin)
+add_unary("asin", asin_inputs, MATH.asin)
 
 local pow_recorded = {}
 for i = 1, #recorded do
     pow_recorded[#pow_recorded + 1] = { recorded[i], POW_EXPONENTS[((i - 1) % #POW_EXPONENTS) + 1] }
 end
 local pow_pairs = append(pow_boundary_pairs(), cap_pairs(pow_recorded, MAX_RECORDED_PAIRS))
-add_binary("pow", "pow_a", "pow_b", pow_pairs, function(a, b) return a ^ b end)
+add_binary("pow", "pow_a", "pow_b", pow_pairs, MATH.pow)
 
 local function finite(r) return r == r and r ~= math.huge and r ~= -math.huge end
 
 local mod_pairs = append(mod_boundary_pairs(), recorded_pairs(MAX_RECORDED_PAIRS))
 add_binary("mod", "mod_a", "mod_b", mod_pairs, function(a, b) return a % b end, finite)
 
-add_unary("exp", append(exp_boundaries(), recorded_values()), math.exp)
+add_unary("exp", append(exp_boundaries(), recorded_values()), MATH.exp)
 add_unary("log", append(log_boundaries(),
-    filter_values(recorded_values(), function(x) return x > 0.0 end)), math.log)
+    filter_values(recorded_values(), function(x) return x > 0.0 end)), MATH.log)
 add_unary("sqrt", append(sqrt_boundaries(),
-    filter_values(recorded_values(), function(x) return x >= 0.0 end)), math.sqrt)
+    filter_values(recorded_values(), function(x) return x >= 0.0 end)), MATH.sqrt)
 
 -- ===========================================================================
 -- Encode and write / check
@@ -668,15 +738,39 @@ for k, v in pairs(inputs) do input_arrays[k] = array_of(v) end
 local expected_arrays = {}
 for k, v in pairs(expected) do expected_arrays[k] = array_of(v) end
 
+local source = {
+    reference_revision = opts.revision,
+    reference_tree = opts.tree,
+    config_sha256 = opts.config_sha,
+    fixtures_sha256 = fixtures_sha,
+}
+if MATH.mode == "detmath" then
+    -- Platform-independent backend provenance only: the library path,
+    -- compiler, platform tag, and artifact bytes are host-specific and are
+    -- excluded so the fixture SHA-256 can match across hosts.
+    local backend = { backend = MATH.backend }
+    local ident = MATH.identity
+    if ident.native_identity ~= nil then
+        local ok, native = pcall(CanonicalJSON.decode, ident.native_identity)
+        if ok and type(native) == "table" then
+            if native.core_math_revision ~= nil then
+                backend.core_math_revision = native.core_math_revision
+            end
+            if native.core_math_tag ~= nil and native.core_math_tag ~= "" then
+                backend.core_math_tag = native.core_math_tag
+            end
+        end
+    end
+    if ident.abi_version ~= nil then
+        backend.abi_version = ident.abi_version
+    end
+    source.math_backend = object_of(backend)
+end
+
 local document = object_of({
     format = "peggle.math_census",
     schema_version = 1,
-    source = object_of({
-        reference_revision = opts.revision,
-        reference_tree = opts.tree,
-        config_sha256 = opts.config_sha,
-        fixtures_sha256 = fixtures_sha,
-    }),
+    source = object_of(source),
     counts = object_of(counts),
     inputs = object_of(input_arrays),
     expected = object_of(expected_arrays),

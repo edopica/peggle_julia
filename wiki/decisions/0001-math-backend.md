@@ -131,7 +131,9 @@ authoritative system-libm decision.
   candidate sweep ~21% slower. Performance evidence is directional, not
   precise (run variation 24-36%).
 - **Adoption remains pending.** The required two-physical-host, two-OS
-  exact comparison is still unavailable, no Windows/macOS artifact exists,
-  and the M3 shot evaluator has not run. No performance threshold has been
-  agreed. The `system_libm` backend therefore remains authoritative and the
-  reference pin unchanged.
+  exact comparison is still unavailable, the M3 shot evaluator has not run,
+  and no performance threshold has been agreed. Windows and macOS artifacts
+  are now cross-built, but they are not runtime-qualified on their target
+  operating systems (`qualified_on_target: false`), so the second-OS
+  requirement is still not met. The `system_libm` backend therefore remains
+  authoritative and the reference pin unchanged.

@@ -26,6 +26,14 @@
 # artifact hash is recorded as environment provenance and validated against
 # `native/artifacts/<platform>/` before the manifest is emitted.
 #
+# `parity_manifest` accepts optional `census_path`, `rng_path`, and
+# `colors_path` keyword overrides for the experimental CORE-MATH-era path.
+# The overridden fixture is verified and hashed exactly like the historical
+# one, and the effective (repository-relative when possible) path is recorded
+# in `identity.prerequisites` as `<name>_fixture_path` so two hosts must
+# supply byte-identical experimental inputs. Without overrides no path keys
+# are added and the historical computation is unchanged.
+#
 # The manifest contains no timestamps; `write_parity` emits canonical JSON.
 
 const PARITY_FORMAT = "peggle.parity"
@@ -104,6 +112,25 @@ end
 
 function _file_sha256(path::AbstractString)::String
     return sha256_hex(read(path))
+end
+
+# Recorded paths always use `/` separators so a Windows checkout records the
+# same prerequisite strings as Linux/macOS for `compare_parity.sh`.
+function _normalize_path_separators(path::AbstractString)::String
+    return replace(path, '\\' => '/')
+end
+
+# Effective fixture path recorded in `identity.prerequisites` for override
+# fixtures: repository-relative when the fixture lives under the repository
+# (so hosts with different checkout roots record the same string), otherwise
+# the normalized absolute path. Both branches use `/` separators.
+function _recorded_fixture_path(root::AbstractString, path::AbstractString)::String
+    absolute = normpath(abspath(path))
+    relative = _normalize_path_separators(relpath(absolute, normpath(abspath(root))))
+    if relative == ".." || startswith(relative, "../")
+        return _normalize_path_separators(absolute)
+    end
+    return relative
 end
 
 function _config_source_sha256(path::AbstractString)
@@ -190,8 +217,9 @@ end
 # Expected artifact checksum recorded by the native build for this platform,
 # or `nothing` when no build has been recorded under `native/artifacts/`.
 function _expected_native_artifact_sha256(repo::AbstractString, platform::AbstractString)
+    filename = DetMath.core_math_artifact_filename(platform) * ".sha256"
     path = joinpath(abspath(repo), "native", "artifacts", String(platform),
-                    "libpeggle_math.so.sha256")
+                    filename)
     isfile(path) || return nothing
     for line in eachline(path)
         text = strip(line)
@@ -773,7 +801,25 @@ end
 # Identity and environment
 # ---------------------------------------------------------------------------
 
-function _identity(paths, pin, config_sha)
+const PARITY_NO_FIXTURE_PATHS = (census = nothing, rng = nothing, colors = nothing)
+
+function _identity(paths, pin, config_sha,
+                   fixture_paths = PARITY_NO_FIXTURE_PATHS)
+    prerequisites = Dict{String,Any}(
+        "config_artifact_sha256" => _file_sha256(paths.config),
+        "census_fixture_sha256" => _file_sha256(paths.census),
+        "rng_sequences_fixture_sha256" => _file_sha256(paths.rng_sequences),
+        "peg_colors_fixture_sha256" => _file_sha256(paths.peg_colors),
+        "levels_sha256" => _levels_manifest_sha256(paths.levels),
+        "package_version" => _project_version(paths.project),
+        "math_backend" => _math_backend_prereq(paths.root),
+    )
+    fixture_paths.census === nothing ||
+        (prerequisites["census_fixture_path"] = String(fixture_paths.census))
+    fixture_paths.rng === nothing ||
+        (prerequisites["rng_sequences_fixture_path"] = String(fixture_paths.rng))
+    fixture_paths.colors === nothing ||
+        (prerequisites["peg_colors_fixture_path"] = String(fixture_paths.colors))
     return Dict{String,Any}(
         "format" => PARITY_FORMAT,
         "schema_version" => PARITY_SCHEMA_VERSION,
@@ -783,15 +829,7 @@ function _identity(paths, pin, config_sha)
         "package_version" => _project_version(paths.project),
         "checkpoint_schema_version" => PARITY_CHECKPOINT_SCHEMA_VERSION,
         "julia_source_sha256" => _julia_source_sha256(paths.root),
-        "prerequisites" => Dict{String,Any}(
-            "config_artifact_sha256" => _file_sha256(paths.config),
-            "census_fixture_sha256" => _file_sha256(paths.census),
-            "rng_sequences_fixture_sha256" => _file_sha256(paths.rng_sequences),
-            "peg_colors_fixture_sha256" => _file_sha256(paths.peg_colors),
-            "levels_sha256" => _levels_manifest_sha256(paths.levels),
-            "package_version" => _project_version(paths.project),
-            "math_backend" => _math_backend_prereq(paths.root),
-        ),
+        "prerequisites" => prerequisites,
     )
 end
 
@@ -836,8 +874,27 @@ end
 # Public entry points
 # ---------------------------------------------------------------------------
 
-function parity_manifest(; repo::AbstractString, label::AbstractString)::Dict{String,Any}
+function parity_manifest(; repo::AbstractString, label::AbstractString,
+                         census_path::Union{Nothing,AbstractString} = nothing,
+                         rng_path::Union{Nothing,AbstractString} = nothing,
+                         colors_path::Union{Nothing,AbstractString} = nothing)::Dict{String,Any}
     paths = _parity_paths(repo)
+    fixture_paths = PARITY_NO_FIXTURE_PATHS
+    if census_path !== nothing
+        paths = merge(paths, (census = abspath(census_path),))
+        fixture_paths = merge(fixture_paths, (
+            census = _recorded_fixture_path(paths.root, census_path),))
+    end
+    if rng_path !== nothing
+        paths = merge(paths, (rng_sequences = abspath(rng_path),))
+        fixture_paths = merge(fixture_paths, (
+            rng = _recorded_fixture_path(paths.root, rng_path),))
+    end
+    if colors_path !== nothing
+        paths = merge(paths, (peg_colors = abspath(colors_path),))
+        fixture_paths = merge(fixture_paths, (
+            colors = _recorded_fixture_path(paths.root, colors_path),))
+    end
     pin = _parse_pin(paths.pin)
     config_sha = _config_source_sha256(paths.config)
     config_sha == pin.config_hash || throw(ArgumentError(string(
@@ -852,15 +909,16 @@ function parity_manifest(; repo::AbstractString, label::AbstractString)::Dict{St
         expected_artifact = _expected_native_artifact_sha256(paths.root, platform)
         expected_artifact === nothing && throw(ArgumentError(string(
             "parity: no expected checksum for the core_math artifact on platform ",
-            platform, " at native/artifacts/", platform,
-            "/libpeggle_math.so.sha256; build and record the artifact first")))
+            platform, " at native/artifacts/", platform, "/",
+            DetMath.core_math_artifact_filename(platform),
+            ".sha256; build and record the artifact first")))
         artifact == expected_artifact || throw(ArgumentError(string(
             "parity: core_math artifact hash mismatch on platform ", platform,
             ": expected ", expected_artifact, ", got ",
             artifact === nothing ? "nothing" : artifact)))
     end
     return Dict{String,Any}(
-        "identity" => _identity(paths, pin, config_sha),
+        "identity" => _identity(paths, pin, config_sha, fixture_paths),
         "authoritative" => _authoritative(paths, pin, config_sha, config),
         "environment" => _environment(label, expected_artifact),
     )

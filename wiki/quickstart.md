@@ -64,6 +64,7 @@ make math-census         # capture the math census fixture and Julia summary
 make math-census-check   # re-capture the math census fixture and compare
 make wpd-math            # CORE-MATH vs system libm vs MPFR oracle (WP-D)
 make wpd-state           # Lua core_math state capture + Julia comparison (WP-D)
+make wpd-parity          # experimental CORE-MATH parity manifest (WP-D)
 make wpd-trace           # gameplay traces/candidate samples, single host (WP-E)
 make wpd-perf            # math/checkpoint/sweep performance comparison (WP-F)
 ```
@@ -165,6 +166,7 @@ Conventions:
 | What do the interchange artifacts contain? | `wiki/context/interchange.md` |
 | Which reference fixtures exist and why? | `wiki/context/fixtures.md` |
 | How is the Julia side built? | `wiki/context/julia.md` |
+| How do I collect the macOS/Windows qualification evidence? | `wiki/context/cross-platform-qualification.md` |
 | How fast is Lua today? | `wiki/benchmarks/baseline-metrics.md` |
 | How fast is the M2 checkpoint/reset? | `wiki/benchmarks/m2-checkpoint.md` |
 | Is the Julia math/RNG bit-identical? | `wiki/audits/m2-math-census.md`, `wiki/audits/m2-rng-geometry.md` |

@@ -3,10 +3,17 @@
 #
 # Usage:
 #   julia --project=julia/PeggleSim julia/PeggleSim/bin/parity_emit.jl \
-#       [--label local] [--repo .] [--out results/parity/local.json]
+#       [--label local] [--repo .] [--out results/parity/local.json] \
+#       [--census PATH] [--rng PATH] [--colors PATH]
 #
 # The process exits nonzero when the math census does not verify exactly or
 # when reset determinism fails.
+#
+# --census/--rng/--colors replace the historical fixture inputs (the WP-D
+# experimental CORE-MATH-era path). The manifest's identity prerequisites
+# record the effective path and SHA-256 of each overridden fixture, so
+# compare_parity.sh requires byte-identical experimental inputs across hosts.
+# Without overrides the historical manifest is unchanged.
 
 using PeggleSim
 
@@ -15,12 +22,17 @@ function parse_args(argv)
     i = 1
     while i <= length(argv)
         arg = argv[i]
-        if arg in ("--label", "--repo", "--out")
+        if arg in ("--label", "--repo", "--out", "--census", "--rng", "--colors")
             i += 1
             i <= length(argv) || error("missing value for $(arg)")
             opts[arg[3:end]] = argv[i]
         elseif arg == "--help" || arg == "-h"
             println("usage: parity_emit.jl [--label LABEL] [--repo PATH] [--out PATH]")
+            println("                      [--census PATH] [--rng PATH] [--colors PATH]")
+            println()
+            println("--census/--rng/--colors override the historical fixture inputs")
+            println("and are recorded by effective path and SHA-256 in the manifest")
+            println("identity prerequisites. Defaults are the historical fixtures.")
             exit(0)
         else
             error("unknown argument: $(arg)")
@@ -36,7 +48,10 @@ function main(argv)
     label = get(opts, "label", "local")
     out = get(opts, "out", joinpath(repo, "results", "parity", label * ".json"))
 
-    man = PeggleSim.parity_manifest(; repo = repo, label = label)
+    man = PeggleSim.parity_manifest(; repo = repo, label = label,
+        census_path = get(opts, "census", nothing),
+        rng_path = get(opts, "rng", nothing),
+        colors_path = get(opts, "colors", nothing))
     PeggleSim.write_parity(man, out)
 
     auth = PeggleSim.parity_authoritative(man)

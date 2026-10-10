@@ -25,11 +25,20 @@ Implements WP-E's trace comparison contract (tmp/core-math/wpef-plan.md):
     compared recursively with ``compare_state_value``: numeric leaves by
     exact IEEE-754 bits, structure by key presence/list length/type. State
     differences are classified ``state_bit_difference`` or
-    ``state_structure``. When only one corpus carries snapshots the scope
+    ``state_structure``. ``state_comparison`` is ``"full"`` only when a
+    snapshot dict exists at every recorded step on both sides and both
+    step-id sets are identical; a missing snapshot anywhere makes it
+    ``"partial"`` (a coverage failure under ``--control``/
+    ``--strict-reference``), with the per-side missing step ids recorded in
+    ``snapshot_coverage``. When only one corpus carries snapshots the scope
     mismatch is recorded (``state_comparison == "scope_mismatch"``) and the
     result is event/result agreement only, not complete simulation-state
     agreement; a control fails on the mismatch, ``--strict-reference`` does
-    not. The first divergent state is retained in
+    not. Snapshot-free corpora are ``"not_captured"`` (event/result agreement
+    only), except that both headers declaring ``include_snapshot=true`` while
+    carrying no snapshot records is ``"partial"``. The header
+    ``include_snapshot`` declaration must be consistent with the observed
+    snapshots. The first divergent state is retained in
     ``first_difference.left_step_json``/``right_step_json``, which embed the
     full step records (snapshots included) for inspection.
   * Every difference is classified into exactly one of
@@ -38,11 +47,15 @@ Implements WP-E's trace comparison contract (tmp/core-math/wpef-plan.md):
     (types/ids/commands differ), ``completion`` (max_steps/steps/reason/
     rule), ``score`` (expected-record result/score/semantic fields),
     ``state_bit_difference``/``state_structure`` (snapshot state).
-    ``volatile_animation`` is allowed only for the explicit
-    ``VOLATILE_ANIMATION_FIELDS`` allowlist of known non-authoritative
-    animation fields (the WP-C fever-bucket variable-dt finding); additions
-    require review, and every other reference-vs-reference difference is a
-    failure requiring investigation. ``trace_hash_metadata`` records
+    ``VOLATILE_ANIMATION_FIELDS`` is intentionally empty: no volatile
+    exemptions exist. ``snapshot.fever_buckets.animating`` and
+    ``snapshot.fever_buckets.dividers[].y`` are authoritative state (the
+    dividers feed ``Physics.update`` collision geometry and ``animating``
+    gates the per-step bucket/divider update) and the fixed-step harness
+    requires exact equality; any observed difference is an authoritative
+    ``state_bit_difference``/``state_structure`` failure or an explicitly
+    unresolved determinism finding requiring investigation. Allowlist
+    additions require explicit review. ``trace_hash_metadata`` records
     ``trace.sha256`` differences that follow from the recorded
     ``math_backend`` header alone.
 
@@ -56,6 +69,16 @@ Options:
   --strict-reference      reference-discovery comparison: any difference
                           outside the explicit volatile allowlist is a
                           failure (report mode ``reference_discovery``)
+  --require-identical     cross-machine comparison: any difference is a
+                          failure except the recorded per-trace header/
+                          backend identity metadata (``trace_hash_metadata``
+                          and the ``math_backend`` identity block); when both
+                          sides declare ``math_backend`` their backend
+                          ``name`` fields must be equal (report mode
+                          ``require_identical``). ``state_comparison ==
+                          "partial"`` or ``"scope_mismatch"`` fails;
+                          ``not_captured`` (result-only fixtures) is allowed.
+                          Mutually exclusive with --control/--strict-reference
   --volatile-report FILE  read approved volatile field paths from a prior
                           discovery report (``volatile_paths_discovered``);
                           a path outside the explicit allowlist raises
@@ -69,8 +92,11 @@ Options:
   --left-label/--right-label  labels recorded in the report
 
 Exit codes: 0 report written and control clean, 1 unexpected differences in
---control mode or a reference difference outside the explicit volatile
-allowlist in --strict-reference mode, 2 malformed or missing input.
+--control mode, a reference difference outside the explicit volatile
+allowlist in --strict-reference mode, an unexempt difference (including
+missing traces, one-sided expected records, differing backend names, and
+incomplete/one-sided snapshot coverage) in --require-identical mode,
+2 malformed or missing input, including malformed --volatile-report input.
 """
 
 import argparse
@@ -108,32 +134,31 @@ ULP_BUCKETS = ((1, "1"), (3, "2-3"), (15, "4-15"), (255, "16-255"),
 ULP_LARGE = ">=65536"
 ULP_NAN = "nan"
 
-# Explicit allowlist of known non-authoritative animation fields. WP-C found
-# that fever-bucket animation state is updated with the variable frame delta
-# (tmp/core-math/wpc-acceptance.md item 3), so these two fields may vary
-# run-to-run under load. Additions require review: any other
-# reference-vs-reference difference is authoritative and must be
-# investigated, never discovered into this list automatically.
-VOLATILE_ANIMATION_FIELDS = (
-    "snapshot.fever_buckets.animating",
-    "snapshot.fever_buckets.dividers[].y",
-)
+# Intentionally empty: no volatile exemptions exist. Fever-bucket animation
+# state is authoritative collision/update state (the Lua game passes the
+# dividers into Physics.update as collision geometry, and ``animating`` gates
+# the per-step bucket/divider update) and the fixed-step harness requires
+# exact equality; any observed difference is an authoritative determinism
+# failure that must be investigated. Additions require explicit review.
+VOLATILE_ANIMATION_FIELDS = ()
 
 VOLATILE_NOTE = (
-    "Only paths in the explicit VOLATILE_ANIMATION_FIELDS allowlist may be "
-    "classified volatile_animation (snapshot.fever_buckets.animating and "
-    "snapshot.fever_buckets.dividers[].y): WP-C found that fever-bucket "
-    "animation state is updated with the variable frame delta "
-    "(wpc-acceptance.md item 3), so those fields vary between two otherwise "
-    "identical runs. Every other reference-vs-reference difference is a "
-    "failure requiring investigation, and allowlist additions require "
-    "review. In this fixed-dt harness the discovered set is normally empty."
+    "No volatile exemptions exist: VOLATILE_ANIMATION_FIELDS is "
+    "intentionally empty. snapshot.fever_buckets.animating and "
+    "snapshot.fever_buckets.dividers[].y are authoritative "
+    "(snapshot.fever_buckets.dividers feed Physics.update collision "
+    "geometry; animating gates the per-step bucket/divider update), so any "
+    "observed difference is an authoritative state_bit_difference/"
+    "state_structure failure or an explicitly unresolved determinism finding "
+    "requiring investigation. Allowlist additions require review."
 )
 
 STATE_SCOPE_NOTE = (
-    "Some fixtures were compared without per-step snapshots on one or both "
-    "sides (state_comparison is not \"full\"): those results are event/result "
-    "agreement only, not complete simulation-state agreement."
+    "Some fixtures were not compared with full simulation state "
+    "(state_comparison is not \"full\") and those results are not complete "
+    "simulation-state agreement: \"not_captured\" and \"scope_mismatch\" are "
+    "event/result agreement only, and \"partial\" means the capture is "
+    "missing per-step snapshots (a coverage failure)."
 )
 
 
@@ -378,16 +403,51 @@ def compare_state_value(left, right, path_parts, norm_parts, step, out):
                               ".".join(path_parts), step, left, right))
 
 
-def compare_snapshots(left_steps, right_steps, control, out):
-    """Compare per-step snapshots; return (scope, steps_compared)."""
-    left_has = any(isinstance(record.get("snapshot"), dict)
-                   for record in left_steps)
-    right_has = any(isinstance(record.get("snapshot"), dict)
-                    for record in right_steps)
+def compare_snapshots(left_steps, right_steps, left_header, right_header,
+                      control, out):
+    """Compare per-step snapshots; return (scope, steps_compared, coverage).
+
+    ``full`` requires a snapshot dict at every recorded step on both sides
+    and identical step-id sets; a missing snapshot makes the scope
+    ``partial`` and records the per-side missing step ids in the coverage.
+    """
+    left_declared = left_header.get("include_snapshot") is True
+    right_declared = right_header.get("include_snapshot") is True
+    left_by_id = {record["step"]: record for record in left_steps}
+    right_by_id = {record["step"]: record for record in right_steps}
+    left_ids = [record["step"] for record in left_steps]
+    right_ids = [record["step"] for record in right_steps]
+    left_with = [sid for sid in left_ids
+                 if isinstance(left_by_id[sid].get("snapshot"), dict)]
+    right_with = [sid for sid in right_ids
+                  if isinstance(right_by_id[sid].get("snapshot"), dict)]
+    left_with_set = set(left_with)
+    right_with_set = set(right_with)
+    left_missing = [sid for sid in left_ids if sid not in left_with_set]
+    right_missing = [sid for sid in right_ids if sid not in right_with_set]
+    left_has = bool(left_with)
+    right_has = bool(right_with)
+    same_ids = set(left_ids) == set(right_ids)
+
+    if left_declared and not left_has:
+        out.append(Difference(
+            "state_structure", "snapshot", "snapshot", None,
+            "include_snapshot=true", "no snapshot records on left"))
+    if right_declared and not right_has:
+        out.append(Difference(
+            "state_structure", "snapshot", "snapshot", None,
+            "include_snapshot=true", "no snapshot records on right"))
+    if left_has and not left_declared:
+        out.append(Difference(
+            "state_structure", "snapshot", "snapshot", None,
+            "include_snapshot=false", "snapshot records present on left"))
+    if right_has and not right_declared:
+        out.append(Difference(
+            "state_structure", "snapshot", "snapshot", None,
+            "include_snapshot=false", "snapshot records present on right"))
+
     steps_compared = 0
     if left_has and right_has:
-        left_by_id = {record["step"]: record for record in left_steps}
-        right_by_id = {record["step"]: record for record in right_steps}
         for sid in sorted(set(left_by_id) & set(right_by_id)):
             left_snapshot = left_by_id[sid].get("snapshot")
             right_snapshot = right_by_id[sid].get("snapshot")
@@ -403,15 +463,47 @@ def compare_snapshots(left_steps, right_steps, control, out):
                     "state_structure", "snapshot", "step.%d.snapshot" % sid,
                     sid, "present" if left_dict else "missing",
                     "present" if right_dict else "missing"))
-        return "full", steps_compared
-    if not left_has and not right_has:
-        return "not_captured", steps_compared
-    if control:
-        out.append(Difference(
-            "state_structure", "snapshot", "snapshot", None,
-            "present" if left_has else "missing",
-            "present" if right_has else "missing"))
-    return "scope_mismatch", steps_compared
+            else:
+                out.append(Difference(
+                    "state_structure", "snapshot", "step.%d.snapshot" % sid,
+                    sid, "present", "missing on both sides"))
+        if same_ids and not left_missing and not right_missing:
+            scope = "full"
+        else:
+            scope = "partial"
+    elif left_has or right_has:
+        scope = "scope_mismatch"
+        if left_has and left_declared:
+            for sid in left_missing:
+                out.append(Difference(
+                    "state_structure", "snapshot", "step.%d.snapshot" % sid,
+                    sid, "include_snapshot=true", "missing on left"))
+        if right_has and right_declared:
+            for sid in right_missing:
+                out.append(Difference(
+                    "state_structure", "snapshot", "step.%d.snapshot" % sid,
+                    sid, "include_snapshot=true", "missing on right"))
+        if control:
+            out.append(Difference(
+                "state_structure", "snapshot", "snapshot", None,
+                "present" if left_has else "missing",
+                "present" if right_has else "missing"))
+    else:
+        scope = "partial" if (left_declared and right_declared) else "not_captured"
+
+    coverage = {
+        "left": {
+            "steps_total": len(left_ids),
+            "steps_with_snapshot": len(left_with),
+            "missing_steps": left_missing,
+        },
+        "right": {
+            "steps_total": len(right_ids),
+            "steps_with_snapshot": len(right_with),
+            "missing_steps": right_missing,
+        },
+    }
+    return scope, steps_compared, coverage
 
 
 def collect_events(steps):
@@ -645,17 +737,71 @@ def path_allowed(norm_path, allowed):
     return False
 
 
+def volatile_paths_from_report(report, path):
+    """Validate a volatile report's shape; return its path strings.
+
+    Only a JSON list of strings or a JSON object with a
+    ``volatile_paths_discovered`` list of strings (falling back to the
+    ``fixtures[].difference_counts`` keys) is accepted; malformed shapes
+    raise InputError instead of crashing on coercion.
+    """
+    if isinstance(report, list):
+        paths = list(report)
+        for item in paths:
+            if not isinstance(item, str):
+                raise InputError(
+                    "volatile report %s: path entries must be strings "
+                    "(got %r)" % (path, item))
+        return paths
+    if not isinstance(report, dict):
+        raise InputError(
+            "volatile report %s: expected a JSON list or object" % path)
+    declared = report.get("volatile_paths_discovered")
+    if declared:
+        if not isinstance(declared, list):
+            raise InputError(
+                "volatile report %s: volatile_paths_discovered must be a "
+                "list (got %r)" % (path, declared))
+        for item in declared:
+            if not isinstance(item, str):
+                raise InputError(
+                    "volatile report %s: volatile_paths_discovered path "
+                    "entries must be strings (got %r)" % (path, item))
+        return list(declared)
+    fixtures = report.get("fixtures")
+    if fixtures is None:
+        return []
+    if not isinstance(fixtures, dict):
+        raise InputError(
+            "volatile report %s: fixtures must be an object (got %r)"
+            % (path, fixtures))
+    paths = []
+    for fixture_key, fixture in fixtures.items():
+        if not isinstance(fixture, dict):
+            raise InputError(
+                "volatile report %s: fixtures[%r] must be an object (got %r)"
+                % (path, fixture_key, fixture))
+        counts = fixture.get("difference_counts")
+        if counts is None:
+            continue
+        if not isinstance(counts, dict):
+            raise InputError(
+                "volatile report %s: fixtures[%r].difference_counts must be "
+                "an object (got %r)" % (path, fixture_key, counts))
+        for key in counts:
+            if not isinstance(key, str):
+                raise InputError(
+                    "volatile report %s: fixtures[%r].difference_counts keys "
+                    "must be strings (got %r)" % (path, fixture_key, key))
+            paths.append(key)
+    return paths
+
+
 def load_volatile_paths(path):
     if not path:
         return []
     report = load_json_file(path)
-    if isinstance(report, list):
-        paths = [str(item) for item in report]
-    else:
-        paths = list(report.get("volatile_paths_discovered") or [])
-        if not paths:
-            for fixture in (report.get("fixtures") or {}).values():
-                paths.extend((fixture.get("difference_counts") or {}).keys())
+    paths = volatile_paths_from_report(report, path)
     unapproved = sorted(set(paths) - set(VOLATILE_ANIMATION_FIELDS))
     if unapproved:
         raise InputError(
@@ -666,7 +812,7 @@ def load_volatile_paths(path):
 
 def analyze_fixture(fixture, left_traces, right_traces, left_expected,
                     right_expected, allowed_volatile, control,
-                    strict_reference, failures):
+                    strict_reference, require_identical, failures):
     left_path = os.path.join(left_traces, fixture + ".jsonl")
     right_path = os.path.join(right_traces, fixture + ".jsonl")
     left_exists = os.path.exists(left_path)
@@ -681,6 +827,7 @@ def analyze_fixture(fixture, left_traces, right_traces, left_expected,
     right_step_by_id = {}
     state_comparison = "not_captured"
     snapshot_steps_compared = 0
+    snapshot_coverage = None
     if left_exists:
         left_header, left_steps = load_trace(left_path)
         right_header, right_steps = load_trace(right_path)
@@ -693,13 +840,26 @@ def analyze_fixture(fixture, left_traces, right_traces, left_expected,
                         "reason": "control %s trace was captured with backend %r"
                                   % (side, backend.get("name")),
                     })
+        if require_identical:
+            left_backend = left_header.get("math_backend")
+            right_backend = right_header.get("math_backend")
+            if isinstance(left_backend, dict) and isinstance(right_backend, dict):
+                if left_backend.get("name") != right_backend.get("name"):
+                    failures.append({
+                        "fixture": fixture,
+                        "reason": "backend names differ: left %r, right %r"
+                                  % (left_backend.get("name"),
+                                     right_backend.get("name")),
+                    })
         left_step_by_id = {record["step"]: record for record in left_steps}
         right_step_by_id = {record["step"]: record for record in right_steps}
         compare_headers(left_header, right_header, differences)
         compare_event_steps(left_steps, right_steps, differences)
         compare_event_streams(left_steps, right_steps, differences)
-        state_comparison, snapshot_steps_compared = compare_snapshots(
-            left_steps, right_steps, control, differences)
+        state_comparison, snapshot_steps_compared, snapshot_coverage = (
+            compare_snapshots(left_steps, right_steps, left_header,
+                              right_header, control or require_identical,
+                              differences))
         for diff in differences:
             if path_allowed(diff.path, allowed_volatile):
                 diff.category = "volatile_animation"
@@ -724,8 +884,8 @@ def analyze_fixture(fixture, left_traces, right_traces, left_expected,
                             left_header, right_header, left_exists,
                             left_step_by_id, right_step_by_id,
                             state_comparison, snapshot_steps_compared,
-                            state_scope)
-    if control:
+                            snapshot_coverage, state_scope)
+    if control or require_identical:
         for diff in expected_differences:
             if diff.category not in ("volatile_animation", "trace_hash_metadata"):
                 failures.append({
@@ -749,6 +909,17 @@ def analyze_fixture(fixture, left_traces, right_traces, left_expected,
                           "allowlist: %s (%s)"
                           % (first_reference.full_path, first_reference.category),
             })
+    if state_comparison == "partial" and (
+            control or strict_reference or require_identical):
+        failures.append({
+            "fixture": fixture,
+            "reason": "snapshot coverage incomplete (state_comparison=partial): "
+                      "left missing steps %s, right missing steps %s, "
+                      "step id sets equal=%s" % (
+                          snapshot_coverage["left"]["missing_steps"],
+                          snapshot_coverage["right"]["missing_steps"],
+                          set(left_step_by_id) == set(right_step_by_id)),
+        })
     return result
 
 
@@ -761,10 +932,26 @@ def pick_first(differences):
     return min(enumerate(differences), key=order)[1]
 
 
+def backend_metadata_equal(left_backend, right_backend):
+    """True/False when both sides declare ``math_backend``; None otherwise.
+
+    Only the identity fields other than ``name`` are considered: library
+    paths and native identity strings legitimately differ across platforms
+    and are recorded as metadata, never as simulation differences.
+    """
+    if not isinstance(left_backend, dict) or not isinstance(right_backend, dict):
+        return None
+    left_meta = {key: value for key, value in left_backend.items()
+                 if key != "name"}
+    right_meta = {key: value for key, value in right_backend.items()
+                  if key != "name"}
+    return left_meta == right_meta
+
+
 def format_fixture(fixture, differences, expected_differences,
                    left_header, right_header, traces_compared,
                    left_step_by_id, right_step_by_id, state_comparison,
-                   snapshot_steps_compared, state_scope):
+                   snapshot_steps_compared, snapshot_coverage, state_scope):
     classification_counts = Counter()
     difference_counts = Counter()
     state_difference_counts = Counter()
@@ -807,6 +994,7 @@ def format_fixture(fixture, differences, expected_differences,
         "state_comparison": state_comparison,
         "state_scope": state_scope,
         "snapshot_steps_compared": snapshot_steps_compared,
+        "snapshot_coverage": snapshot_coverage,
         "state_difference_counts": dict(sorted(state_difference_counts.items())),
         "expected_nonvolatile_differences": expected_nonvolatile,
         "first_difference_step": first.step if first is not None else None,
@@ -821,6 +1009,8 @@ def format_fixture(fixture, differences, expected_differences,
             "left": left_header.get("math_backend"),
             "right": right_header.get("math_backend"),
         },
+        "math_backend_identity_equal": backend_metadata_equal(
+            left_header.get("math_backend"), right_header.get("math_backend")),
     }
 
 
@@ -832,11 +1022,19 @@ def main(argv=None):
     parser.add_argument("--right-traces", required=True)
     parser.add_argument("--right-expected", required=True)
     parser.add_argument("--out", required=True)
-    parser.add_argument("--control", action="store_true",
-                        help="mark this comparison as the system control")
-    parser.add_argument("--strict-reference", action="store_true",
-                        help="reference-discovery comparison: any difference "
-                             "outside the explicit volatile allowlist fails")
+    mode_group = parser.add_mutually_exclusive_group()
+    mode_group.add_argument("--control", action="store_true",
+                            help="mark this comparison as the system control")
+    mode_group.add_argument("--strict-reference", action="store_true",
+                            help="reference-discovery comparison: any "
+                                 "difference outside the explicit volatile "
+                                 "allowlist fails")
+    mode_group.add_argument("--require-identical", action="store_true",
+                            help="cross-machine comparison: any difference "
+                                 "is a failure except the recorded trace "
+                                 "header/backend identity metadata; backend "
+                                 "names must match and snapshot coverage "
+                                 "must not be partial or one-sided")
     parser.add_argument("--volatile-report", default=None,
                         help="report that discovered the allowed volatile paths")
     parser.add_argument("--volatile-out", default=None,
@@ -882,7 +1080,8 @@ def main(argv=None):
             result = analyze_fixture(
                 fixture, args.left_traces, args.right_traces,
                 left_expected, right_expected, allowed_volatile,
-                args.control, args.strict_reference, failures)
+                args.control, args.strict_reference,
+                args.require_identical, failures)
         except InputError as err:
             failures.append({"fixture": fixture, "reason": str(err)})
             continue
@@ -898,12 +1097,14 @@ def main(argv=None):
                 "first_expected_difference": result["first_expected_difference"],
                 "volatile_differences": result["volatile_differences"],
             })
-            if args.control:
-                failures.append({
-                    "fixture": fixture,
-                    "reason": "control differences are not confined to "
-                              "documented volatile fields",
-                })
+            if args.control or args.require_identical:
+                if args.control:
+                    reason = ("control differences are not confined to "
+                              "documented volatile fields")
+                else:
+                    reason = ("differences are not confined to the recorded "
+                              "trace header/backend identity metadata")
+                failures.append({"fixture": fixture, "reason": reason})
         for bucket, count in result["ulp_histogram"].items():
             total_ulps[bucket] += count
         observed_paths.update(result["difference_counts"].keys())
@@ -912,6 +1113,7 @@ def main(argv=None):
         result["state_comparison"] for result in fixture_results.values())
     state_comparison_summary = {
         "full": state_scope_counts.get("full", 0),
+        "partial": state_scope_counts.get("partial", 0),
         "not_captured": state_scope_counts.get("not_captured", 0),
         "scope_mismatch": state_scope_counts.get("scope_mismatch", 0),
     }
@@ -926,6 +1128,7 @@ def main(argv=None):
             not fixture["identical"] for fixture in fixture_results.values()),
         "checked": bool(args.control),
         "strict_reference": bool(args.strict_reference),
+        "require_identical": bool(args.require_identical),
         "left_label": args.left_label,
         "right_label": args.right_label,
         "fixtures_compared": len(fixture_results),
@@ -945,7 +1148,9 @@ def main(argv=None):
             control_block = prior["control"]
             control_block["embedded_from"] = os.path.abspath(args.control_json)
 
-    if args.strict_reference:
+    if args.require_identical:
+        mode = "require_identical"
+    elif args.strict_reference:
         mode = "reference_discovery"
     elif args.control:
         mode = "control"

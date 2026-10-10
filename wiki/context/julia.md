@@ -31,7 +31,7 @@ No other runtime dependency may be added without revisiting this pin.
 
 ```bash
 julia --project=julia/PeggleSim -e 'using Pkg; Pkg.instantiate()'
-julia --project=julia/PeggleSim -e 'using Pkg; Pkg.test()'   # 3848 pass, 0 fail
+julia --project=julia/PeggleSim -e 'using Pkg; Pkg.test()'   # 3883 pass, 0 fail
 ```
 
 Source files are included in this fixed order by `src/PeggleSim.jl`:
@@ -59,11 +59,12 @@ precompile time, so one precompiled image serves every backend:
 
 - `system_libm` (default on Linux): `ccall` into `libm.so.6`, the same C
   library LuaJIT uses, so results are bit-identical on the reference platform;
-- `core_math` (experimental; adoption pending WP-F): the pinned shared native
-  component `native/artifacts/<platform>/libpeggle_math.so` (ABI 1), loaded
-  with `Libdl.dlopen` and called through `dlsym`'d function pointers. The path
-  can be overridden with `PEGGLE_MATH_LIB`. A missing library, a missing
-  symbol, or a wrong ABI is a hard startup error with no fallback;
+- `core_math` (experimental; adoption undecided): the pinned shared native
+  component under `native/artifacts/<platform>/` (platform filename:
+  `libpeggle_math.so`, `peggle_math.dll`, or `libpeggle_math.dylib`), ABI 1,
+  loaded with `Libdl.dlopen` and called through `dlsym`'d function pointers.
+  The path can be overridden with `PEGGLE_MATH_LIB`. A missing library, a
+  missing symbol, or a wrong ABI is a hard startup error with no fallback;
 - `julia_base` (default elsewhere): Julia runtime `Base` math (`Base.sin`,
   ...). This is not a claim about a pinned implementation: the identity
   reports `Base.Math.libm` as the library name and makes no version claim.
@@ -229,6 +230,7 @@ make math-census         # capture the math census fixture (luajit)
 make math-census-check   # re-capture and compare
 make wpd-math            # WP-D: CORE-MATH vs system libm vs MPFR oracle
 make wpd-state           # WP-D: Lua core_math capture + Julia state comparison
+make wpd-parity          # WP-D: experimental CORE-MATH-era parity manifest + comparison
 make wpd-trace           # WP-E: gameplay traces/candidates (single host)
 make wpd-perf            # WP-F: math/checkpoint/sweep performance comparison
 ```
@@ -268,8 +270,10 @@ summary.
   `environment` carries the non-authoritative host/backend identity (CPU,
   kernel, library, and for `core_math` the platform and loaded artifact
   SHA-256). For `core_math` the loaded artifact is validated against
-  `native/artifacts/<platform>/libpeggle_math.so.sha256` before the manifest
-  is emitted (a missing or mismatched checksum is an error), and
+  `native/artifacts/<platform>/<artifact>.sha256`, where `<artifact>` is the
+  platform-specific filename (`libpeggle_math.so`, `peggle_math.dll`, or
+  `libpeggle_math.dylib`), before the manifest is emitted (a missing or
+  mismatched checksum is an error), and
   `environment.math_backend` records `expected_artifact_sha256` and
   `artifact_validated`.
 - The manifest is schema 2. `identity` additionally pins the Julia package

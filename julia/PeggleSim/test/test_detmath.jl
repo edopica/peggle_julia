@@ -195,6 +195,31 @@ print(JSON.json(data))
         @test isnan(lua_mod(0.0, 0.0))
     end
 
+    @testset "core_math artifact filename" begin
+        @test DetMath.core_math_artifact_filename("windows-x86_64") ==
+              "peggle_math.dll"
+        @test DetMath.core_math_artifact_filename("windows-aarch64") ==
+              "peggle_math.dll"
+        @test DetMath.core_math_artifact_filename("darwin-aarch64") ==
+              "libpeggle_math.dylib"
+        @test DetMath.core_math_artifact_filename("darwin-x86_64") ==
+              "libpeggle_math.dylib"
+        @test DetMath.core_math_artifact_filename("linux-x86_64") ==
+              "libpeggle_math.so"
+        @test DetMath.core_math_artifact_filename("freebsd-x86_64") ==
+              "libpeggle_math.so"
+
+        platform = DetMath._platform_name()
+        default = DetMath._default_core_math_path()
+        @test basename(default) ==
+              DetMath.core_math_artifact_filename(platform)
+        @test occursin(joinpath("native", "artifacts", platform), default)
+        package_dir = pkgdir(DetMath)
+        @test dirname(default) ==
+              joinpath(dirname(dirname(String(package_dir))), "native",
+                       "artifacts", platform)
+    end
+
     @testset "backend selection (subprocess)" begin
         default = _run_detmath_subprocess(
             "using PeggleSim; " *

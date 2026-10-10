@@ -27,10 +27,11 @@ three backends selected once, in `__init__`, from `PEGGLE_MATH_BACKEND`:
 
 - `system_libm` (default on Linux) calls `libm.so.6` with `ccall`, which is
   the same library LuaJIT uses, giving bit-identical results on this platform;
-- `core_math` (experimental) loads the pinned native component
-  `native/artifacts/<platform>/libpeggle_math.so` (or `PEGGLE_MATH_LIB`) and
-  calls the `peggle_math_*` symbols; a missing artifact or ABI mismatch is a
-  hard error with no fallback;
+- `core_math` (experimental) loads the pinned native component from
+  `native/artifacts/<platform>/` (`libpeggle_math.so`, `peggle_math.dll`, or
+  `libpeggle_math.dylib` by platform; or `PEGGLE_MATH_LIB`) and calls the
+  `peggle_math_*` symbols; a missing artifact or ABI mismatch is a hard error
+  with no fallback;
 - `julia_base` (default elsewhere) calls Julia runtime `Base` math. This is
   not a pinned implementation claim; `openlibm` is accepted as an alias.
 

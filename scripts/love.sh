@@ -4,6 +4,14 @@
 # run unattended on servers.
 set -euo pipefail
 
+# Native desktop sessions (macOS, Windows Git Bash/MSYS/Cygwin) already have a
+# display; skip the Linux display/xvfb logic and run directly.
+case "$(uname -s)" in
+  Darwin|MINGW*|MSYS*|CYGWIN*)
+    exec "$@"
+    ;;
+esac
+
 ENV_FILE="${HERMES_LOVE_ENV:-$HOME/.hermes/scripts/love-env.sh}"
 
 if [ -f "$ENV_FILE" ]; then

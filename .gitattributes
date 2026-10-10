@@ -1,0 +1,5 @@
+# Deterministic byte-level checkouts: the frozen reference, fixtures,
+# interchange artifacts, and parity manifests are compared by SHA-256.
+# Force LF in the working tree so a Windows checkout is byte-identical to
+# Linux; binary artifacts (no text conversion) are left as-is.
+* text=auto eol=lf

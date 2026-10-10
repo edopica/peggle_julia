@@ -33,6 +33,7 @@
   },
   "artifact": {
     "path": "native/artifacts/linux-x86_64/libpeggle_math.so",
+    "filename": "libpeggle_math.so",
     "sha256": "d012f42e0185fbf7d15b892a687b5a07e93668cb5b66ba9021dcbf9d006d0494",
     "size_bytes": 271216
   },
@@ -88,16 +89,37 @@
       "-Wall",
       "-Wshadow"
     ],
+    "link_flags": [
+      "-shared",
+      "-Wl,--version-script=native/peggle_math.map"
+    ],
+    "flags_ignored_by_toolchain": [],
     "sqrt_implementation": "hardware-ieee754",
     "sqrt_source": "peggle_math_sqrt: __builtin_sqrt with -fno-math-errno (no host sqrt call)",
     "sqrt_internal_shim": "native/sqrt_shim.c defines a hidden hardware sqrtsd `sqrt` for CORE-MATH cold paths only; the version script keeps it out of the ABI",
     "cpu_baseline": "-msse4.1 (makes __builtin_roundeven use roundsd; no libm roundeven dependency)",
     "fma_policy": "no hardware FMA target: CORE-MATH __builtin_fma binds to the correctly-rounded libm fma; no accidental FMA contraction (-ffp-contract=off)",
-    "artifact_reproducible": "true"
+    "artifact_reproducible": "true",
+    "reproducibility_scope": "second build to a temporary path (compiled bytes are path independent)"
   },
   "undefined_symbol_audit": {
-    "tool": "nm -D --undefined-only",
+    "kind": "elf",
+    "tool": "nm -D --undefined-only + nm -D --defined-only; llvm-objdump -d (sqrtsd present)",
     "result": "pass",
+    "forbidden_symbols": [
+      "sin",
+      "cos",
+      "tan",
+      "asin",
+      "acos",
+      "atan",
+      "atan2",
+      "exp",
+      "log",
+      "pow",
+      "sqrt"
+    ],
+    "forbidden_symbols_present": [],
     "undefined_symbols_strong": [
       "exit",
       "feclearexcept",
@@ -146,25 +168,11 @@
       "_ITM_deregisterTMCloneTable",
       "_ITM_registerTMCloneTable"
     ],
-    "forbidden_symbols": [
-      "sin",
-      "cos",
-      "tan",
-      "asin",
-      "acos",
-      "atan",
-      "atan2",
-      "exp",
-      "log",
-      "pow",
-      "sqrt"
-    ],
-    "forbidden_symbols_present": [],
     "fma_undefined": true
   },
   "smoke_test": {
     "ran": false,
     "result": "not_run"
   },
-  "build_timestamp_utc": "2026-10-09T14:17:40Z"
+  "build_timestamp_utc": "2026-10-10T13:50:21Z"
 }

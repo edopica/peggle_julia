@@ -1,4 +1,4 @@
-.PHONY: help verify export fixtures fixture-list check check-all list self-check quick baseline test julia-test julia-parity julia-bench capture-m2 capture-m2-check math-census math-census-check core-math-build core-math-verify wpd-math wpd-state-capture wpd-state-compare wpd-state wpd-trace wpd-perf
+.PHONY: help verify export fixtures fixture-list check check-all list self-check quick baseline test julia-test julia-parity julia-bench capture-m2 capture-m2-check math-census math-census-check core-math-build core-math-verify wpd-math wpd-state-capture wpd-state-compare wpd-state wpd-trace wpd-compare-hosts wpd-perf wpd-parity
 
 JULIA = julia --project=julia/PeggleSim
 
@@ -24,6 +24,7 @@ help:
 	@echo "  math-census-check re-capture the math census fixture and compare"
 	@echo "  core-math-build build the pinned native math component (linux-x86_64)"
 	@echo "  core-math-verify verify the native pin, artifact, and ABI/symbol audit"
+	@echo "  wpd-parity   experimental CORE-MATH-era parity capture + local comparison"
 
 verify:
 	scripts/verify_reference.sh
@@ -107,6 +108,22 @@ wpd-state: wpd-state-capture wpd-state-compare
 wpd-trace:
 	scripts/core_math_trace.sh
 
+# WP-E: compare two scripts/wpd_capture_host.sh capture dirs (Linux; python3).
+wpd-compare-hosts:
+	scripts/wpd_compare_hosts.sh $(ARGS)
+
 # WP-F: math/checkpoint/sweep performance comparison.
 wpd-perf:
 	scripts/core_math_perf.sh
+
+# WP-D open item: experimental CORE-MATH-era parity inputs and local manifests.
+# Captures the census through the dev tree + core_math, emits one manifest from
+# those inputs, then runs the two-run local comparison. Historical fixtures
+# and results/parity/local.json are never modified.
+wpd-parity:
+	scripts/capture_wpd_parity_census.sh
+	PEGGLE_MATH_BACKEND=core_math $(JULIA) julia/PeggleSim/bin/parity_emit.jl \
+	  --census tmp/core-math/parity/math_census.v1.json \
+	  --label core_math-local \
+	  --out tmp/core-math/parity/core_math-local.json
+	scripts/wpd_parity_check.sh

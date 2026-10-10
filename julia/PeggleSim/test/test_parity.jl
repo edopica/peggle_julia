@@ -160,10 +160,18 @@ const PARITY_CENSUS = joinpath(
         @test occursin(r"^[0-9a-f]{64}$", component)
         @test component == PeggleSim._native_component_source_sha256(PARITY_REPO_ROOT)
         sha_path = joinpath(PARITY_REPO_ROOT, "native", "artifacts",
-                            "linux-x86_64", "libpeggle_math.so.sha256")
+                            "linux-x86_64",
+                            PeggleSim.DetMath.core_math_artifact_filename(
+                                "linux-x86_64") * ".sha256")
         recorded = first(split(strip(read(sha_path, String))))
         @test PeggleSim._expected_native_artifact_sha256(
             PARITY_REPO_ROOT, "linux-x86_64") == recorded
+        @test PeggleSim._expected_native_artifact_sha256(
+            PARITY_REPO_ROOT, "windows-x86_64") ==
+              "bad2c2274783cc4ce123618463b6486811c9f863a44c228d99ad33fee3c29ec6"
+        @test PeggleSim._expected_native_artifact_sha256(
+            PARITY_REPO_ROOT, "darwin-aarch64") ==
+              "3b877368fed9608e575ef48904ab016ce83f4a719f599cb2ac0a04d64fb0f8a5"
         @test PeggleSim._expected_native_artifact_sha256(
             PARITY_REPO_ROOT, "no-such-platform") === nothing
 
@@ -203,6 +211,100 @@ const PARITY_CENSUS = joinpath(
             @test text == canonical_json(man1) * "\n"
             parsed = JSON.parsefile(path)
             @test parsed["authoritative"] == JSON.parse(canonical_json(auth1))
+        end
+    end
+end
+
+# Experimental fixture path overrides (WP-D parity manifest repair): a
+# manifest built from override fixtures verifies them, hashes them, and
+# records their effective path in identity.prerequisites so cross-host
+# comparisons require identical inputs. The historical default records no
+# path keys (byte-identical default behavior).
+@testset "Parity fixture overrides" begin
+    mktempdir() do dir
+        census = joinpath(dir, "math_census.v1.json")
+        rng = joinpath(dir, "rng_sequences.v1.json")
+        colors = joinpath(dir, "peg_colors.v1.json")
+
+        inputs = Dict{String,Any}()
+        expected = Dict{String,Any}()
+        counts = Dict{String,Any}()
+        for spec in PeggleSim.PARITY_CENSUS_UNARY
+            inputs[spec.name] = Any[0.5]
+            expected[spec.name] = Any[PeggleSim.float_bits_hex(spec.det(0.5))]
+            counts[spec.name] = 1
+        end
+        for spec in PeggleSim.PARITY_CENSUS_BINARY
+            inputs[spec.a] = Any[0.5]
+            inputs[spec.b] = Any[0.25]
+            expected[spec.name] = Any[PeggleSim.float_bits_hex(spec.det(0.5, 0.25))]
+            counts[spec.name] = 1
+        end
+        write(census, canonical_json(Dict{String,Any}(
+            "format" => "peggle.math_census",
+            "schema_version" => 1,
+            "counts" => counts,
+            "inputs" => inputs,
+            "expected" => expected,
+        )) * "\n")
+        write(rng, "{}\n")
+        write(colors, "{}\n")
+
+        man = PeggleSim.parity_manifest(; repo = PARITY_REPO_ROOT,
+                                        label = "override",
+                                        census_path = census,
+                                        rng_path = rng,
+                                        colors_path = colors)
+        auth = PeggleSim.parity_authoritative(man)
+        @test auth["math_census"]["verified"] === true
+        @test auth["math_census"]["total_cases"] == 10
+        @test auth["math_census"]["mismatches"] == 0
+        @test auth["math_census"]["fixture_sha256"] == PeggleSim._file_sha256(census)
+        @test auth["rng_sequences"]["verified"] === true
+        @test auth["rng_sequences"]["fixture_sha256"] == PeggleSim._file_sha256(rng)
+        @test auth["peg_colors"]["verified"] === true
+        @test auth["peg_colors"]["fixture_sha256"] == PeggleSim._file_sha256(colors)
+
+        prereq = man["identity"]["prerequisites"]
+        @test prereq["census_fixture_sha256"] == PeggleSim._file_sha256(census)
+        @test prereq["rng_sequences_fixture_sha256"] == PeggleSim._file_sha256(rng)
+        @test prereq["peg_colors_fixture_sha256"] == PeggleSim._file_sha256(colors)
+        # temp fixtures live outside the repository: paths are absolute
+        @test prereq["census_fixture_path"] == normpath(abspath(census))
+        @test prereq["rng_sequences_fixture_path"] == normpath(abspath(rng))
+        @test prereq["peg_colors_fixture_path"] == normpath(abspath(colors))
+
+        # Paths under the repository are recorded repository-relative so two
+        # hosts with different checkout roots record the same prerequisite.
+        inside = joinpath(PARITY_REPO_ROOT, "tmp", "parity-test", "x.json")
+        @test PeggleSim._recorded_fixture_path(PARITY_REPO_ROOT, inside) ==
+              joinpath("tmp", "parity-test", "x.json")
+        @test PeggleSim._recorded_fixture_path(PARITY_REPO_ROOT, inside) ==
+              "tmp/parity-test/x.json"
+        @test !occursin('\\', PeggleSim._recorded_fixture_path(PARITY_REPO_ROOT, inside))
+        @test PeggleSim._recorded_fixture_path(PARITY_REPO_ROOT, census) ==
+              normpath(abspath(census))
+
+        # Recorded paths use `/` separators on every platform. A real
+        # backslash path cannot exist under the repository on Linux, so the
+        # separator normalizer is covered directly with a Windows spelling.
+        @test PeggleSim._normalize_path_separators(
+            "results\\core-math\\parity\\math_census.v1.json") ==
+            "results/core-math/parity/math_census.v1.json"
+        @test PeggleSim._normalize_path_separators(
+            "C:\\repo\\results\\core-math\\parity") ==
+            "C:/repo/results/core-math/parity"
+        @test PeggleSim._normalize_path_separators("already/posix.json") ==
+              "already/posix.json"
+
+        # The historical default records no fixture path keys.
+        paths = PeggleSim._parity_paths(PARITY_REPO_ROOT)
+        pin = PeggleSim._parse_pin(paths.pin)
+        config_sha = PeggleSim._config_source_sha256(paths.config)
+        identity = PeggleSim._identity(paths, pin, config_sha)
+        for key in ("census_fixture_path", "rng_sequences_fixture_path",
+                    "peg_colors_fixture_path")
+            @test !haskey(identity["prerequisites"], key)
         end
     end
 end

@@ -8,8 +8,10 @@
 #                   default on Linux (the same C library LuaJIT used on the
 #                   reference host).
 #   :core_math   -- the pinned shared native component (`peggle_math`, ABI 1)
-#                   loaded from `native/artifacts/<platform>/libpeggle_math.so`
-#                   or `ENV["PEGGLE_MATH_LIB"]`. Experimental; WP-F adoption
+#                   loaded from `native/artifacts/<platform>/` (filename
+#                   `peggle_math.dll` on Windows, `libpeggle_math.dylib` on
+#                   macOS, `libpeggle_math.so` elsewhere) or
+#                   `ENV["PEGGLE_MATH_LIB"]`. Experimental; WP-F adoption
 #                   is pending.
 #   :julia_base  -- Julia runtime Base math (`Base.sin`, ...). This is NOT a
 #                   claim about a pinned implementation: it is whatever math
@@ -27,10 +29,11 @@
 # `:core_math` resolves its library in this order:
 #
 #   1. `ENV["PEGGLE_MATH_LIB"]` when non-empty (absolute path recommended);
-#   2. `<repo_root>/native/artifacts/<platform>/libpeggle_math.so`, where
-#      `repo_root` is the repository containing this package and `<platform>`
+#   2. `<repo_root>/native/artifacts/<platform>/<filename>`, where
+#      `repo_root` is the repository containing this package, `<platform>`
 #      is `linux-x86_64`, `darwin-aarch64`, or `windows-x86_64` (built from
-#      `Sys.islinux`/`Sys.isapple`/`Sys.iswindows` and `Sys.ARCH`).
+#      `Sys.islinux`/`Sys.isapple`/`Sys.iswindows` and `Sys.ARCH`), and
+#      `<filename>` is `core_math_artifact_filename(<platform>)`.
 #
 # A missing library, a missing symbol, or an ABI version other than 1 is an
 # explicit startup error. There is no fallback to another backend.
@@ -50,7 +53,15 @@ export det_sin, det_cos, det_atan, det_atan2, det_asin, det_acos, det_tan,
 const SYSTEM_LIBM = "libm.so.6"
 
 const CORE_MATH_ABI_VERSION = 1
-const CORE_MATH_DEFAULT_FILENAME = "libpeggle_math.so"
+
+# Per-platform artifact filename, matching the Lua reference
+# (`../peggle_evolved/src/detmath.lua`): `peggle_math.dll` for `windows-*`,
+# `libpeggle_math.dylib` for `darwin-*`, `libpeggle_math.so` otherwise.
+function core_math_artifact_filename(platform::AbstractString)::String
+    startswith(platform, "windows") && return "peggle_math.dll"
+    startswith(platform, "darwin") && return "libpeggle_math.dylib"
+    return "libpeggle_math.so"
+end
 
 # Populated by __init__ from PEGGLE_MATH_BACKEND. The initial value is only a
 # placeholder for the precompiled image; __init__ always runs before any
@@ -118,8 +129,9 @@ function _default_core_math_path()::String
         error("DetMath: cannot derive the package location for the core_math " *
               "artifact lookup; set PEGGLE_MATH_LIB explicitly")
     repo_root = dirname(dirname(String(package_dir)))
-    return joinpath(repo_root, "native", "artifacts", _platform_name(),
-                    CORE_MATH_DEFAULT_FILENAME)
+    platform = _platform_name()
+    return joinpath(repo_root, "native", "artifacts", platform,
+                    core_math_artifact_filename(platform))
 end
 
 function _resolve_core_math_path()::String

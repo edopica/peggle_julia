@@ -25,12 +25,19 @@ Usage:
   tools/compare_candidates.py --left-raw FILE --left-summary FILE
                               --right-raw FILE --right-summary FILE
                               --out REPORT.json [--control]
+                              [--require-identical]
                               [--control-json FILE]
                               [--left-label L --right-label R]
                               [--environment-json STR]
 
+--control and --require-identical are mutually exclusive. --control checks a
+same-host control (differences are failures); --require-identical checks a
+cross-machine comparison (every compared difference is a failure; host and
+timing fields are never compared) and records mode ``require_identical``.
+
 Exit codes: 0 clean report written, 1 unexpected differences in --control
-mode, 2 malformed or missing input.
+mode, any compared difference in --require-identical mode, 2 malformed or
+missing input.
 """
 
 import argparse
@@ -255,7 +262,11 @@ def main(argv=None):
     parser.add_argument("--right-raw", required=True)
     parser.add_argument("--right-summary", required=True)
     parser.add_argument("--out", required=True)
-    parser.add_argument("--control", action="store_true")
+    mode_group = parser.add_mutually_exclusive_group()
+    mode_group.add_argument("--control", action="store_true")
+    mode_group.add_argument("--require-identical", action="store_true",
+                            help="cross-machine comparison: every compared "
+                                 "difference is a failure")
     parser.add_argument("--control-json", default=None)
     parser.add_argument("--left-label", default="left")
     parser.add_argument("--right-label", default="right")
@@ -308,17 +319,20 @@ def main(argv=None):
                 "first_difference": result["first_difference"],
                 "summary_differences": result["summary_differences"],
             })
-            if args.control:
-                failures.append({
-                    "workload": workload,
-                    "reason": "control candidate differences in %s"
-                              % sorted(result["classifications"]),
-                })
+            if args.control or args.require_identical:
+                if args.control:
+                    reason = ("control candidate differences in %s"
+                              % sorted(result["classifications"]))
+                else:
+                    reason = ("candidate differences in %s"
+                              % sorted(result["classifications"]))
+                failures.append({"workload": workload, "reason": reason})
 
     control_block = {
         "clean": not failures and not any(
             not result["identical"] for result in workloads.values()),
         "checked": bool(args.control),
+        "require_identical": bool(args.require_identical),
         "left_label": args.left_label,
         "right_label": args.right_label,
         "workloads_compared": len(workloads),
@@ -332,10 +346,16 @@ def main(argv=None):
             control_block = prior["control"]
             control_block["embedded_from"] = os.path.abspath(args.control_json)
 
+    if args.require_identical:
+        mode = "require_identical"
+    elif args.control:
+        mode = "control"
+    else:
+        mode = "core_vs_system"
     report = {
         "format": FORMAT,
         "schema_version": SCHEMA_VERSION,
-        "mode": "control" if args.control else "core_vs_system",
+        "mode": mode,
         "left": {"label": args.left_label, "raw": os.path.abspath(args.left_raw),
                  "summary": os.path.abspath(args.left_summary)},
         "right": {"label": args.right_label, "raw": os.path.abspath(args.right_raw),
@@ -350,10 +370,12 @@ def main(argv=None):
     with open(args.out, "w", encoding="utf-8") as handle:
         json.dump(report, handle, indent=2, sort_keys=True)
         handle.write("\n")
-    if args.control and failures:
+    if (args.control or args.require_identical) and failures:
+        label = "control failure" if args.control else "failure"
         for failure in failures:
-            print("compare_candidates: control failure: %s: %s" % (
-                failure.get("workload"), failure.get("reason")), file=sys.stderr)
+            print("compare_candidates: %s: %s: %s" % (
+                label, failure.get("workload"), failure.get("reason")),
+                file=sys.stderr)
         return 1
     return 0
 
