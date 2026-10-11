@@ -94,11 +94,13 @@ mutable struct BallState
     vy::Float64
     radius::Float64
     launched::Bool
+    scored_fever::Bool
 end
 
 # Ball.new: zero velocity, unlaunched, previous position at the spawn point.
+# `scored_fever` is set by the fever scoring path, never at construction.
 function BallState(id::Int, x::Float64, y::Float64, radius::Float64)::BallState
-    return BallState(id, x, y, x, y, 0.0, 0.0, radius, false)
+    return BallState(id, x, y, x, y, 0.0, 0.0, radius, false, false)
 end
 
 mutable struct StyleShotTrackers

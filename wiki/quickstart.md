@@ -17,21 +17,21 @@ in `../peggle_evolved/wiki/`.
 | M0 — define the workload and select the reference | **Done** |
 | M1 — interchange, fixtures, level previews | **Done** |
 | M2 — math and state foundations (first Julia code) | **Done** |
-| M3 — minimal shot evaluator and early measurement | Not started |
+| M3 — full-physics shot engine, mustache traces, first benchmark | **Done** |
 
 The repository contains the frozen Lua reference, the baseline sweep harness,
-the versioned interchange artifacts and fixtures, the M2 Julia package
-(`julia/PeggleSim`) with its pinned math/RNG/state foundation, and the
-documentation. M3 builds the first shot evaluator on top of the checkpoint
-contract.
+the versioned interchange artifacts and fixtures, the M2/M3 Julia package
+(`julia/PeggleSim`) with its pinned math/RNG/state foundation and full
+physics/engine port, the mustache trace corpus, and the documentation. The
+measured M3 results are in `wiki/benchmarks/m3-shot.md`.
 
 ## Requirements
 
 - LuaJIT and LÖVE 11.x for the baseline harness (LÖVE needs a display, or
   `xvfb-run` on headless servers; `scripts/love.sh` handles both).
 - Python 3 for SVG previews and schema validation.
-- Julia 1.12.6 for the `julia/PeggleSim` package (M2); the pinned environment
-  is reproduced with `julia --project=julia/PeggleSim -e 'using Pkg; Pkg.instantiate()'`.
+- Julia 1.12.6 for the `julia/PeggleSim` package (M2/M3); the pinned
+  environment is reproduced with `julia --project=julia/PeggleSim -e 'using Pkg; Pkg.instantiate()'`.
   The Lua checks do not need Julia.
 - `make verify`, `make check`, and `make test` need neither a display nor
   LÖVE (fixture capture does).
@@ -69,6 +69,15 @@ make wpd-trace           # gameplay traces/candidate samples, single host (WP-E)
 make wpd-perf            # math/checkpoint/sweep performance comparison (WP-F)
 ```
 
+M3 Julia targets:
+
+```bash
+make m3-trace            # Julia snapshot traces for the base mustache fixtures
+make m3-mustache         # 5-fixture Lua-vs-Julia trace control comparison
+make m3-sweep            # stride-200 serial/parallel identity sweep
+make m3-bench            # Lua-vs-Julia mustache benchmark + full-grid agreement
+```
+
 The `wpd-*` targets are the experimental CORE-MATH comparison; their outputs
 and acceptance records live under `tmp/core-math/` (see
 `tmp/core-math/wpc-acceptance.md`, `wpd-acceptance.md`,
@@ -84,6 +93,8 @@ scripts/verify_reference.sh
 scripts/export_interchange.sh
 scripts/capture_fixtures.sh --id slide_rail_graze
 scripts/validate_interchange.py
+scripts/compare_m3_mustache.sh --julia-only
+scripts/bench_m3.sh --stride 20 --threads "1 2 4"
 ```
 
 ## Repository layout
@@ -94,14 +105,14 @@ scripts/validate_interchange.py
 | `reference/peggle_evolved/` | Byte-for-byte export of the frozen Lua revision; **read-only** |
 | `reference/PIN.md` | Reference revision, tree hash, config hash, manifest rules |
 | `reference/files.sha256` | Per-file hash manifest of the pinned tree |
-| `harness/` | LÖVE sweep harness: candidate grid, phase timings, fixture capture, search |
-| `julia/PeggleSim/` | Julia package: pinned math/RNG/state foundation, checkpoint contract, parity tools |
+| `harness/` | LÖVE sweep harness: candidate grid, phase timings, fixture capture, search, additive M3 capture options |
+| `julia/PeggleSim/` | Julia package: pinned math/RNG/state foundation, checkpoint contract, full-physics shot engine, parity tools |
 | `tools/` | Lua interchange tools: canonical JSON, level/config exporters, M2 captures |
 | `schemas/` | Versioned interchange schemas and examples |
 | `interchange/` | Generated level/config artifacts, SVG previews, manifest |
-| `fixtures/` | Fixture catalog, expected records, gameplay traces, `rng/`, `checkpoints/`, `math_census/` |
-| `scripts/` | Verification, export, fixture capture, previews, baseline runner, M2 captures, parity compare |
-| `results/` | Baseline summary JSON (committed); `results/parity/`, M2 benchmark/census summaries; `results/raw/` per-candidate JSONL (gitignored) |
+| `fixtures/` | Fixture catalog, expected records, gameplay traces, `rng/`, `checkpoints/`, `math_census/`, `mustache/` |
+| `scripts/` | Verification, export, fixture capture, previews, baseline runner, M2 captures, parity compare, M3 capture/compare/bench |
+| `results/` | Baseline summary JSON (committed); `results/parity/`, M2 benchmark/census summaries, M3 benchmark/sweep reports; `results/raw/` per-candidate JSONL (gitignored) |
 | `tmp/` | Local scratch (gitignored) |
 
 ## Wiki layout
@@ -120,10 +131,12 @@ mirrors `../peggle_evolved/wiki/` so material can move between the projects.
 | `wiki/context/inventory.md` | Inventory of the existing Lua corpus, tools, and plumbing | current |
 | `wiki/context/interchange.md` | Versioned level/config/checkpoint/action/result formats, static subset, verification | current |
 | `wiki/context/fixtures.md` | Reference fixture matrix, capture protocol, the 42-case assessment | current |
-| `wiki/context/julia.md` | M2 Julia package: pinned env, DetMath backends, RNG, state, checkpoint contract | current |
+| `wiki/context/julia.md` | M2/M3 Julia package: pinned env, DetMath backends, RNG, state, checkpoint contract, shot engine, traces | current |
+| `wiki/context/m3-mustache.md` | M3 mustache corpus: 5 trace fixtures, capture and comparison runbook, full-grid agreement | current |
 | `wiki/benchmarks/` | Measured performance and parity results | current |
 | `wiki/benchmarks/baseline-metrics.md` | M0 Lua candidate-sweep baseline and continuing-metric protocol | current |
 | `wiki/benchmarks/m2-checkpoint.md` | M2 checkpoint/reset benchmark and M0 init comparison | current |
+| `wiki/benchmarks/m3-shot.md` | M3 Lua-vs-Julia mustache shot benchmark: same-core, thread scaling, allocations | current |
 | `wiki/devlog/` | Dated engineering log, one file per date (`YYYY-MM-DD.md`) | current |
 | `wiki/decisions/` | ADRs for port decisions (math contract, storage, scheduler, ...) | current |
 | `wiki/decisions/0001-math-backend.md` | Math backend decision: system libm default, Julia Base fallback, experimental `core_math` | current |
@@ -166,9 +179,11 @@ Conventions:
 | What do the interchange artifacts contain? | `wiki/context/interchange.md` |
 | Which reference fixtures exist and why? | `wiki/context/fixtures.md` |
 | How is the Julia side built? | `wiki/context/julia.md` |
+| Which M3 fixtures exist, and how are they compared? | `wiki/context/m3-mustache.md` |
 | How do I collect the macOS/Windows qualification evidence? | `wiki/context/cross-platform-qualification.md` |
 | How fast is Lua today? | `wiki/benchmarks/baseline-metrics.md` |
 | How fast is the M2 checkpoint/reset? | `wiki/benchmarks/m2-checkpoint.md` |
+| How fast is the M3 shot engine, and is it bit-identical to Lua? | `wiki/benchmarks/m3-shot.md` |
 | Is the Julia math/RNG bit-identical? | `wiki/audits/m2-math-census.md`, `wiki/audits/m2-rng-geometry.md` |
 | What happened on a given day? | `wiki/devlog/` |
 | Why was a port decision made? | `wiki/decisions/` |

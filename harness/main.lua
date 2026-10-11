@@ -8,7 +8,8 @@
 --   love harness -- --sweep --out results/raw/NAME [options]
 --
 -- Options:
---   --workload ID        workload id from harness/workloads.lua (default: all)
+--   --workload ID        workload id from the workload catalog (default: all)
+--   --workloads FILE     workload catalog file (default: harness/workloads.lua)
 --   --group NAME         only workloads in this group
 --   --stride N           evaluate every Nth aim index (default: 1)
 --   --indices LIST       explicit comma-separated aim indices (overrides grid)
@@ -35,6 +36,9 @@
 --   --fixtures-out DIR   expected-record output dir (default: fixtures/expected)
 --   --fixtures-traces DIR gameplay-trace dir (default: fixtures/traces); check
 --                        mode reads reference traces here and never writes
+--   --artifact-dir DIR   level-artifact directory (default: interchange/levels);
+--                        shot fixtures read <level>.v1.json from here and hash
+--                        it into source.level_sha256
 --   --fixtures-snapshots include the full authoritative per-step snapshot in
 --                        captured traces (capture mode only; check mode stays
 --                        snapshot-free)
@@ -108,6 +112,19 @@ if source_dir:sub(1, 1) ~= "/" then
   source_dir = love.filesystem.getWorkingDirectory() .. "/" .. source_dir
 end
 local repo_root = source_dir .. "/.."
+
+-- Optional level-artifact directory override. The default keeps the M1
+-- interchange behavior; auxiliary corpora (e.g. the M3 mustache corpus) pass
+-- their captured artifact directory explicitly.
+local artifact_dir = args["artifact-dir"]
+if artifact_dir == true then
+  error("--artifact-dir requires a directory")
+end
+if artifact_dir == nil then
+  artifact_dir = repo_root .. "/interchange/levels"
+elseif artifact_dir:sub(1, 1) ~= "/" then
+  artifact_dir = love.filesystem.getWorkingDirectory() .. "/" .. artifact_dir
+end
 
 local ref_root = args["reference-dir"] or (source_dir .. "/../reference/peggle_evolved")
 if ref_root:sub(1, 1) ~= "/" then
@@ -364,10 +381,23 @@ local GRID = validate_grid()
 -- ===========================================================================
 -- Workload catalog
 -- ===========================================================================
+-- Optional workload-catalog override. The default keeps the M0/M1 workload
+-- list; auxiliary corpora (e.g. the M3 mustache benchmark) pass their own
+-- catalog explicitly so the pinned reference never has to load their levels.
+local workloads_path = args["workloads"]
+if workloads_path == true then
+  error("--workloads requires a file")
+end
+if workloads_path == nil then
+  workloads_path = source_dir .. "/workloads.lua"
+elseif workloads_path:sub(1, 1) ~= "/" then
+  workloads_path = love.filesystem.getWorkingDirectory() .. "/" .. workloads_path
+end
+
 local ALL_WORKLOADS = (function()
-  local chunk, err = loadfile(source_dir .. "/workloads.lua")
+  local chunk, err = loadfile(workloads_path)
   if not chunk then
-    error("cannot load harness/workloads.lua: " .. tostring(err))
+    error("cannot load workload catalog " .. workloads_path .. ": " .. tostring(err))
   end
   return chunk()
 end)()
@@ -809,7 +839,7 @@ local function load_table_file(path, what)
 end
 
 local function read_level_artifact(level)
-  local path = repo_root .. "/interchange/levels/" .. level .. ".v1.json"
+  local path = artifact_dir .. "/" .. level .. ".v1.json"
   local ok, data = pcall(CanonicalJSON.decode_file, path)
   if not ok then
     error("missing level artifact " .. path

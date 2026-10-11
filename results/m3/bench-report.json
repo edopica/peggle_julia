@@ -1,0 +1,448 @@
+{
+  "agreement": {
+    "lua_compare_exit": 0,
+    "timed_stride": {
+      "candidates_compared": 91,
+      "clean": true,
+      "coverage": {
+        "first_index": 0,
+        "julia_candidates": 91,
+        "julia_indices": 91,
+        "last_index": 1800,
+        "lua_candidates": 91,
+        "lua_indices": 91,
+        "missing_in_julia": [],
+        "missing_in_lua": [],
+        "shared_indices": 91
+      },
+      "detected_stride": 20,
+      "fields_compared": [
+        "index",
+        "angle",
+        "steps",
+        "completed",
+        "reason",
+        "score",
+        "peg_score",
+        "bonus",
+        "style_points",
+        "style_total",
+        "styles",
+        "pegs_hit",
+        "reds_hit",
+        "multiplier",
+        "is_fever",
+        "balls"
+      ],
+      "first_divergent_candidate": null,
+      "julia_label": "t1",
+      "mismatch_candidates": 0,
+      "per_field_mismatch_count": {},
+      "report": "results/m3/sweeps-compare.json",
+      "requested_stride": 20,
+      "unavailable_fields": {
+        "spawned": {
+          "julia_key": "spawned",
+          "julia_present": true,
+          "lua_key": "spawned",
+          "lua_present": false
+        }
+      }
+    }
+  },
+  "format": "peggle.m3_bench_report",
+  "full_grid": {
+    "attempted": true,
+    "candidates_compared": 1801,
+    "chosen_stride": 1,
+    "clean": true,
+    "coverage": {
+      "first_index": 0,
+      "julia_candidates": 1801,
+      "julia_indices": 1801,
+      "last_index": 1800,
+      "lua_candidates": 1801,
+      "lua_indices": 1801,
+      "missing_in_julia": [],
+      "missing_in_lua": [],
+      "shared_indices": 1801
+    },
+    "fields_compared": [
+      "index",
+      "angle",
+      "steps",
+      "completed",
+      "reason",
+      "score",
+      "peg_score",
+      "bonus",
+      "style_points",
+      "style_total",
+      "styles",
+      "pegs_hit",
+      "reds_hit",
+      "multiplier",
+      "is_fever",
+      "balls"
+    ],
+    "first_divergent_candidate": null,
+    "mode": "auto",
+    "per_field_mismatch_count": {},
+    "projected_seconds": 108.1,
+    "state": "clean",
+    "threshold_seconds": 1200.0,
+    "unavailable_fields": {
+      "spawned": {
+        "julia_key": "spawned",
+        "julia_present": true,
+        "lua_key": "spawned",
+        "lua_present": false
+      }
+    }
+  },
+  "generated_utc": "2026-10-11T17:03:05Z",
+  "host": {
+    "cpu_model": "AMD Ryzen 5 4600H with Radeon Graphics",
+    "love_version": "11.5.0.Mysterious Mysteries",
+    "luajit": "LuaJIT 2.1.1788460057",
+    "os": "Linux 7.2.5-3-omarchy"
+  },
+  "host_label": "omarchy",
+  "julia": {
+    "alloc_method": "Base.gc_bytes() delta around reset+launch+run+extract per candidate on a post-warmup serial sweep (extra untimed serial pass compiles all code paths first)",
+    "alloc_note": "allocation accounting is process-wide; it is measured on the serial path only",
+    "single_thread": {
+      "alloc": {
+        "count": 91,
+        "max_bytes": 92869568,
+        "mean_bytes": 11264952.175824177,
+        "min_bytes": 337120,
+        "p50_bytes": 4963056,
+        "p99_bytes": 92869568,
+        "total_bytes": 1025110648
+      },
+      "alloc_method": "Base.gc_bytes() delta around reset+launch+run+extract per candidate on a post-warmup serial sweep (extra untimed serial pass compiles all code paths first)",
+      "candidates": 91,
+      "jsonl_path": "results/m3/julia-sweep-t1.jsonl",
+      "parallel": {
+        "candidates_per_second": 32.55877227006562,
+        "phases_mean_seconds": {
+          "extract": 1.8900340659340657e-05,
+          "reset": 4.181764835164835e-05,
+          "sim": 0.02989024734065934
+        },
+        "steps_per_second": 27447.40281237158,
+        "wall_seconds": 2.794945683
+      },
+      "parallel_speedup_vs_serial": 0.9729703323182615,
+      "repeat_count": 1,
+      "repeat_note": "single post-warmup sweep per thread count; --verify-serial runs the serial then parallel pass",
+      "requested_threads": 1,
+      "serial": {
+        "candidates_per_second": 33.46327343043338,
+        "steps_per_second": 28209.907230134795,
+        "wall_seconds": 2.71939923
+      },
+      "serial_parallel_identical": true,
+      "steps_stats": {
+        "max": 3010,
+        "mean": 843.010989010989,
+        "min": 100,
+        "p50": 765,
+        "p99": 3010
+      },
+      "summary_path": "results/m3/julia-sweep-t1.json",
+      "threads": 1,
+      "verify_serial": true
+    },
+    "threads": [
+      {
+        "alloc": {
+          "count": 91,
+          "max_bytes": 92869568,
+          "mean_bytes": 11264952.175824177,
+          "min_bytes": 337120,
+          "p50_bytes": 4963056,
+          "p99_bytes": 92869568,
+          "total_bytes": 1025110648
+        },
+        "alloc_method": "Base.gc_bytes() delta around reset+launch+run+extract per candidate on a post-warmup serial sweep (extra untimed serial pass compiles all code paths first)",
+        "candidates": 91,
+        "jsonl_path": "results/m3/julia-sweep-t1.jsonl",
+        "parallel": {
+          "candidates_per_second": 32.55877227006562,
+          "phases_mean_seconds": {
+            "extract": 1.8900340659340657e-05,
+            "reset": 4.181764835164835e-05,
+            "sim": 0.02989024734065934
+          },
+          "steps_per_second": 27447.40281237158,
+          "wall_seconds": 2.794945683
+        },
+        "parallel_speedup_vs_serial": 0.9729703323182615,
+        "repeat_count": 1,
+        "repeat_note": "single post-warmup sweep per thread count; --verify-serial runs the serial then parallel pass",
+        "requested_threads": 1,
+        "serial": {
+          "candidates_per_second": 33.46327343043338,
+          "steps_per_second": 28209.907230134795,
+          "wall_seconds": 2.71939923
+        },
+        "serial_parallel_identical": true,
+        "steps_stats": {
+          "max": 3010,
+          "mean": 843.010989010989,
+          "min": 100,
+          "p50": 765,
+          "p99": 3010
+        },
+        "summary_path": "results/m3/julia-sweep-t1.json",
+        "threads": 1,
+        "verify_serial": true
+      },
+      {
+        "alloc": {
+          "count": 91,
+          "max_bytes": 92869568,
+          "mean_bytes": 11264952.175824177,
+          "min_bytes": 337120,
+          "p50_bytes": 4963056,
+          "p99_bytes": 92869568,
+          "total_bytes": 1025110648
+        },
+        "alloc_method": "Base.gc_bytes() delta around reset+launch+run+extract per candidate on a post-warmup serial sweep (extra untimed serial pass compiles all code paths first)",
+        "candidates": 91,
+        "jsonl_path": "results/m3/julia-sweep-t2.jsonl",
+        "parallel": {
+          "candidates_per_second": 49.991721013916376,
+          "phases_mean_seconds": {
+            "extract": 1.8866648351648352e-05,
+            "reset": 5.4393043956043957e-05,
+            "sim": 0.03233144521978022
+          },
+          "steps_per_second": 42143.57017430309,
+          "wall_seconds": 1.820301405
+        },
+        "parallel_speedup_vs_serial": 1.5863765099934095,
+        "repeat_count": 1,
+        "repeat_note": "single post-warmup sweep per thread count; --verify-serial runs the serial then parallel pass",
+        "requested_threads": 2,
+        "serial": {
+          "candidates_per_second": 31.513150061787073,
+          "steps_per_second": 26565.93180043883,
+          "wall_seconds": 2.88768339
+        },
+        "serial_parallel_identical": true,
+        "steps_stats": {
+          "max": 3010,
+          "mean": 843.010989010989,
+          "min": 100,
+          "p50": 765,
+          "p99": 3010
+        },
+        "summary_path": "results/m3/julia-sweep-t2.json",
+        "threads": 2,
+        "verify_serial": true
+      },
+      {
+        "alloc": {
+          "count": 91,
+          "max_bytes": 92869568,
+          "mean_bytes": 11264952.175824177,
+          "min_bytes": 337120,
+          "p50_bytes": 4963056,
+          "p99_bytes": 92869568,
+          "total_bytes": 1025110648
+        },
+        "alloc_method": "Base.gc_bytes() delta around reset+launch+run+extract per candidate on a post-warmup serial sweep (extra untimed serial pass compiles all code paths first)",
+        "candidates": 91,
+        "jsonl_path": "results/m3/julia-sweep-t4.jsonl",
+        "parallel": {
+          "candidates_per_second": 65.02460308039065,
+          "phases_mean_seconds": {
+            "extract": 4.27846923076923e-05,
+            "reset": 4.4968307692307695e-05,
+            "sim": 0.042441436626373626
+          },
+          "steps_per_second": 54816.454952847125,
+          "wall_seconds": 1.399470288
+        },
+        "parallel_speedup_vs_serial": 2.025723152759067,
+        "repeat_count": 1,
+        "repeat_note": "single post-warmup sweep per thread count; --verify-serial runs the serial then parallel pass",
+        "requested_threads": 4,
+        "serial": {
+          "candidates_per_second": 32.09945198672687,
+          "steps_per_second": 27060.190766041374,
+          "wall_seconds": 2.834939364
+        },
+        "serial_parallel_identical": true,
+        "steps_stats": {
+          "max": 3010,
+          "mean": 843.010989010989,
+          "min": 100,
+          "p50": 765,
+          "p99": 3010
+        },
+        "summary_path": "results/m3/julia-sweep-t4.json",
+        "threads": 4,
+        "verify_serial": true
+      },
+      {
+        "alloc": {
+          "count": 91,
+          "max_bytes": 92869568,
+          "mean_bytes": 11264952.175824177,
+          "min_bytes": 337120,
+          "p50_bytes": 4963056,
+          "p99_bytes": 92869568,
+          "total_bytes": 1025110648
+        },
+        "alloc_method": "Base.gc_bytes() delta around reset+launch+run+extract per candidate on a post-warmup serial sweep (extra untimed serial pass compiles all code paths first)",
+        "candidates": 91,
+        "jsonl_path": "results/m3/julia-sweep-t8.jsonl",
+        "parallel": {
+          "candidates_per_second": 93.22049580322557,
+          "phases_mean_seconds": {
+            "extract": 2.4543637362637364e-05,
+            "reset": 5.407763736263736e-05,
+            "sim": 0.05102057338461538
+          },
+          "steps_per_second": 78585.90236317195,
+          "wall_seconds": 0.976180176
+        },
+        "parallel_speedup_vs_serial": 2.727272296093011,
+        "repeat_count": 1,
+        "repeat_note": "single post-warmup sweep per thread count; --verify-serial runs the serial then parallel pass",
+        "requested_threads": 8,
+        "serial": {
+          "candidates_per_second": 34.18085386514936,
+          "steps_per_second": 28814.835422099644,
+          "wall_seconds": 2.66230915
+        },
+        "serial_parallel_identical": true,
+        "steps_stats": {
+          "max": 3010,
+          "mean": 843.010989010989,
+          "min": 100,
+          "p50": 765,
+          "p99": 3010
+        },
+        "summary_path": "results/m3/julia-sweep-t8.json",
+        "threads": 8,
+        "verify_serial": true
+      },
+      {
+        "alloc": {
+          "count": 91,
+          "max_bytes": 92869568,
+          "mean_bytes": 11264952.175824177,
+          "min_bytes": 337120,
+          "p50_bytes": 4963056,
+          "p99_bytes": 92869568,
+          "total_bytes": 1025110648
+        },
+        "alloc_method": "Base.gc_bytes() delta around reset+launch+run+extract per candidate on a post-warmup serial sweep (extra untimed serial pass compiles all code paths first)",
+        "candidates": 91,
+        "jsonl_path": "results/m3/julia-sweep-t12.jsonl",
+        "parallel": {
+          "candidates_per_second": 93.32257855223459,
+          "phases_mean_seconds": {
+            "extract": 2.592367032967033e-05,
+            "reset": 6.471203296703297e-05,
+            "sim": 0.06335924127472527
+          },
+          "steps_per_second": 78671.95924237499,
+          "wall_seconds": 0.975112362
+        },
+        "parallel_speedup_vs_serial": 2.732009707615624,
+        "repeat_count": 1,
+        "repeat_note": "single post-warmup sweep per thread count; --verify-serial runs the serial then parallel pass",
+        "requested_threads": 12,
+        "serial": {
+          "candidates_per_second": 34.15894837126416,
+          "steps_per_second": 28796.368850034713,
+          "wall_seconds": 2.664016439
+        },
+        "serial_parallel_identical": true,
+        "steps_stats": {
+          "max": 3010,
+          "mean": 843.010989010989,
+          "min": 100,
+          "p50": 765,
+          "p99": 3010
+        },
+        "summary_path": "results/m3/julia-sweep-t12.json",
+        "threads": 12,
+        "verify_serial": true
+      }
+    ]
+  },
+  "julia_version": "julia version 1.12.6",
+  "lua": {
+    "candidates": 91,
+    "candidates_per_second_max": 18.970738920014,
+    "candidates_per_second_mean": 16.6583921507245,
+    "candidates_per_second_min": 14.346045381435,
+    "cold_start_seconds": 0.00091959999999999,
+    "determinism": {
+      "checked": 3,
+      "deterministic": true,
+      "mismatches": []
+    },
+    "harness_wall_seconds": 12.101478748,
+    "phases_mean_seconds": {
+      "extract": 2.1109890109890004e-05,
+      "init": 0.020554274725274997,
+      "output": 1.63736263736265e-06,
+      "reset": 9.4945054945056e-06,
+      "sim": 0.0406125549450545
+    },
+    "reference_revision": null,
+    "repeat_count": 2,
+    "replay_serialize": false,
+    "serial_parallel_identity": null,
+    "serial_parallel_identity_note": "n/a: the Lua harness is single-threaded",
+    "steps_per_second_mean": 20757.4637778615,
+    "steps_stats": {
+      "max": 3010,
+      "mean": 843.01098901099,
+      "p50": 765.0,
+      "p99": 3010.0
+    },
+    "threads": 1,
+    "wall_seconds_mean_per_repeat": 5.570036310000001,
+    "wall_seconds_total": 11.140072620000002,
+    "workload": "mustache_full"
+  },
+  "lua_replay_serialization": {
+    "candidates_per_second_with_serialize": 18.770763526312,
+    "candidates_per_second_without_serialize": 16.6583921507245,
+    "note": "replay serialization is harness I/O overhead, not simulation physics; the timed sweep uses --no-replay-serialize and this is one extra repeat=1 measurement, so the ratio cannot separate a real serialization cost from run-to-run rate variation",
+    "ratio_with_over_without": 1.1268052376528805
+  },
+  "nproc": 12,
+  "repeats": 2,
+  "schema_version": 1,
+  "speedup": {
+    "caveat": "single-core wall-clock comparison at the same stride and indices; rates vary between runs (Lua timed with repeat=2, Julia with a single post-warmup pass); treat the ratio as indicative, not a benchmark-grade result",
+    "julia_candidates_per_second": 32.55877227006562,
+    "julia_over_lua": 1.9544966870436884,
+    "lua_candidates_per_second": 16.6583921507245,
+    "lua_over_julia": 0.5116406728284453,
+    "metric": "candidates_per_second",
+    "same_core_inputs": {
+      "candidates": 91,
+      "julia_threads": 1,
+      "stride": 20
+    }
+  },
+  "stride": 20,
+  "threads_requested_capped": [
+    "1",
+    "2",
+    "4",
+    "8",
+    "12"
+  ]
+}

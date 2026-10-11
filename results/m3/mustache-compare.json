@@ -1,0 +1,230 @@
+{
+  "control": {
+    "checked": true,
+    "clean": true,
+    "expected_records_identical": true,
+    "failures": [],
+    "fixtures_compared": 5,
+    "identical_fixtures": 5,
+    "left_label": "lua",
+    "require_identical": false,
+    "right_label": "julia",
+    "strict_reference": false,
+    "volatile_differences": 0,
+    "volatile_paths": []
+  },
+  "environment": null,
+  "failures": [],
+  "fixtures": {
+    "m3_mustache_bucket": {
+      "classifications": {},
+      "difference_counts": {},
+      "expected_nonvolatile_differences": 0,
+      "first_difference": null,
+      "first_difference_step": null,
+      "first_expected_difference": null,
+      "identical": true,
+      "math_backend": {
+        "left": null,
+        "right": null
+      },
+      "math_backend_identity_equal": null,
+      "snapshot_coverage": {
+        "left": {
+          "missing_steps": [],
+          "steps_total": 178,
+          "steps_with_snapshot": 178
+        },
+        "right": {
+          "missing_steps": [],
+          "steps_total": 178,
+          "steps_with_snapshot": 178
+        }
+      },
+      "snapshot_steps_compared": 178,
+      "state_comparison": "full",
+      "state_difference_counts": {},
+      "state_scope": {
+        "left_include_snapshot": true,
+        "right_include_snapshot": true
+      },
+      "traces_compared": true,
+      "ulp_histogram": {},
+      "volatile_differences": []
+    },
+    "m3_mustache_center": {
+      "classifications": {},
+      "difference_counts": {},
+      "expected_nonvolatile_differences": 0,
+      "first_difference": null,
+      "first_difference_step": null,
+      "first_expected_difference": null,
+      "identical": true,
+      "math_backend": {
+        "left": null,
+        "right": null
+      },
+      "math_backend_identity_equal": null,
+      "snapshot_coverage": {
+        "left": {
+          "missing_steps": [],
+          "steps_total": 922,
+          "steps_with_snapshot": 922
+        },
+        "right": {
+          "missing_steps": [],
+          "steps_total": 922,
+          "steps_with_snapshot": 922
+        }
+      },
+      "snapshot_steps_compared": 922,
+      "state_comparison": "full",
+      "state_difference_counts": {},
+      "state_scope": {
+        "left_include_snapshot": true,
+        "right_include_snapshot": true
+      },
+      "traces_compared": true,
+      "ulp_histogram": {},
+      "volatile_differences": []
+    },
+    "m3_mustache_left_wall": {
+      "classifications": {},
+      "difference_counts": {},
+      "expected_nonvolatile_differences": 0,
+      "first_difference": null,
+      "first_difference_step": null,
+      "first_expected_difference": null,
+      "identical": true,
+      "math_backend": {
+        "left": null,
+        "right": null
+      },
+      "math_backend_identity_equal": null,
+      "snapshot_coverage": {
+        "left": {
+          "missing_steps": [],
+          "steps_total": 1507,
+          "steps_with_snapshot": 1507
+        },
+        "right": {
+          "missing_steps": [],
+          "steps_total": 1507,
+          "steps_with_snapshot": 1507
+        }
+      },
+      "snapshot_steps_compared": 1507,
+      "state_comparison": "full",
+      "state_difference_counts": {},
+      "state_scope": {
+        "left_include_snapshot": true,
+        "right_include_snapshot": true
+      },
+      "traces_compared": true,
+      "ulp_histogram": {},
+      "volatile_differences": []
+    },
+    "m3_mustache_multiball": {
+      "classifications": {},
+      "difference_counts": {},
+      "expected_nonvolatile_differences": 0,
+      "first_difference": null,
+      "first_difference_step": null,
+      "first_expected_difference": null,
+      "identical": true,
+      "math_backend": {
+        "left": null,
+        "right": null
+      },
+      "math_backend_identity_equal": null,
+      "snapshot_coverage": {
+        "left": {
+          "missing_steps": [],
+          "steps_total": 1797,
+          "steps_with_snapshot": 1797
+        },
+        "right": {
+          "missing_steps": [],
+          "steps_total": 1797,
+          "steps_with_snapshot": 1797
+        }
+      },
+      "snapshot_steps_compared": 1797,
+      "state_comparison": "full",
+      "state_difference_counts": {},
+      "state_scope": {
+        "left_include_snapshot": true,
+        "right_include_snapshot": true
+      },
+      "traces_compared": true,
+      "ulp_histogram": {},
+      "volatile_differences": []
+    },
+    "m3_mustache_right_wall": {
+      "classifications": {},
+      "difference_counts": {},
+      "expected_nonvolatile_differences": 0,
+      "first_difference": null,
+      "first_difference_step": null,
+      "first_expected_difference": null,
+      "identical": true,
+      "math_backend": {
+        "left": null,
+        "right": null
+      },
+      "math_backend_identity_equal": null,
+      "snapshot_coverage": {
+        "left": {
+          "missing_steps": [],
+          "steps_total": 886,
+          "steps_with_snapshot": 886
+        },
+        "right": {
+          "missing_steps": [],
+          "steps_total": 886,
+          "steps_with_snapshot": 886
+        }
+      },
+      "snapshot_steps_compared": 886,
+      "state_comparison": "full",
+      "state_difference_counts": {},
+      "state_scope": {
+        "left_include_snapshot": true,
+        "right_include_snapshot": true
+      },
+      "traces_compared": true,
+      "ulp_histogram": {},
+      "volatile_differences": []
+    }
+  },
+  "format": "peggle.trace_comparison",
+  "left": {
+    "expected": "/home/kurapica/Projects/pevo/julia_clone/fixtures/mustache/expected",
+    "label": "lua",
+    "traces": "/home/kurapica/Projects/pevo/julia_clone/tmp/m3/lua-snapshots/traces"
+  },
+  "mode": "control",
+  "right": {
+    "expected": "/home/kurapica/Projects/pevo/julia_clone/results/m3/expected",
+    "label": "julia",
+    "traces": "/home/kurapica/Projects/pevo/julia_clone/results/m3/traces"
+  },
+  "schema_version": 1,
+  "semantic_differences": [],
+  "state_comparison": {
+    "full": 5,
+    "not_captured": 0,
+    "partial": 0,
+    "scope_mismatch": 0
+  },
+  "state_scope_note": null,
+  "ulp_histogram": {},
+  "volatile_paths_discovered": [],
+  "volatile_policy": {
+    "allowed_paths": [],
+    "known_fields": [],
+    "note": "No volatile exemptions exist: VOLATILE_ANIMATION_FIELDS is intentionally empty. snapshot.fever_buckets.animating and snapshot.fever_buckets.dividers[].y are authoritative (snapshot.fever_buckets.dividers feed Physics.update collision geometry; animating gates the per-step bucket/divider update), so any observed difference is an authoritative state_bit_difference/state_structure failure or an explicitly unresolved determinism finding requiring investigation. Allowlist additions require review.",
+    "source": "explicit-allowlist",
+    "unapproved_differences": []
+  }
+}

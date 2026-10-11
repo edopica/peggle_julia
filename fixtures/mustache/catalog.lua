@@ -1,0 +1,20 @@
+return {
+	version = 1,
+	fixtures = {
+		{ id = "m3_mustache_center", category = "completion", kind = "shot",
+		  level = "mustache", aim_index = 900, trace = true,
+		  note = "center drop through the middle mustache row" },
+		{ id = "m3_mustache_left_wall", category = "power", kind = "shot",
+		  level = "mustache", aim_index = 0, trace = true,
+		  note = "left wall launch; green power spawn observed" },
+		{ id = "m3_mustache_right_wall", category = "style", kind = "shot",
+		  level = "mustache", aim_index = 1800, trace = true,
+		  note = "right wall launch" },
+		{ id = "m3_mustache_bucket", category = "bucket", kind = "shot",
+		  level = "mustache", aim_index = 1680, trace = true,
+		  note = "minimal bucket catch on the right (3 pegs, no power spawn)" },
+		{ id = "m3_mustache_multiball", category = "multiball", kind = "shot",
+		  level = "mustache", aim_index = 570, trace = true,
+		  note = "multiple green-power spawns (6 spawned balls) without a bucket catch" },
+	},
+}

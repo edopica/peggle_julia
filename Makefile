@@ -1,4 +1,4 @@
-.PHONY: help verify export fixtures fixture-list check check-all list self-check quick baseline test julia-test julia-parity julia-bench capture-m2 capture-m2-check math-census math-census-check core-math-build core-math-verify wpd-math wpd-state-capture wpd-state-compare wpd-state wpd-trace wpd-compare-hosts wpd-perf wpd-parity
+.PHONY: help verify export fixtures fixture-list check check-all list self-check quick baseline test julia-test julia-parity julia-bench capture-m2 capture-m2-check math-census math-census-check core-math-build core-math-verify wpd-math wpd-state-capture wpd-state-compare wpd-state wpd-trace wpd-compare-hosts wpd-perf wpd-parity m3-trace m3-mustache m3-sweep m3-bench
 
 JULIA = julia --project=julia/PeggleSim
 
@@ -115,6 +115,27 @@ wpd-compare-hosts:
 # WP-F: math/checkpoint/sweep performance comparison.
 wpd-perf:
 	scripts/core_math_perf.sh
+
+# M3 shot evaluator: mustache traces, Lua-vs-Julia control comparison, and a
+# short parallel sweep. The level/config artifacts are the dev-tree corpus
+# under fixtures/mustache/.
+M3_LEVEL = fixtures/mustache/artifact/mustache.v1.json
+M3_CONFIG = fixtures/mustache/config.dev.v1.json
+M3_SHOT_BENCH = julia/PeggleSim/bin/shot_bench.jl
+
+m3-trace:
+	$(JULIA) $(M3_SHOT_BENCH) --fixture m3_mustache_center --level $(M3_LEVEL) --config $(M3_CONFIG) --aim 900 --category completion --snapshots --trace-out results/m3/traces/m3_mustache_center.jsonl --expected-out results/m3/expected/m3_mustache_center.json
+	$(JULIA) $(M3_SHOT_BENCH) --fixture m3_mustache_left_wall --level $(M3_LEVEL) --config $(M3_CONFIG) --aim 0 --category power --snapshots --trace-out results/m3/traces/m3_mustache_left_wall.jsonl --expected-out results/m3/expected/m3_mustache_left_wall.json
+	$(JULIA) $(M3_SHOT_BENCH) --fixture m3_mustache_right_wall --level $(M3_LEVEL) --config $(M3_CONFIG) --aim 1800 --category style --snapshots --trace-out results/m3/traces/m3_mustache_right_wall.jsonl --expected-out results/m3/expected/m3_mustache_right_wall.json
+
+m3-mustache:
+	scripts/compare_m3_mustache.sh
+
+m3-sweep:
+	$(JULIA) -t auto $(M3_SHOT_BENCH) --sweep --level $(M3_LEVEL) --config $(M3_CONFIG) --stride 200 --verify-serial --out results/m3/sweep.jsonl --summary results/m3/sweep-summary.json
+
+m3-bench:
+	scripts/bench_m3.sh
 
 # WP-D open item: experimental CORE-MATH-era parity inputs and local manifests.
 # Captures the census through the dev tree + core_math, emits one manifest from

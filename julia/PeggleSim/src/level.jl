@@ -49,6 +49,36 @@ mutable struct Peg
     hit_order::Int
     multiplier_at_hit::Int
     line::Union{Nothing,LineMetadata}
+    # Live shot-time fields (M3). Static levels keep vx=vy=va=0 and x/y/angle
+    # equal to their previous values. `angle` for a rectangle starts at the
+    # shape's authored angle; every other shape starts at 0. `bounding_radius`
+    # is the physics broad-phase cache (nothing until first computed).
+    base_angle::Float64
+    angle::Float64
+    vx::Float64
+    vy::Float64
+    va::Float64
+    prev_x::Float64
+    prev_y::Float64
+    prev_angle::Float64
+    bounding_radius::Union{Nothing,Float64}
+end
+
+# The 11-field positional constructor stays valid for level parsing, state
+# building, and checkpoint restore; the live fields get their static defaults.
+function Peg(id::Int, x::Float64, y::Float64, base_x::Float64, base_y::Float64,
+             shape::Union{CircleShape,RectangleShape,AnnularShape},
+             peg_type::Symbol, hit::Bool, hit_order::Int, multiplier_at_hit::Int,
+             line::Union{Nothing,LineMetadata})::Peg
+    angle = shape isa RectangleShape ? shape.angle : 0.0
+    return Peg(
+        id, x, y, base_x, base_y, shape, peg_type, hit, hit_order,
+        multiplier_at_hit, line,
+        angle, angle,               # base_angle, angle
+        0.0, 0.0, 0.0,              # vx, vy, va
+        x, y, angle,                # prev_x, prev_y, prev_angle
+        nothing,                    # bounding_radius
+    )
 end
 
 struct LevelDefinition

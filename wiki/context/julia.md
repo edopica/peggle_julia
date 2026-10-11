@@ -1,16 +1,17 @@
-# Julia package and M2 state foundation
+# Julia package: M2 state foundation and M3 shot engine
 
-Durable technical notes for the first Julia code in the port (M2). This page
+Durable technical notes for the Julia code in the port (M2 and M3). This page
 covers the pinned package, the deterministic math backend, the exact LÖVE 11.5
 RNG, the level/config/state types, the ready-to-aim initialization pipeline,
 the checkpoint contract, per-worker ownership, and the provenance conventions
-the parity manifests rely on. The shot evaluator and candidate sweeps arrive
-in M3.
+the parity manifests rely on. Section 10 covers the M3 full-physics shot
+engine.
 
 The Lua-side formats and the decision boundary are defined in
 `wiki/context/interchange.md` and `wiki/context/reference.md`; the measured M2
 results are in `results/m2-math-census.json`,
-`results/m2-checkpoint-bench.json`, and `results/parity/local.json`.
+`results/m2-checkpoint-bench.json`, and `results/parity/local.json`. The M3
+results are in `results/m3/` (see `wiki/benchmarks/m3-shot.md`).
 
 ## 1. Package and pinned environment
 
@@ -31,7 +32,7 @@ No other runtime dependency may be added without revisiting this pin.
 
 ```bash
 julia --project=julia/PeggleSim -e 'using Pkg; Pkg.instantiate()'
-julia --project=julia/PeggleSim -e 'using Pkg; Pkg.test()'   # 3883 pass, 0 fail
+julia --project=julia/PeggleSim -e 'using Pkg; Pkg.test()'   # 4722 pass, 0 fail
 ```
 
 Source files are included in this fixed order by `src/PeggleSim.jl`:
@@ -49,6 +50,9 @@ Source files are included in this fixed order by `src/PeggleSim.jl`:
 | `src/scratch.jl` | `Scratch`, `WorkerState`, `test_advance!` |
 | `src/checkpoint.jl` | `Checkpoint` capture/encode/decode/restore |
 | `src/parity.jl` | cross-machine manifest and configuration list |
+
+The M3 block (`src/events.jl` through `src/engine.jl`, 12 files) is included
+after `checkpoint.jl` and before `parity.jl`. Its file map is in §10.
 
 ## 2. DetMath: deterministic math backends
 
@@ -233,6 +237,10 @@ make wpd-state           # WP-D: Lua core_math capture + Julia state comparison
 make wpd-parity          # WP-D: experimental CORE-MATH-era parity manifest + comparison
 make wpd-trace           # WP-E: gameplay traces/candidates (single host)
 make wpd-perf            # WP-F: math/checkpoint/sweep performance comparison
+make m3-trace            # M3: Julia snapshot traces for the base mustache fixtures
+make m3-mustache         # M3: 5-fixture Lua-vs-Julia trace control comparison
+make m3-sweep            # M3: stride-200 serial/parallel identity sweep
+make m3-bench            # M3: Lua-vs-Julia mustache benchmark + full-grid agreement
 ```
 
 Every command selects its backend with `PEGGLE_MATH_BACKEND` (`system_libm`,
@@ -293,3 +301,89 @@ summary.
   SHA-256, checkpoint geometry SHA-256, and per-configuration reset records
   (`checkpoint_sha256`, `mutated_sha256`, two `restored_sha256`, and
   `restored_matches_original`, which must be true).
+
+## 10. M3: full-physics shot engine
+
+M3 extends the package from the checkpoint boundary to complete shots. The
+new sources sit in the M3 include block of `src/PeggleSim.jl` (§1). Circuits
+and path motion stay out of scope (static levels only). The package version
+stays `0.1.0`, and the checkpoint serialization is unchanged.
+
+| File | Contents |
+| --- | --- |
+| `src/events.jl` | `GameplayJournal`/`GameplayCommands`: raw/derived event journal and command queue |
+| `src/impact_geometry.jl` | rotating-peg transform at the time of impact |
+| `src/physics.jl` | full `Physics.update` port: swept CCD, graze, overlap and depenetration, ball-ball, walls, fever dividers |
+| `src/bucket.jl` | bucket motion and catch/bounce resolution |
+| `src/fever_buckets.jl` | fever activation, divider motion, ball resolution |
+| `src/powers.jl` | green power spawn specs |
+| `src/style_shots.jl` | style-shot trackers and awards |
+| `src/ball_state.jl` | ball-state timers (spawn and drain) |
+| `src/slide_inversion.jl` | slide-inversion tracker |
+| `src/snapshot.jl` | per-step simulation snapshot (schema v2) |
+| `src/trace.jl` | canonical gameplay-trace JSONL writer |
+| `src/engine.jl` | `ShotEngine` pipeline: launch, update, run, scoring, clearing, shot end |
+| `bin/shot_bench.jl` | single-shot trace/expected-record driver and serial/parallel sweeps |
+
+The entity and tracker systems read the step's raw/derived events from the
+journal and push commands. They never mutate pegs, scores, or `SimState.engine`
+directly.
+
+### Engine pipeline
+
+`ShotEngine` wraps the M2 `SimState` and owns the shot-time state (journal,
+commands, per-shape peg lists, aim angle, lifecycle flags, trace writer).
+`shot_engine(ckpt)` builds one from a ready-to-aim checkpoint, and
+`reset_shot_engine!(eng, ckpt)` restores it per candidate. `launch!(eng,
+aim_index)` snaps the index through `angle_for_index` and `snapped_aim_angle`
+and fires every unlaunched ball. `update!(eng, dt)` accumulates time and runs
+each fixed step: `save_previous_state`, one step-id increment, and
+`step_simulation!`. It then updates the fever buckets. `run_shot!` loops
+`update!` until `shot_done` or `max_steps` (default 3600). `shot_summary`
+returns the harness feature set: `steps`, `completed`, `reason`, `score`,
+`peg_score`, `bonus`, `style_points`, `style_total`, `styles`, `pegs_hit`,
+`reds_hit`, `multiplier`, `is_fever`, `balls`, and `spawned`.
+
+`step_simulation!` and `finalize_step!` follow the documented 26-phase order
+of `../peggle_evolved/src/engine/core.lua`. The order includes phase 18b
+(slide inversion), the seam-collapse reduction, the clearing cascade,
+deterministic command application, and `shot_completed` emission.
+Presentation-only systems (`ContactEvents`, `ImpactDebug`, `Perf`,
+`ball.draw_path`) are not ported. `harness_callbacks(clearing = false)`
+reproduces the bench harness: all balls depleted ends the shot, a bucket catch
+adds the bonus, a style shot increments the counter, and turn end sets
+`shot_done`.
+
+### Snapshots and traces
+
+`snapshot_capture(engine)` produces schema-v2 snapshot dicts, key-for-key the
+Lua `src/systems/simulation_snapshot.lua` schema. `trace.jl` writes canonical
+gameplay-trace JSONL: one header plus one record per fixed step, sorted keys,
+`%.17g` numbers, and integral values as integer tokens. The header carries a
+`math_backend` identity block only when the DetMath backend is not
+`system_libm`, so default-backend trace bytes stay stable. See
+`wiki/context/m3-mustache.md` for the trace corpus and the comparison
+runbook.
+
+### Tests and parity
+
+`test/runtests.jl` includes every `test_*.jl` file. M3 adds
+`test_events.jl`, `test_impact_geometry.jl`, `test_physics.jl`,
+`test_bucket.jl`, `test_fever.jl`, `test_powers.jl`, `test_style_shots.jl`,
+`test_ball_state.jl`, `test_slide_inversion.jl`, `test_engine.jl`,
+`test_snapshot.jl`, and `test_trace.jl`. `Pkg.test()` reports 4,722 pass / 0
+fail.
+
+- 5 mustache trace fixtures: the Lua snapshot-enabled corpus and the Julia
+  traces are byte-identical. The comparison covers the full per-step state
+  with zero differences, and the expected records are identical
+  (`results/m3/mustache-compare.json`).
+- Full candidate grid: 1,801/1,801 indices agree across 16 shared fields, and
+  `first_divergent_candidate` is `null`
+  (`results/m3/sweeps-compare-full.json`).
+- Julia serial and parallel sweeps are bit-identical at every thread count.
+- `spawned` is Julia-only in the sweep rows. The Lua raw format omits it. The
+  multiball fixture covers spawn behavior in the trace comparison.
+
+The benchmark is in `wiki/benchmarks/m3-shot.md`. The fixture catalog, capture
+script, and comparison runbook are in `wiki/context/m3-mustache.md`.

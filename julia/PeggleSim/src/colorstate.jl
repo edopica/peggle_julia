@@ -115,3 +115,26 @@ end
 function purple_queue_snapshot(cs::ColorState)::NamedTuple
     return (queue = copy(cs.queue), active = copy(cs.active))
 end
+
+# PegColors.on_purple_peg_hit (peg_colors.lua lines 189-196): the hit purple
+# peg leaves the active list. No immediate re-promotion and no queue removal
+# (the peg was consumed from the queue at promotion time).
+function on_purple_peg_hit!(cs::ColorState, peg::Peg)
+    i = findfirst(==(peg.id), cs.active)
+    i === nothing || deleteat!(cs.active, i)
+    return cs
+end
+
+# PegColors.on_peg_removed (lines 208-224): purge a removed peg from the
+# active list and from anywhere in the queue so it can never be promoted.
+function on_peg_removed!(cs::ColorState, peg::Peg)
+    i = findfirst(==(peg.id), cs.active)
+    i === nothing || deleteat!(cs.active, i)
+    for j in length(cs.queue):-1:1
+        if cs.queue[j] == peg.id
+            deleteat!(cs.queue, j)
+            break # each peg appears at most once
+        end
+    end
+    return cs
+end

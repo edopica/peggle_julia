@@ -15,6 +15,21 @@ include("colorstate.jl")
 include("state.jl")
 include("scratch.jl")
 include("checkpoint.jl")
+
+# M3 shot-time systems. Order matters (engine.jl consumes all).
+include("events.jl")
+include("impact_geometry.jl")
+include("physics.jl")
+include("bucket.jl")
+include("fever_buckets.jl")
+include("powers.jl")
+include("style_shots.jl")
+include("ball_state.jl")
+include("slide_inversion.jl")
+include("snapshot.jl")
+include("trace.jl")
+include("engine.jl")
+
 include("parity.jl")
 
 export DetMath

@@ -10,7 +10,10 @@ interchange formats, exports every static level with SVG previews, and
 captures the reference fixture matrix. M2 adds the Julia package
 (`julia/PeggleSim`): a pinned environment, the deterministic math backend and
 exact LÖVE 11.5 RNG, the level/state/checkpoint types, and cross-machine
-parity tooling. Start with the [wiki quickstart](wiki/quickstart.md).
+parity tooling. M3 ports the full physics system and the engine shot pipeline,
+validates byte-identical Lua-vs-Julia gameplay traces on the mustache level,
+and adds the first cross-engine benchmark. Start with the
+[wiki quickstart](wiki/quickstart.md).
 
 ## Layout
 
@@ -18,20 +21,20 @@ parity tooling. Start with the [wiki quickstart](wiki/quickstart.md).
 | --- | --- |
 | `wiki/` | Project documentation: quickstart, context notes, benchmarks, audits, devlog ([layout](wiki/quickstart.md#wiki-layout)) |
 | `reference/peggle_evolved/` | Byte-for-byte export of the frozen Lua reference revision (`reference/PIN.md`) |
-| `harness/` | LÖVE harness: M0 candidate sweep, fixture capture, candidate search, M2 captures |
-| `julia/PeggleSim/` | Julia package: math/RNG/state foundation, checkpoint contract, parity tools |
+| `harness/` | LÖVE harness: M0 candidate sweep, fixture capture, candidate search, M2 captures, M3 capture options |
+| `julia/PeggleSim/` | Julia package: math/RNG/state foundation, checkpoint contract, full-physics shot engine, parity tools |
 | `tools/` | Lua interchange tools: canonical JSON, level/config exporters, M2 captures |
 | `schemas/` | Versioned interchange schemas and examples |
 | `interchange/` | Generated level/config artifacts, SVG previews, manifest |
-| `fixtures/` | Fixture catalog, expected records, gameplay traces, `rng/`, `checkpoints/`, `math_census/` |
-| `scripts/` | Reference verification, export, fixture capture, previews, baseline runner, M2 captures |
-| `results/` | Baseline summaries plus M2 benchmark/census/parity results; `results/raw/` is gitignored |
+| `fixtures/` | Fixture catalog, expected records, gameplay traces, `rng/`, `checkpoints/`, `math_census/`, `mustache/` |
+| `scripts/` | Reference verification, export, fixture capture, previews, baseline runner, M2 captures, M3 capture/compare/bench |
+| `results/` | Baseline summaries, M2 benchmark/census/parity results, M3 benchmark/sweep reports; `results/raw/` is gitignored |
 
 ## Quickstart
 
 Requirements: LÖVE 11.x, LuaJIT, Python 3, and a display (`xvfb-run` for
 unattended runs). Verification, schema checks, and the test suite need no
-display. M2 additionally needs Julia 1.12.6; the pinned environment is
+display. M2 and M3 additionally need Julia 1.12.6; the pinned environment is
 reproduced with
 `julia --project=julia/PeggleSim -e 'using Pkg; Pkg.instantiate()'`.
 
@@ -49,6 +52,10 @@ make test         # run the reference test suite
 make julia-test   # run the Julia package test suite
 make julia-parity # recompute the cross-machine parity manifest
 make julia-bench  # checkpoint/reset benchmark
+make m3-trace     # Julia snapshot traces for the base mustache fixtures
+make m3-mustache  # 5-fixture Lua-vs-Julia trace control comparison
+make m3-sweep     # stride-200 serial/parallel identity sweep
+make m3-bench     # Lua-vs-Julia mustache benchmark + full-grid agreement
 ```
 
 ## The M0 workload
@@ -94,3 +101,18 @@ they imply are in `wiki/benchmarks/baseline-metrics.md`.
   in ~14 µs against the M0 ~82 ms per-candidate `setupLevel` rebuild.
 - `results/parity/local.json` plus `scripts/compare_parity.sh` — the
   cross-machine parity manifest and first-difference comparison tool.
+
+## The M3 full-physics shot engine
+
+- `wiki/context/julia.md` — the M3 sources of `julia/PeggleSim`: event journal
+  and commands, full `Physics.update` with swept CCD, bucket/fever/powers,
+  style shots, ball state, slide inversion, the 26-phase `ShotEngine`
+  pipeline, snapshots, and canonical traces (4,722 tests pass).
+- `wiki/context/m3-mustache.md` — the 5-fixture mustache corpus, the capture
+  and snapshot-comparison runbook, and the full-grid agreement.
+- `wiki/benchmarks/m3-shot.md` — the Lua-vs-Julia mustache benchmark
+  (`results/m3/bench-report.json`): 16.66 vs 32.56 candidates/s same-core
+  (indicative 1.95×), 93.3 candidates/s at 12 threads, and the allocation
+  table.
+- `results/m3/` — combined benchmark report, Lua summaries, Julia sweeps,
+  trace comparison, and the full-grid agreement report.
