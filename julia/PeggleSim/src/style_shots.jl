@@ -421,6 +421,7 @@ function style_shots_process!(
     commands::GameplayCommands,
     virtual_width::Float64,
     c::SimConfig,
+    scored_by_source::Dict{Int,GameEvent} = Dict{Int,GameEvent}(),
 )::Nothing
     long_d = c.long_shot_distance
     super_d = c.super_long_shot_distance
@@ -433,7 +434,7 @@ function style_shots_process!(
     pt_slide = c.slide_points
 
     # Index peg_scored derived events by their source raw sequence.
-    scored_by_source = Dict{Int,GameEvent}()
+    empty!(scored_by_source)
     for ev in journal.derived
         if ev.type == "peg_scored"
             src = get(ev.fields, "source_sequence", nothing)

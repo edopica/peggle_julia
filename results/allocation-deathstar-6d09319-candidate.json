@@ -1,0 +1,4259 @@
+{
+  "artifact_sha256": {
+    "baseline-goldens-comparison.json": "d2cb8d06f058437dbd5f6e842775e7c6aade6b16fe963015ef7fb4f0c1b25212",
+    "baseline-goldens-comparison.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "baseline-plain-m3_mustache_bucket.log": "0b25f78fe5d6864d91d163c0ac0f73d3d86ef263c1a549712a60476b0abcc500",
+    "baseline-plain-m3_mustache_center.log": "dc7d44fc0e6956c4419460a728679ee4afbfb7066cb4248846da0753cd8e00fc",
+    "baseline-plain-m3_mustache_left_wall.log": "1588314c48ca1f377213622d012da8f4ce1fa70d4725604bdd88faec033b5a86",
+    "baseline-plain-m3_mustache_multiball.log": "448d88d365c2c4a4423d16cb102a14d4bcde31279bb6eeb5a04880e17eb3579d",
+    "baseline-plain-m3_mustache_right_wall.log": "ea4b7efd000dfe9c41959fc35cd36bdf9ce344f918e71166b2101c8f5be919e9",
+    "baseline-snapshots-m3_mustache_bucket.log": "bdb67c4bbf21f583ef044de41da23d053f20096ec6b427e564db7e841b925018",
+    "baseline-snapshots-m3_mustache_center.log": "130010ca83ab8fe45f079023278c8f9cb7bd961b37590b3d1f63781571be625f",
+    "baseline-snapshots-m3_mustache_left_wall.log": "409fa39b854e149294b26bbd338b796970d15b94d636aabb05dba2db378302f8",
+    "baseline-snapshots-m3_mustache_multiball.log": "21c11153e0530d288f5985b2673f83592b5729961497759de06d02f4b7e67173",
+    "baseline-snapshots-m3_mustache_right_wall.log": "598635597dc1ebedeeac4926f1a9c214c8db3defae1ce14121992f458b8a6add",
+    "baseline-stride20-t1.json": "fa0f181fe247f380acaeb2db1820fe5a6a4888e2bafe27930e1595fd4bacd10e",
+    "baseline-stride20-t1.jsonl": "e6453258bdce9fdadf137deb9bf5bc9512950a55cfedce03695ab2d0c185aadd",
+    "baseline-stride20-t1.log": "c5bbdc6060d9db83cfbf6d8145af8af1348fd80a31481f1da3412c461c8af975",
+    "baseline-stride20-t2.json": "82a4f03599effcad47c4796a154cb6ea4831e95cbe9a2f1f0241b2a2bc762ffe",
+    "baseline-stride20-t2.jsonl": "e6453258bdce9fdadf137deb9bf5bc9512950a55cfedce03695ab2d0c185aadd",
+    "baseline-stride20-t2.log": "40f68e75c45a8891a01d10d36f410ed9c5c5c27652de1cf12e04c2a2eded4449",
+    "baseline-stride20-t4.json": "89fe1af8d537e1d1ae2d37ef8cd2b5b8dfc242a52f92d73aeb54a5f132acc09b",
+    "baseline-stride20-t4.jsonl": "e6453258bdce9fdadf137deb9bf5bc9512950a55cfedce03695ab2d0c185aadd",
+    "baseline-stride20-t4.log": "b2c11325e07933be27d146e8b548814d535264ea55db44a5e80b5ffbb622238d",
+    "baseline-verify-after.log": "836f7cf13c1bbba96c78b828db9c7d747f99f399df6a086c0fe9be62afbcd1f2",
+    "baseline-verify-before.log": "836f7cf13c1bbba96c78b828db9c7d747f99f399df6a086c0fe9be62afbcd1f2",
+    "candidate-goldens-comparison.json": "a72c30c27c9212156543827dc6f7d2b3d61d5901929a6b331f75809bfd3783d8",
+    "candidate-goldens-comparison.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "candidate-measurement.log": "b246842705bc40648a38834f5b8cf367582a6cd0e43391beb318e6de3ae10b25",
+    "candidate-parity.json": "546b61459e9292299991367f3ebf3f254fa33e813946e276377de3612005c0c1",
+    "candidate-parity.log": "a7c60017b4ed5224fa89108f70874e7bc1c6fdd32351ddad6dc3a5dbf97cb0f8",
+    "candidate-plain-m3_mustache_bucket.log": "087fe5feb3050f26b3b54e371d0cb30d6a85fdf21a21539fa638640100b4258e",
+    "candidate-plain-m3_mustache_center.log": "0d2ba507c9c62108477a31eedf8be2a299ddb6f833c10f3142165459b0ea92a6",
+    "candidate-plain-m3_mustache_left_wall.log": "c0b653294ae722b59c081031b8153e63b714abd73e01f043400ab37fc95ffcf4",
+    "candidate-plain-m3_mustache_multiball.log": "8c6717e7d498497c6588229fef91bfd98ed7a047513308809bb8c2c436030358",
+    "candidate-plain-m3_mustache_right_wall.log": "9e406335b812a54d34c56c8db0220bc01dea6c43fd2cc989fa5702fb3be56005",
+    "candidate-snapshots-m3_mustache_bucket.log": "9c17699f77ba42efb9055ada6506ac82833b1998da2c28ab2e435b3cb98eaf27",
+    "candidate-snapshots-m3_mustache_center.log": "0807e86c7f3d0c7abc1cebbd4cd11e7a42d329d36d96e3780ef5e42760ce8d38",
+    "candidate-snapshots-m3_mustache_left_wall.log": "c1ce03219e348df91d8303d1cc3588a40858de8dfc0aa5c849c176d7b3a1c7b5",
+    "candidate-snapshots-m3_mustache_multiball.log": "12f852c8b5365ee83eba8a16faaaaba55d8dc6150d2eef56e51f80aeb9fd8669",
+    "candidate-snapshots-m3_mustache_right_wall.log": "ffb15b9014790eacf457aca140acfd3d5f51b31c6052eee7bf69ab91ec51a847",
+    "candidate-stride20-t1.json": "63cedc63ff2c78eba41c26d26fc8a834265e728a00fa9ab8c6513535b5d8db55",
+    "candidate-stride20-t1.jsonl": "e6453258bdce9fdadf137deb9bf5bc9512950a55cfedce03695ab2d0c185aadd",
+    "candidate-stride20-t1.log": "718bbb9de905afef1db4f91e2ed0640597bdbb59f720eefb67ff7aad2c7058f5",
+    "candidate-stride20-t2.json": "23f612a1e077035d0290f4eb03c3a613aab477c35ff28a22c9449002a670ce8f",
+    "candidate-stride20-t2.jsonl": "e6453258bdce9fdadf137deb9bf5bc9512950a55cfedce03695ab2d0c185aadd",
+    "candidate-stride20-t2.log": "7f6ce58fd77e0a8ac837b27a8f42b9e91dbd76406fad6f5bb10bf6e8590380ca",
+    "candidate-stride20-t4.json": "320f202b1b72e300c71c92607d5790fc9d354674b658f28dd0fdec02456faefe",
+    "candidate-stride20-t4.jsonl": "e6453258bdce9fdadf137deb9bf5bc9512950a55cfedce03695ab2d0c185aadd",
+    "candidate-stride20-t4.log": "9d79c459cdc85f13a18f6d96626ee780c1c9d9bda4dbda5ad6483b110a5e7647",
+    "candidate-test-precompile.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "candidate-tests.log": "fdc71ea9ccbf80dc64324bb59167f17352e7ba5431f1ab6e7d8823f61996a0d3",
+    "candidate-tmp-allocation-extended-full-tests.log": "ab1df332367e4931693f57292c9a99dba367647910ae6cf03e9374830c05d49e",
+    "candidate-tmp-allocation-extended-prepare.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "candidate-tmp-allocation-extended-test-shot-scratch.log": "f903790591d055dbbaf28ad82a4e32f7fe5cd2845a9f4767428734512938f206",
+    "candidate-verify-after.log": "8fcb273c700eb86bc1f52e5336936c982d673549afa9d1e4ce977957169ef20a",
+    "candidate-verify-before.log": "8fcb273c700eb86bc1f52e5336936c982d673549afa9d1e4ce977957169ef20a",
+    "finalize.py": "e42010e0254eccbffbfd1354b44ad2495bebc7eb74beae423b22fb0bef8c4f06",
+    "paired-result-checks/baseline-measurement.json": "1e9ba899f5ce1c831d07a9a91d94642ec1d84f3b93823b2d987ad3d9c46db268",
+    "paired-result-checks/baseline-measurement.log": "1e9ba899f5ce1c831d07a9a91d94642ec1d84f3b93823b2d987ad3d9c46db268",
+    "paired-result-checks/baseline-prepare.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "paired-result-checks/baseline-verify-after.log": "836f7cf13c1bbba96c78b828db9c7d747f99f399df6a086c0fe9be62afbcd1f2",
+    "paired-result-checks/baseline-verify-before.log": "836f7cf13c1bbba96c78b828db9c7d747f99f399df6a086c0fe9be62afbcd1f2",
+    "paired-result-checks/candidate-measurement.json": "37815c451ff8393529c51354e915bc26a187031e9e6a55cd41621a4f21366c0a",
+    "paired-result-checks/candidate-measurement.log": "37815c451ff8393529c51354e915bc26a187031e9e6a55cd41621a4f21366c0a",
+    "paired-result-checks/candidate-prepare.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "paired-result-checks/candidate-verify-after.log": "8fcb273c700eb86bc1f52e5336936c982d673549afa9d1e4ce977957169ef20a",
+    "paired-result-checks/candidate-verify-before.log": "8fcb273c700eb86bc1f52e5336936c982d673549afa9d1e4ce977957169ef20a",
+    "paired-result-checks/concurrency.json": "e330e596ddd3660e6f1af689a6b124cd59cad2eadea4af7b9a0084cdc3d85873",
+    "trace-plain-comparison.json": "e7588fef9ada7c922529b8436d14580e6753312b33dcef966c9bfdd9d3572de7",
+    "trace-plain-comparison.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "trace-snapshots-comparison.json": "e42ed6423d711af8970adae40eecaa7342ca37104e0a8250885428ae25e27f8a",
+    "trace-snapshots-comparison.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "baseline_commit": "6d09319c33162d7fb9957cf096ef29c3478c471e",
+  "blockers": [],
+  "candidate_base_commit": "6d09319c33162d7fb9957cf096ef29c3478c471e",
+  "candidate_discovered_test_files": [
+    "test_ball_state.jl",
+    "test_bucket.jl",
+    "test_canonical.jl",
+    "test_census.jl",
+    "test_checkpoint.jl",
+    "test_colors.jl",
+    "test_contact_payloads.jl",
+    "test_detmath.jl",
+    "test_engine.jl",
+    "test_events.jl",
+    "test_fever.jl",
+    "test_impact_geometry.jl",
+    "test_level.jl",
+    "test_parity.jl",
+    "test_physics.jl",
+    "test_powers.jl",
+    "test_rng.jl",
+    "test_shot_scratch.jl",
+    "test_slide_inversion.jl",
+    "test_snapshot.jl",
+    "test_style_shots.jl",
+    "test_trace.jl"
+  ],
+  "candidate_kind": "uncommitted worktree snapshot",
+  "candidate_package_tests": {
+    "passed": 5588,
+    "total": 5588
+  },
+  "candidate_package_tests_after_extension": {
+    "passed": 5608,
+    "total": 5608
+  },
+  "commands": [
+    {
+      "argv": [
+        "make",
+        "verify"
+      ],
+      "cwd": "/home/picazio/projects/julia_clone_alloc_6d09319_20261011/baseline",
+      "exit_code": 0,
+      "log": "baseline-verify-before.log"
+    },
+    {
+      "argv": [
+        "make",
+        "verify"
+      ],
+      "cwd": "/home/picazio/projects/julia_clone_alloc_6d09319_20261011/candidate",
+      "exit_code": 0,
+      "log": "candidate-verify-before.log"
+    },
+    {
+      "argv": [
+        "nice",
+        "-n",
+        "10",
+        "timeout",
+        "900",
+        "/home/picazio/.julia/juliaup/julia-1.12.6+0.x64.linux.gnu/bin/julia",
+        "--startup-file=no",
+        "--gcthreads=1",
+        "-t",
+        "1,0",
+        "--project=julia/PeggleSim",
+        "--check-bounds=yes",
+        "--depwarn=yes",
+        "-e",
+        "using Pkg; Pkg.precompile(); using Test, PeggleSim"
+      ],
+      "cwd": "/home/picazio/projects/julia_clone_alloc_6d09319_20261011/candidate",
+      "exit_code": 0,
+      "log": "candidate-test-precompile.log"
+    },
+    {
+      "argv": [
+        "nice",
+        "-n",
+        "10",
+        "timeout",
+        "900",
+        "/home/picazio/.julia/juliaup/julia-1.12.6+0.x64.linux.gnu/bin/julia",
+        "--startup-file=no",
+        "--gcthreads=1",
+        "-t",
+        "1,0",
+        "--project=julia/PeggleSim",
+        "-e",
+        "using Pkg; Pkg.test(; julia_args=[\"--startup-file=no\", \"--threads=1,0\", \"--gcthreads=1\"])"
+      ],
+      "cwd": "/home/picazio/projects/julia_clone_alloc_6d09319_20261011/candidate",
+      "exit_code": 0,
+      "log": "candidate-tests.log"
+    },
+    {
+      "argv": [
+        "nice",
+        "-n",
+        "10",
+        "timeout",
+        "900",
+        "/home/picazio/.julia/juliaup/julia-1.12.6+0.x64.linux.gnu/bin/julia",
+        "--startup-file=no",
+        "--gcthreads=1",
+        "-t",
+        "1,0",
+        "--project=julia/PeggleSim",
+        "julia/PeggleSim/bin/parity_emit.jl",
+        "--out",
+        "/home/picazio/projects/julia_clone_alloc_6d09319_20261011/qualification/candidate-parity.json",
+        "--label",
+        "deathstar-allocation-candidate"
+      ],
+      "cwd": "/home/picazio/projects/julia_clone_alloc_6d09319_20261011/candidate",
+      "exit_code": 0,
+      "log": "candidate-parity.log"
+    },
+    {
+      "argv": [
+        "nice",
+        "-n",
+        "10",
+        "timeout",
+        "900",
+        "/home/picazio/.julia/juliaup/julia-1.12.6+0.x64.linux.gnu/bin/julia",
+        "--startup-file=no",
+        "--gcthreads=1",
+        "-t",
+        "1,0",
+        "--project=julia/PeggleSim",
+        "julia/PeggleSim/bin/shot_bench.jl",
+        "--fixture",
+        "m3_mustache_bucket",
+        "--level",
+        "fixtures/mustache/artifact/mustache.v1.json",
+        "--config",
+        "fixtures/mustache/config.dev.v1.json",
+        "--aim",
+        "1680",
+        "--category",
+        "bucket",
+        "--trace-out",
+        "/home/picazio/projects/julia_clone_alloc_6d09319_20261011/qualification/baseline/plain/traces/m3_mustache_bucket.jsonl",
+        "--expected-out",
+        "/home/picazio/projects/julia_clone_alloc_6d09319_20261011/qualification/baseline/plain/expected/m3_mustache_bucket.json"
+      ],
+      "cwd": "/home/picazio/projects/julia_clone_alloc_6d09319_20261011/baseline",
+      "exit_code": 0,
+      "log": "baseline-plain-m3_mustache_bucket.log"
+    },
+    {
+      "argv": [
+        "nice",
+        "-n",
+        "10",
+        "timeout",
+        "900",
+        "/home/picazio/.julia/juliaup/julia-1.12.6+0.x64.linux.gnu/bin/julia",
+        "--startup-file=no",
+        "--gcthreads=1",
+        "-t",
+        "1,0",
+        "--project=julia/PeggleSim",
+        "julia/PeggleSim/bin/shot_bench.jl",
+        "--fixture",
+        "m3_mustache_center",
+        "--level",
+        "fixtures/mustache/artifact/mustache.v1.json",
+        "--config",
+        "fixtures/mustache/config.dev.v1.json",
+        "--aim",
+        "900",
+        "--category",
+        "completion",
+        "--trace-out",
+        "/home/picazio/projects/julia_clone_alloc_6d09319_20261011/qualification/baseline/plain/traces/m3_mustache_center.jsonl",
+        "--expected-out",
+        "/home/picazio/projects/julia_clone_alloc_6d09319_20261011/qualification/baseline/plain/expected/m3_mustache_center.json"
+      ],
+      "cwd": "/home/picazio/projects/julia_clone_alloc_6d09319_20261011/baseline",
+      "exit_code": 0,
+      "log": "baseline-plain-m3_mustache_center.log"
+    },
+    {
+      "argv": [
+        "nice",
+        "-n",
+        "10",
+        "timeout",
+        "900",
+        "/home/picazio/.julia/juliaup/julia-1.12.6+0.x64.linux.gnu/bin/julia",
+        "--startup-file=no",
+        "--gcthreads=1",
+        "-t",
+        "1,0",
+        "--project=julia/PeggleSim",
+        "julia/PeggleSim/bin/shot_bench.jl",
+        "--fixture",
+        "m3_mustache_left_wall",
+        "--level",
+        "fixtures/mustache/artifact/mustache.v1.json",
+        "--config",
+        "fixtures/mustache/config.dev.v1.json",
+        "--aim",
+        "0",
+        "--category",
+        "power",
+        "--trace-out",
+        "/home/picazio/projects/julia_clone_alloc_6d09319_20261011/qualification/baseline/plain/traces/m3_mustache_left_wall.jsonl",
+        "--expected-out",
+        "/home/picazio/projects/julia_clone_alloc_6d09319_20261011/qualification/baseline/plain/expected/m3_mustache_left_wall.json"
+      ],
+      "cwd": "/home/picazio/projects/julia_clone_alloc_6d09319_20261011/baseline",
+      "exit_code": 0,
+      "log": "baseline-plain-m3_mustache_left_wall.log"
+    },
+    {
+      "argv": [
+        "nice",
+        "-n",
+        "10",
+        "timeout",
+        "900",
+        "/home/picazio/.julia/juliaup/julia-1.12.6+0.x64.linux.gnu/bin/julia",
+        "--startup-file=no",
+        "--gcthreads=1",
+        "-t",
+        "1,0",
+        "--project=julia/PeggleSim",
+        "julia/PeggleSim/bin/shot_bench.jl",
+        "--fixture",
+        "m3_mustache_multiball",
+        "--level",
+        "fixtures/mustache/artifact/mustache.v1.json",
+        "--config",
+        "fixtures/mustache/config.dev.v1.json",
+        "--aim",
+        "570",
+        "--category",
+        "multiball",
+        "--trace-out",
+        "/home/picazio/projects/julia_clone_alloc_6d09319_20261011/qualification/baseline/plain/traces/m3_mustache_multiball.jsonl",
+        "--expected-out",
+        "/home/picazio/projects/julia_clone_alloc_6d09319_20261011/qualification/baseline/plain/expected/m3_mustache_multiball.json"
+      ],
+      "cwd": "/home/picazio/projects/julia_clone_alloc_6d09319_20261011/baseline",
+      "exit_code": 0,
+      "log": "baseline-plain-m3_mustache_multiball.log"
+    },
+    {
+      "argv": [
+        "nice",
+        "-n",
+        "10",
+        "timeout",
+        "900",
+        "/home/picazio/.julia/juliaup/julia-1.12.6+0.x64.linux.gnu/bin/julia",
+        "--startup-file=no",
+        "--gcthreads=1",
+        "-t",
+        "1,0",
+        "--project=julia/PeggleSim",
+        "julia/PeggleSim/bin/shot_bench.jl",
+        "--fixture",
+        "m3_mustache_right_wall",
+        "--level",
+        "fixtures/mustache/artifact/mustache.v1.json",
+        "--config",
+        "fixtures/mustache/config.dev.v1.json",
+        "--aim",
+        "1800",
+        "--category",
+        "style",
+        "--trace-out",
+        "/home/picazio/projects/julia_clone_alloc_6d09319_20261011/qualification/baseline/plain/traces/m3_mustache_right_wall.jsonl",
+        "--expected-out",
+        "/home/picazio/projects/julia_clone_alloc_6d09319_20261011/qualification/baseline/plain/expected/m3_mustache_right_wall.json"
+      ],
+      "cwd": "/home/picazio/projects/julia_clone_alloc_6d09319_20261011/baseline",
+      "exit_code": 0,
+      "log": "baseline-plain-m3_mustache_right_wall.log"
+    },
+    {
+      "argv": [
+        "nice",
+        "-n",
+        "10",
+        "timeout",
+        "900",
+        "/home/picazio/.julia/juliaup/julia-1.12.6+0.x64.linux.gnu/bin/julia",
+        "--startup-file=no",
+        "--gcthreads=1",
+        "-t",
+        "1,0",
+        "--project=julia/PeggleSim",
+        "julia/PeggleSim/bin/shot_bench.jl",
+        "--fixture",
+        "m3_mustache_bucket",
+        "--level",
+        "fixtures/mustache/artifact/mustache.v1.json",
+        "--config",
+        "fixtures/mustache/config.dev.v1.json",
+        "--aim",
+        "1680",
+        "--category",
+        "bucket",
+        "--trace-out",
+        "/home/picazio/projects/julia_clone_alloc_6d09319_20261011/qualification/baseline/snapshots/traces/m3_mustache_bucket.jsonl",
+        "--expected-out",
+        "/home/picazio/projects/julia_clone_alloc_6d09319_20261011/qualification/baseline/snapshots/expected/m3_mustache_bucket.json",
+        "--snapshots"
+      ],
+      "cwd": "/home/picazio/projects/julia_clone_alloc_6d09319_20261011/baseline",
+      "exit_code": 0,
+      "log": "baseline-snapshots-m3_mustache_bucket.log"
+    },
+    {
+      "argv": [
+        "nice",
+        "-n",
+        "10",
+        "timeout",
+        "900",
+        "/home/picazio/.julia/juliaup/julia-1.12.6+0.x64.linux.gnu/bin/julia",
+        "--startup-file=no",
+        "--gcthreads=1",
+        "-t",
+        "1,0",
+        "--project=julia/PeggleSim",
+        "julia/PeggleSim/bin/shot_bench.jl",
+        "--fixture",
+        "m3_mustache_center",
+        "--level",
+        "fixtures/mustache/artifact/mustache.v1.json",
+        "--config",
+        "fixtures/mustache/config.dev.v1.json",
+        "--aim",
+        "900",
+        "--category",
+        "completion",
+        "--trace-out",
+        "/home/picazio/projects/julia_clone_alloc_6d09319_20261011/qualification/baseline/snapshots/traces/m3_mustache_center.jsonl",
+        "--expected-out",
+        "/home/picazio/projects/julia_clone_alloc_6d09319_20261011/qualification/baseline/snapshots/expected/m3_mustache_center.json",
+        "--snapshots"
+      ],
+      "cwd": "/home/picazio/projects/julia_clone_alloc_6d09319_20261011/baseline",
+      "exit_code": 0,
+      "log": "baseline-snapshots-m3_mustache_center.log"
+    },
+    {
+      "argv": [
+        "nice",
+        "-n",
+        "10",
+        "timeout",
+        "900",
+        "/home/picazio/.julia/juliaup/julia-1.12.6+0.x64.linux.gnu/bin/julia",
+        "--startup-file=no",
+        "--gcthreads=1",
+        "-t",
+        "1,0",
+        "--project=julia/PeggleSim",
+        "julia/PeggleSim/bin/shot_bench.jl",
+        "--fixture",
+        "m3_mustache_left_wall",
+        "--level",
+        "fixtures/mustache/artifact/mustache.v1.json",
+        "--config",
+        "fixtures/mustache/config.dev.v1.json",
+        "--aim",
+        "0",
+        "--category",
+        "power",
+        "--trace-out",
+        "/home/picazio/projects/julia_clone_alloc_6d09319_20261011/qualification/baseline/snapshots/traces/m3_mustache_left_wall.jsonl",
+        "--expected-out",
+        "/home/picazio/projects/julia_clone_alloc_6d09319_20261011/qualification/baseline/snapshots/expected/m3_mustache_left_wall.json",
+        "--snapshots"
+      ],
+      "cwd": "/home/picazio/projects/julia_clone_alloc_6d09319_20261011/baseline",
+      "exit_code": 0,
+      "log": "baseline-snapshots-m3_mustache_left_wall.log"
+    },
+    {
+      "argv": [
+        "nice",
+        "-n",
+        "10",
+        "timeout",
+        "900",
+        "/home/picazio/.julia/juliaup/julia-1.12.6+0.x64.linux.gnu/bin/julia",
+        "--startup-file=no",
+        "--gcthreads=1",
+        "-t",
+        "1,0",
+        "--project=julia/PeggleSim",
+        "julia/PeggleSim/bin/shot_bench.jl",
+        "--fixture",
+        "m3_mustache_multiball",
+        "--level",
+        "fixtures/mustache/artifact/mustache.v1.json",
+        "--config",
+        "fixtures/mustache/config.dev.v1.json",
+        "--aim",
+        "570",
+        "--category",
+        "multiball",
+        "--trace-out",
+        "/home/picazio/projects/julia_clone_alloc_6d09319_20261011/qualification/baseline/snapshots/traces/m3_mustache_multiball.jsonl",
+        "--expected-out",
+        "/home/picazio/projects/julia_clone_alloc_6d09319_20261011/qualification/baseline/snapshots/expected/m3_mustache_multiball.json",
+        "--snapshots"
+      ],
+      "cwd": "/home/picazio/projects/julia_clone_alloc_6d09319_20261011/baseline",
+      "exit_code": 0,
+      "log": "baseline-snapshots-m3_mustache_multiball.log"
+    },
+    {
+      "argv": [
+        "nice",
+        "-n",
+        "10",
+        "timeout",
+        "900",
+        "/home/picazio/.julia/juliaup/julia-1.12.6+0.x64.linux.gnu/bin/julia",
+        "--startup-file=no",
+        "--gcthreads=1",
+        "-t",
+        "1,0",
+        "--project=julia/PeggleSim",
+        "julia/PeggleSim/bin/shot_bench.jl",
+        "--fixture",
+        "m3_mustache_right_wall",
+        "--level",
+        "fixtures/mustache/artifact/mustache.v1.json",
+        "--config",
+        "fixtures/mustache/config.dev.v1.json",
+        "--aim",
+        "1800",
+        "--category",
+        "style",
+        "--trace-out",
+        "/home/picazio/projects/julia_clone_alloc_6d09319_20261011/qualification/baseline/snapshots/traces/m3_mustache_right_wall.jsonl",
+        "--expected-out",
+        "/home/picazio/projects/julia_clone_alloc_6d09319_20261011/qualification/baseline/snapshots/expected/m3_mustache_right_wall.json",
+        "--snapshots"
+      ],
+      "cwd": "/home/picazio/projects/julia_clone_alloc_6d09319_20261011/baseline",
+      "exit_code": 0,
+      "log": "baseline-snapshots-m3_mustache_right_wall.log"
+    },
+    {
+      "argv": [
+        "nice",
+        "-n",
+        "10",
+        "timeout",
+        "900",
+        "/home/picazio/.julia/juliaup/julia-1.12.6+0.x64.linux.gnu/bin/julia",
+        "--startup-file=no",
+        "--gcthreads=1",
+        "-t",
+        "1,0",
+        "--project=julia/PeggleSim",
+        "julia/PeggleSim/bin/shot_bench.jl",
+        "--fixture",
+        "m3_mustache_bucket",
+        "--level",
+        "fixtures/mustache/artifact/mustache.v1.json",
+        "--config",
+        "fixtures/mustache/config.dev.v1.json",
+        "--aim",
+        "1680",
+        "--category",
+        "bucket",
+        "--trace-out",
+        "/home/picazio/projects/julia_clone_alloc_6d09319_20261011/qualification/candidate/plain/traces/m3_mustache_bucket.jsonl",
+        "--expected-out",
+        "/home/picazio/projects/julia_clone_alloc_6d09319_20261011/qualification/candidate/plain/expected/m3_mustache_bucket.json"
+      ],
+      "cwd": "/home/picazio/projects/julia_clone_alloc_6d09319_20261011/candidate",
+      "exit_code": 0,
+      "log": "candidate-plain-m3_mustache_bucket.log"
+    },
+    {
+      "argv": [
+        "nice",
+        "-n",
+        "10",
+        "timeout",
+        "900",
+        "/home/picazio/.julia/juliaup/julia-1.12.6+0.x64.linux.gnu/bin/julia",
+        "--startup-file=no",
+        "--gcthreads=1",
+        "-t",
+        "1,0",
+        "--project=julia/PeggleSim",
+        "julia/PeggleSim/bin/shot_bench.jl",
+        "--fixture",
+        "m3_mustache_center",
+        "--level",
+        "fixtures/mustache/artifact/mustache.v1.json",
+        "--config",
+        "fixtures/mustache/config.dev.v1.json",
+        "--aim",
+        "900",
+        "--category",
+        "completion",
+        "--trace-out",
+        "/home/picazio/projects/julia_clone_alloc_6d09319_20261011/qualification/candidate/plain/traces/m3_mustache_center.jsonl",
+        "--expected-out",
+        "/home/picazio/projects/julia_clone_alloc_6d09319_20261011/qualification/candidate/plain/expected/m3_mustache_center.json"
+      ],
+      "cwd": "/home/picazio/projects/julia_clone_alloc_6d09319_20261011/candidate",
+      "exit_code": 0,
+      "log": "candidate-plain-m3_mustache_center.log"
+    },
+    {
+      "argv": [
+        "nice",
+        "-n",
+        "10",
+        "timeout",
+        "900",
+        "/home/picazio/.julia/juliaup/julia-1.12.6+0.x64.linux.gnu/bin/julia",
+        "--startup-file=no",
+        "--gcthreads=1",
+        "-t",
+        "1,0",
+        "--project=julia/PeggleSim",
+        "julia/PeggleSim/bin/shot_bench.jl",
+        "--fixture",
+        "m3_mustache_left_wall",
+        "--level",
+        "fixtures/mustache/artifact/mustache.v1.json",
+        "--config",
+        "fixtures/mustache/config.dev.v1.json",
+        "--aim",
+        "0",
+        "--category",
+        "power",
+        "--trace-out",
+        "/home/picazio/projects/julia_clone_alloc_6d09319_20261011/qualification/candidate/plain/traces/m3_mustache_left_wall.jsonl",
+        "--expected-out",
+        "/home/picazio/projects/julia_clone_alloc_6d09319_20261011/qualification/candidate/plain/expected/m3_mustache_left_wall.json"
+      ],
+      "cwd": "/home/picazio/projects/julia_clone_alloc_6d09319_20261011/candidate",
+      "exit_code": 0,
+      "log": "candidate-plain-m3_mustache_left_wall.log"
+    },
+    {
+      "argv": [
+        "nice",
+        "-n",
+        "10",
+        "timeout",
+        "900",
+        "/home/picazio/.julia/juliaup/julia-1.12.6+0.x64.linux.gnu/bin/julia",
+        "--startup-file=no",
+        "--gcthreads=1",
+        "-t",
+        "1,0",
+        "--project=julia/PeggleSim",
+        "julia/PeggleSim/bin/shot_bench.jl",
+        "--fixture",
+        "m3_mustache_multiball",
+        "--level",
+        "fixtures/mustache/artifact/mustache.v1.json",
+        "--config",
+        "fixtures/mustache/config.dev.v1.json",
+        "--aim",
+        "570",
+        "--category",
+        "multiball",
+        "--trace-out",
+        "/home/picazio/projects/julia_clone_alloc_6d09319_20261011/qualification/candidate/plain/traces/m3_mustache_multiball.jsonl",
+        "--expected-out",
+        "/home/picazio/projects/julia_clone_alloc_6d09319_20261011/qualification/candidate/plain/expected/m3_mustache_multiball.json"
+      ],
+      "cwd": "/home/picazio/projects/julia_clone_alloc_6d09319_20261011/candidate",
+      "exit_code": 0,
+      "log": "candidate-plain-m3_mustache_multiball.log"
+    },
+    {
+      "argv": [
+        "nice",
+        "-n",
+        "10",
+        "timeout",
+        "900",
+        "/home/picazio/.julia/juliaup/julia-1.12.6+0.x64.linux.gnu/bin/julia",
+        "--startup-file=no",
+        "--gcthreads=1",
+        "-t",
+        "1,0",
+        "--project=julia/PeggleSim",
+        "julia/PeggleSim/bin/shot_bench.jl",
+        "--fixture",
+        "m3_mustache_right_wall",
+        "--level",
+        "fixtures/mustache/artifact/mustache.v1.json",
+        "--config",
+        "fixtures/mustache/config.dev.v1.json",
+        "--aim",
+        "1800",
+        "--category",
+        "style",
+        "--trace-out",
+        "/home/picazio/projects/julia_clone_alloc_6d09319_20261011/qualification/candidate/plain/traces/m3_mustache_right_wall.jsonl",
+        "--expected-out",
+        "/home/picazio/projects/julia_clone_alloc_6d09319_20261011/qualification/candidate/plain/expected/m3_mustache_right_wall.json"
+      ],
+      "cwd": "/home/picazio/projects/julia_clone_alloc_6d09319_20261011/candidate",
+      "exit_code": 0,
+      "log": "candidate-plain-m3_mustache_right_wall.log"
+    },
+    {
+      "argv": [
+        "nice",
+        "-n",
+        "10",
+        "timeout",
+        "900",
+        "/home/picazio/.julia/juliaup/julia-1.12.6+0.x64.linux.gnu/bin/julia",
+        "--startup-file=no",
+        "--gcthreads=1",
+        "-t",
+        "1,0",
+        "--project=julia/PeggleSim",
+        "julia/PeggleSim/bin/shot_bench.jl",
+        "--fixture",
+        "m3_mustache_bucket",
+        "--level",
+        "fixtures/mustache/artifact/mustache.v1.json",
+        "--config",
+        "fixtures/mustache/config.dev.v1.json",
+        "--aim",
+        "1680",
+        "--category",
+        "bucket",
+        "--trace-out",
+        "/home/picazio/projects/julia_clone_alloc_6d09319_20261011/qualification/candidate/snapshots/traces/m3_mustache_bucket.jsonl",
+        "--expected-out",
+        "/home/picazio/projects/julia_clone_alloc_6d09319_20261011/qualification/candidate/snapshots/expected/m3_mustache_bucket.json",
+        "--snapshots"
+      ],
+      "cwd": "/home/picazio/projects/julia_clone_alloc_6d09319_20261011/candidate",
+      "exit_code": 0,
+      "log": "candidate-snapshots-m3_mustache_bucket.log"
+    },
+    {
+      "argv": [
+        "nice",
+        "-n",
+        "10",
+        "timeout",
+        "900",
+        "/home/picazio/.julia/juliaup/julia-1.12.6+0.x64.linux.gnu/bin/julia",
+        "--startup-file=no",
+        "--gcthreads=1",
+        "-t",
+        "1,0",
+        "--project=julia/PeggleSim",
+        "julia/PeggleSim/bin/shot_bench.jl",
+        "--fixture",
+        "m3_mustache_center",
+        "--level",
+        "fixtures/mustache/artifact/mustache.v1.json",
+        "--config",
+        "fixtures/mustache/config.dev.v1.json",
+        "--aim",
+        "900",
+        "--category",
+        "completion",
+        "--trace-out",
+        "/home/picazio/projects/julia_clone_alloc_6d09319_20261011/qualification/candidate/snapshots/traces/m3_mustache_center.jsonl",
+        "--expected-out",
+        "/home/picazio/projects/julia_clone_alloc_6d09319_20261011/qualification/candidate/snapshots/expected/m3_mustache_center.json",
+        "--snapshots"
+      ],
+      "cwd": "/home/picazio/projects/julia_clone_alloc_6d09319_20261011/candidate",
+      "exit_code": 0,
+      "log": "candidate-snapshots-m3_mustache_center.log"
+    },
+    {
+      "argv": [
+        "nice",
+        "-n",
+        "10",
+        "timeout",
+        "900",
+        "/home/picazio/.julia/juliaup/julia-1.12.6+0.x64.linux.gnu/bin/julia",
+        "--startup-file=no",
+        "--gcthreads=1",
+        "-t",
+        "1,0",
+        "--project=julia/PeggleSim",
+        "julia/PeggleSim/bin/shot_bench.jl",
+        "--fixture",
+        "m3_mustache_left_wall",
+        "--level",
+        "fixtures/mustache/artifact/mustache.v1.json",
+        "--config",
+        "fixtures/mustache/config.dev.v1.json",
+        "--aim",
+        "0",
+        "--category",
+        "power",
+        "--trace-out",
+        "/home/picazio/projects/julia_clone_alloc_6d09319_20261011/qualification/candidate/snapshots/traces/m3_mustache_left_wall.jsonl",
+        "--expected-out",
+        "/home/picazio/projects/julia_clone_alloc_6d09319_20261011/qualification/candidate/snapshots/expected/m3_mustache_left_wall.json",
+        "--snapshots"
+      ],
+      "cwd": "/home/picazio/projects/julia_clone_alloc_6d09319_20261011/candidate",
+      "exit_code": 0,
+      "log": "candidate-snapshots-m3_mustache_left_wall.log"
+    },
+    {
+      "argv": [
+        "nice",
+        "-n",
+        "10",
+        "timeout",
+        "900",
+        "/home/picazio/.julia/juliaup/julia-1.12.6+0.x64.linux.gnu/bin/julia",
+        "--startup-file=no",
+        "--gcthreads=1",
+        "-t",
+        "1,0",
+        "--project=julia/PeggleSim",
+        "julia/PeggleSim/bin/shot_bench.jl",
+        "--fixture",
+        "m3_mustache_multiball",
+        "--level",
+        "fixtures/mustache/artifact/mustache.v1.json",
+        "--config",
+        "fixtures/mustache/config.dev.v1.json",
+        "--aim",
+        "570",
+        "--category",
+        "multiball",
+        "--trace-out",
+        "/home/picazio/projects/julia_clone_alloc_6d09319_20261011/qualification/candidate/snapshots/traces/m3_mustache_multiball.jsonl",
+        "--expected-out",
+        "/home/picazio/projects/julia_clone_alloc_6d09319_20261011/qualification/candidate/snapshots/expected/m3_mustache_multiball.json",
+        "--snapshots"
+      ],
+      "cwd": "/home/picazio/projects/julia_clone_alloc_6d09319_20261011/candidate",
+      "exit_code": 0,
+      "log": "candidate-snapshots-m3_mustache_multiball.log"
+    },
+    {
+      "argv": [
+        "nice",
+        "-n",
+        "10",
+        "timeout",
+        "900",
+        "/home/picazio/.julia/juliaup/julia-1.12.6+0.x64.linux.gnu/bin/julia",
+        "--startup-file=no",
+        "--gcthreads=1",
+        "-t",
+        "1,0",
+        "--project=julia/PeggleSim",
+        "julia/PeggleSim/bin/shot_bench.jl",
+        "--fixture",
+        "m3_mustache_right_wall",
+        "--level",
+        "fixtures/mustache/artifact/mustache.v1.json",
+        "--config",
+        "fixtures/mustache/config.dev.v1.json",
+        "--aim",
+        "1800",
+        "--category",
+        "style",
+        "--trace-out",
+        "/home/picazio/projects/julia_clone_alloc_6d09319_20261011/qualification/candidate/snapshots/traces/m3_mustache_right_wall.jsonl",
+        "--expected-out",
+        "/home/picazio/projects/julia_clone_alloc_6d09319_20261011/qualification/candidate/snapshots/expected/m3_mustache_right_wall.json",
+        "--snapshots"
+      ],
+      "cwd": "/home/picazio/projects/julia_clone_alloc_6d09319_20261011/candidate",
+      "exit_code": 0,
+      "log": "candidate-snapshots-m3_mustache_right_wall.log"
+    },
+    {
+      "argv": [
+        "python3",
+        "tools/compare_traces.py",
+        "--control",
+        "--left-traces",
+        "/home/picazio/projects/julia_clone_alloc_6d09319_20261011/qualification/baseline/plain/traces",
+        "--left-expected",
+        "/home/picazio/projects/julia_clone_alloc_6d09319_20261011/qualification/baseline/plain/expected",
+        "--right-traces",
+        "/home/picazio/projects/julia_clone_alloc_6d09319_20261011/qualification/candidate/plain/traces",
+        "--right-expected",
+        "/home/picazio/projects/julia_clone_alloc_6d09319_20261011/qualification/candidate/plain/expected",
+        "--out",
+        "/home/picazio/projects/julia_clone_alloc_6d09319_20261011/qualification/trace-plain-comparison.json"
+      ],
+      "cwd": "/home/picazio/projects/julia_clone_alloc_6d09319_20261011/candidate",
+      "exit_code": 0,
+      "log": "trace-plain-comparison.log"
+    },
+    {
+      "argv": [
+        "python3",
+        "tools/compare_traces.py",
+        "--control",
+        "--left-traces",
+        "/home/picazio/projects/julia_clone_alloc_6d09319_20261011/qualification/baseline/snapshots/traces",
+        "--left-expected",
+        "/home/picazio/projects/julia_clone_alloc_6d09319_20261011/qualification/baseline/snapshots/expected",
+        "--right-traces",
+        "/home/picazio/projects/julia_clone_alloc_6d09319_20261011/qualification/candidate/snapshots/traces",
+        "--right-expected",
+        "/home/picazio/projects/julia_clone_alloc_6d09319_20261011/qualification/candidate/snapshots/expected",
+        "--out",
+        "/home/picazio/projects/julia_clone_alloc_6d09319_20261011/qualification/trace-snapshots-comparison.json"
+      ],
+      "cwd": "/home/picazio/projects/julia_clone_alloc_6d09319_20261011/candidate",
+      "exit_code": 0,
+      "log": "trace-snapshots-comparison.log"
+    },
+    {
+      "argv": [
+        "python3",
+        "tools/compare_traces.py",
+        "--require-identical",
+        "--left-traces",
+        "fixtures/mustache/traces",
+        "--left-expected",
+        "fixtures/mustache/expected",
+        "--right-traces",
+        "/home/picazio/projects/julia_clone_alloc_6d09319_20261011/qualification/baseline/plain/traces",
+        "--right-expected",
+        "/home/picazio/projects/julia_clone_alloc_6d09319_20261011/qualification/baseline/plain/expected",
+        "--out",
+        "/home/picazio/projects/julia_clone_alloc_6d09319_20261011/qualification/baseline-goldens-comparison.json"
+      ],
+      "cwd": "/home/picazio/projects/julia_clone_alloc_6d09319_20261011/baseline",
+      "exit_code": 0,
+      "log": "baseline-goldens-comparison.log"
+    },
+    {
+      "argv": [
+        "python3",
+        "tools/compare_traces.py",
+        "--require-identical",
+        "--left-traces",
+        "fixtures/mustache/traces",
+        "--left-expected",
+        "fixtures/mustache/expected",
+        "--right-traces",
+        "/home/picazio/projects/julia_clone_alloc_6d09319_20261011/qualification/candidate/plain/traces",
+        "--right-expected",
+        "/home/picazio/projects/julia_clone_alloc_6d09319_20261011/qualification/candidate/plain/expected",
+        "--out",
+        "/home/picazio/projects/julia_clone_alloc_6d09319_20261011/qualification/candidate-goldens-comparison.json"
+      ],
+      "cwd": "/home/picazio/projects/julia_clone_alloc_6d09319_20261011/candidate",
+      "exit_code": 0,
+      "log": "candidate-goldens-comparison.log"
+    },
+    {
+      "argv": [
+        "nice",
+        "-n",
+        "10",
+        "timeout",
+        "900",
+        "/home/picazio/.julia/juliaup/julia-1.12.6+0.x64.linux.gnu/bin/julia",
+        "--startup-file=no",
+        "--gcthreads=1",
+        "-t",
+        "1,0",
+        "--project=julia/PeggleSim",
+        "julia/PeggleSim/bin/shot_bench.jl",
+        "--sweep",
+        "--level",
+        "fixtures/mustache/artifact/mustache.v1.json",
+        "--config",
+        "fixtures/mustache/config.dev.v1.json",
+        "--stride",
+        "20",
+        "--threads",
+        "1",
+        "--verify-serial",
+        "--out",
+        "/home/picazio/projects/julia_clone_alloc_6d09319_20261011/qualification/baseline-stride20-t1.jsonl",
+        "--summary",
+        "/home/picazio/projects/julia_clone_alloc_6d09319_20261011/qualification/baseline-stride20-t1.json"
+      ],
+      "cwd": "/home/picazio/projects/julia_clone_alloc_6d09319_20261011/baseline",
+      "exit_code": 0,
+      "log": "baseline-stride20-t1.log"
+    },
+    {
+      "argv": [
+        "nice",
+        "-n",
+        "10",
+        "timeout",
+        "900",
+        "/home/picazio/.julia/juliaup/julia-1.12.6+0.x64.linux.gnu/bin/julia",
+        "--startup-file=no",
+        "--gcthreads=1",
+        "-t",
+        "2,0",
+        "--project=julia/PeggleSim",
+        "julia/PeggleSim/bin/shot_bench.jl",
+        "--sweep",
+        "--level",
+        "fixtures/mustache/artifact/mustache.v1.json",
+        "--config",
+        "fixtures/mustache/config.dev.v1.json",
+        "--stride",
+        "20",
+        "--threads",
+        "2",
+        "--verify-serial",
+        "--out",
+        "/home/picazio/projects/julia_clone_alloc_6d09319_20261011/qualification/baseline-stride20-t2.jsonl",
+        "--summary",
+        "/home/picazio/projects/julia_clone_alloc_6d09319_20261011/qualification/baseline-stride20-t2.json"
+      ],
+      "cwd": "/home/picazio/projects/julia_clone_alloc_6d09319_20261011/baseline",
+      "exit_code": 0,
+      "log": "baseline-stride20-t2.log"
+    },
+    {
+      "argv": [
+        "nice",
+        "-n",
+        "10",
+        "timeout",
+        "900",
+        "/home/picazio/.julia/juliaup/julia-1.12.6+0.x64.linux.gnu/bin/julia",
+        "--startup-file=no",
+        "--gcthreads=1",
+        "-t",
+        "4,0",
+        "--project=julia/PeggleSim",
+        "julia/PeggleSim/bin/shot_bench.jl",
+        "--sweep",
+        "--level",
+        "fixtures/mustache/artifact/mustache.v1.json",
+        "--config",
+        "fixtures/mustache/config.dev.v1.json",
+        "--stride",
+        "20",
+        "--threads",
+        "4",
+        "--verify-serial",
+        "--out",
+        "/home/picazio/projects/julia_clone_alloc_6d09319_20261011/qualification/baseline-stride20-t4.jsonl",
+        "--summary",
+        "/home/picazio/projects/julia_clone_alloc_6d09319_20261011/qualification/baseline-stride20-t4.json"
+      ],
+      "cwd": "/home/picazio/projects/julia_clone_alloc_6d09319_20261011/baseline",
+      "exit_code": 0,
+      "log": "baseline-stride20-t4.log"
+    },
+    {
+      "argv": [
+        "nice",
+        "-n",
+        "10",
+        "timeout",
+        "900",
+        "/home/picazio/.julia/juliaup/julia-1.12.6+0.x64.linux.gnu/bin/julia",
+        "--startup-file=no",
+        "--gcthreads=1",
+        "-t",
+        "1,0",
+        "--project=julia/PeggleSim",
+        "julia/PeggleSim/bin/shot_bench.jl",
+        "--sweep",
+        "--level",
+        "fixtures/mustache/artifact/mustache.v1.json",
+        "--config",
+        "fixtures/mustache/config.dev.v1.json",
+        "--stride",
+        "20",
+        "--threads",
+        "1",
+        "--verify-serial",
+        "--out",
+        "/home/picazio/projects/julia_clone_alloc_6d09319_20261011/qualification/candidate-stride20-t1.jsonl",
+        "--summary",
+        "/home/picazio/projects/julia_clone_alloc_6d09319_20261011/qualification/candidate-stride20-t1.json"
+      ],
+      "cwd": "/home/picazio/projects/julia_clone_alloc_6d09319_20261011/candidate",
+      "exit_code": 0,
+      "log": "candidate-stride20-t1.log"
+    },
+    {
+      "argv": [
+        "nice",
+        "-n",
+        "10",
+        "timeout",
+        "900",
+        "/home/picazio/.julia/juliaup/julia-1.12.6+0.x64.linux.gnu/bin/julia",
+        "--startup-file=no",
+        "--gcthreads=1",
+        "-t",
+        "2,0",
+        "--project=julia/PeggleSim",
+        "julia/PeggleSim/bin/shot_bench.jl",
+        "--sweep",
+        "--level",
+        "fixtures/mustache/artifact/mustache.v1.json",
+        "--config",
+        "fixtures/mustache/config.dev.v1.json",
+        "--stride",
+        "20",
+        "--threads",
+        "2",
+        "--verify-serial",
+        "--out",
+        "/home/picazio/projects/julia_clone_alloc_6d09319_20261011/qualification/candidate-stride20-t2.jsonl",
+        "--summary",
+        "/home/picazio/projects/julia_clone_alloc_6d09319_20261011/qualification/candidate-stride20-t2.json"
+      ],
+      "cwd": "/home/picazio/projects/julia_clone_alloc_6d09319_20261011/candidate",
+      "exit_code": 0,
+      "log": "candidate-stride20-t2.log"
+    },
+    {
+      "argv": [
+        "nice",
+        "-n",
+        "10",
+        "timeout",
+        "900",
+        "/home/picazio/.julia/juliaup/julia-1.12.6+0.x64.linux.gnu/bin/julia",
+        "--startup-file=no",
+        "--gcthreads=1",
+        "-t",
+        "4,0",
+        "--project=julia/PeggleSim",
+        "julia/PeggleSim/bin/shot_bench.jl",
+        "--sweep",
+        "--level",
+        "fixtures/mustache/artifact/mustache.v1.json",
+        "--config",
+        "fixtures/mustache/config.dev.v1.json",
+        "--stride",
+        "20",
+        "--threads",
+        "4",
+        "--verify-serial",
+        "--out",
+        "/home/picazio/projects/julia_clone_alloc_6d09319_20261011/qualification/candidate-stride20-t4.jsonl",
+        "--summary",
+        "/home/picazio/projects/julia_clone_alloc_6d09319_20261011/qualification/candidate-stride20-t4.json"
+      ],
+      "cwd": "/home/picazio/projects/julia_clone_alloc_6d09319_20261011/candidate",
+      "exit_code": 0,
+      "log": "candidate-stride20-t4.log"
+    },
+    {
+      "argv": [
+        "bash",
+        "scripts/allocation_remote.sh",
+        "/home/picazio/projects/julia_clone_alloc_6d09319_20261011/candidate",
+        "measure",
+        "candidate",
+        "/home/picazio/projects/julia_clone_alloc_6d09319_20261011/baseline/tmp/allocation/measurement.json"
+      ],
+      "cwd": "/home/picazio/projects/julia_clone_alloc_6d09319_20261011/candidate",
+      "exit_code": 0,
+      "log": "candidate-measurement.log"
+    },
+    {
+      "argv": [
+        "make",
+        "verify"
+      ],
+      "cwd": "/home/picazio/projects/julia_clone_alloc_6d09319_20261011/baseline",
+      "exit_code": 0,
+      "log": "baseline-verify-after.log"
+    },
+    {
+      "argv": [
+        "make",
+        "verify"
+      ],
+      "cwd": "/home/picazio/projects/julia_clone_alloc_6d09319_20261011/candidate",
+      "exit_code": 0,
+      "log": "candidate-verify-after.log"
+    },
+    {
+      "argv": [
+        "bash",
+        "/home/picazio/projects/julia_clone_alloc_6d09319_20261011/baseline/scripts/allocation_remote.sh",
+        "/home/picazio/projects/julia_clone_alloc_6d09319_20261011/baseline",
+        "measure",
+        "6d09319c33162d7fb9957cf096ef29c3478c471e"
+      ],
+      "cwd": "/home/picazio/projects/julia_clone_alloc_6d09319_20261011/baseline",
+      "exit_code": 0,
+      "log": "paired-result-checks/baseline-measurement.log"
+    },
+    {
+      "argv": [
+        "bash",
+        "/home/picazio/projects/julia_clone_alloc_6d09319_20261011/candidate/scripts/allocation_remote.sh",
+        "/home/picazio/projects/julia_clone_alloc_6d09319_20261011/candidate",
+        "measure",
+        "candidate-result-checks",
+        "/home/picazio/projects/julia_clone_alloc_6d09319_20261011/qualification/paired-result-checks/baseline-measurement.json"
+      ],
+      "cwd": "/home/picazio/projects/julia_clone_alloc_6d09319_20261011/candidate",
+      "exit_code": 0,
+      "log": "paired-result-checks/candidate-measurement.log"
+    },
+    {
+      "argv": [
+        "nice",
+        "-n",
+        "10",
+        "timeout",
+        "900",
+        "/home/picazio/.julia/juliaup/julia-1.12.6+0.x64.linux.gnu/bin/julia",
+        "--startup-file=no",
+        "--gcthreads=1",
+        "-t",
+        "1,0",
+        "--project=julia/PeggleSim",
+        "julia/PeggleSim/test/test_shot_scratch.jl"
+      ],
+      "cwd": "/home/picazio/projects/julia_clone_alloc_6d09319_20261011/candidate",
+      "exit_code": 0,
+      "log": "/home/picazio/projects/julia_clone_alloc_6d09319_20261011/candidate/tmp/allocation/extended-test-shot-scratch.log"
+    },
+    {
+      "argv": [
+        "nice",
+        "-n",
+        "10",
+        "timeout",
+        "900",
+        "/home/picazio/.julia/juliaup/julia-1.12.6+0.x64.linux.gnu/bin/julia",
+        "--startup-file=no",
+        "--gcthreads=1",
+        "-t",
+        "1,0",
+        "--project=julia/PeggleSim",
+        "-e",
+        "using Pkg; Pkg.test(; julia_args=[\"--startup-file=no\", \"--threads=1,0\", \"--gcthreads=1\"])"
+      ],
+      "cwd": "/home/picazio/projects/julia_clone_alloc_6d09319_20261011/candidate",
+      "exit_code": 0,
+      "log": "/home/picazio/projects/julia_clone_alloc_6d09319_20261011/candidate/tmp/allocation/extended-full-tests.log"
+    }
+  ],
+  "completed_utc": "2026-10-11T20:00:37.933538+00:00",
+  "cpu_model": "AMD Ryzen Threadripper 2990WX 32-Core Processor",
+  "environment": {
+    "JULIA_NUM_PRECOMPILE_TASKS": "1",
+    "JULIA_NUM_THREADS": "1",
+    "JULIA_PKG_PRECOMPILE_AUTO": "0",
+    "OMP_NUM_THREADS": "1",
+    "OPENBLAS_NUM_THREADS": "1",
+    "PEGGLE_MATH_BACKEND": "system_libm"
+  },
+  "extended_test_shot_scratch": {
+    "application_source_unchanged_since_validated_snapshot": true,
+    "direct_run": {
+      "argv": [
+        "nice",
+        "-n",
+        "10",
+        "timeout",
+        "900",
+        "/home/picazio/.julia/juliaup/julia-1.12.6+0.x64.linux.gnu/bin/julia",
+        "--startup-file=no",
+        "--gcthreads=1",
+        "-t",
+        "1,0",
+        "--project=julia/PeggleSim",
+        "julia/PeggleSim/test/test_shot_scratch.jl"
+      ],
+      "cwd": "/home/picazio/projects/julia_clone_alloc_6d09319_20261011/candidate",
+      "exit_code": 0,
+      "log": "/home/picazio/projects/julia_clone_alloc_6d09319_20261011/candidate/tmp/allocation/extended-test-shot-scratch.log",
+      "log_sha256": "f903790591d055dbbaf28ad82a4e32f7fe5cd2845a9f4767428734512938f206",
+      "passed": 98,
+      "seconds": 8.4,
+      "total": 98
+    },
+    "environment": {
+      "JULIA_NUM_PRECOMPILE_TASKS": "1",
+      "JULIA_NUM_THREADS": "1",
+      "JULIA_PKG_PRECOMPILE_AUTO": "0",
+      "OMP_NUM_THREADS": "1",
+      "OPENBLAS_NUM_THREADS": "1",
+      "PEGGLE_MATH_BACKEND": "system_libm"
+    },
+    "extended_sha256": "fbcf6c538f7b72d46a956b4dc0147ef520d005ed39b23df7f0d1fe60688065cd",
+    "file": "julia/PeggleSim/test/test_shot_scratch.jl",
+    "full_suite": {
+      "argv": [
+        "nice",
+        "-n",
+        "10",
+        "timeout",
+        "900",
+        "/home/picazio/.julia/juliaup/julia-1.12.6+0.x64.linux.gnu/bin/julia",
+        "--startup-file=no",
+        "--gcthreads=1",
+        "-t",
+        "1,0",
+        "--project=julia/PeggleSim",
+        "-e",
+        "using Pkg; Pkg.test(; julia_args=[\"--startup-file=no\", \"--threads=1,0\", \"--gcthreads=1\"])"
+      ],
+      "cwd": "/home/picazio/projects/julia_clone_alloc_6d09319_20261011/candidate",
+      "exit_code": 0,
+      "log": "/home/picazio/projects/julia_clone_alloc_6d09319_20261011/candidate/tmp/allocation/extended-full-tests.log",
+      "log_sha256": "ab1df332367e4931693f57292c9a99dba367647910ae6cf03e9374830c05d49e",
+      "passed": 5608,
+      "qualification_passed": 5588,
+      "qualification_total": 5588,
+      "total": 5608
+    },
+    "outcome": "passed",
+    "prepare": {
+      "argv": [
+        "bash",
+        "scripts/allocation_remote.sh",
+        "/home/picazio/projects/julia_clone_alloc_6d09319_20261011/candidate",
+        "prepare"
+      ],
+      "cwd": "/home/picazio/projects/julia_clone_alloc_6d09319_20261011/candidate",
+      "exit_code": 0,
+      "log": "/home/picazio/projects/julia_clone_alloc_6d09319_20261011/candidate/tmp/allocation/extended-prepare.log",
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "source_manifest_differences": {
+      "julia/PeggleSim/test/test_shot_scratch.jl": {
+        "after": "fbcf6c538f7b72d46a956b4dc0147ef520d005ed39b23df7f0d1fe60688065cd",
+        "before": "3530d64ec6c29de713d02d6d45caf5d37fc893b3d18ef6790bcd46b3d5f8db9e"
+      }
+    },
+    "source_manifest_sha256_after_extension": "4705e5b900c79e35d16cd78525150d761d6d7ed50a8f38df9b186b62053496e5",
+    "validated_sha256": "3530d64ec6c29de713d02d6d45caf5d37fc893b3d18ef6790bcd46b3d5f8db9e"
+  },
+  "failures": [],
+  "format": "peggle.allocation_qualification.v1",
+  "generated_utc": "2026-10-11T19:39:37.149747+00:00",
+  "host": "deathstar",
+  "improvements": {
+    "570": {
+      "allocation_reduction_percent": 87.12097136722457,
+      "bytes_saved": 60311200,
+      "median_speedup": 2.576079110020653,
+      "median_time_reduction_percent": 61.181316361360395
+    },
+    "900": {
+      "allocation_reduction_percent": 68.64246856064516,
+      "bytes_saved": 2979808,
+      "median_speedup": 1.4663723064233427,
+      "median_time_reduction_percent": 31.804494969008278
+    }
+  },
+  "julia_executable": "/home/picazio/.julia/juliaup/julia-1.12.6+0.x64.linux.gnu/bin/julia",
+  "limitations": [
+    "Fresh Lua execution is unavailable: luajit, love, xvfb-run and the sibling Lua development snapshot are absent. Committed Lua goldens matched byte-for-byte."
+  ],
+  "measurement_refresh": {
+    "execution_order": [
+      "prepare baseline",
+      "prepare candidate",
+      "measure baseline",
+      "measure candidate"
+    ],
+    "external_julia_observations": [],
+    "finished_utc": "2026-10-11T19:57:25.784131+00:00",
+    "harness_sha256": "71a681c075b7d829d3b58835b33cd99cec67b87050b45a8fc37b813a079242d1",
+    "interpretation": "Observed warmed per-shot latency for sequential baseline and candidate processes. Each sample follows a full GC outside measurement. These are not sustained-throughput measurements. The shared host was not reserved. Polling cannot exclude all intervening activity. ps CPU percentages are lifetime averages, not interval utilization.",
+    "measurement_cpu_affinity": [
+      0
+    ],
+    "monitor_cpu_affinity": [
+      1
+    ],
+    "other_runnable_cpu0_observations": [],
+    "paired_measurement_processes_overlapped": false,
+    "poll_interval_seconds": 0.5,
+    "previous_report_sha256": "53bfceb3260a9e666943929eaad153fd00810d677b4a0fcf6301a0b18875aac1",
+    "raw_concurrency_path": "/home/picazio/projects/julia_clone_alloc_6d09319_20261011/qualification/paired-result-checks/concurrency.json",
+    "raw_concurrency_sha256": "e330e596ddd3660e6f1af689a6b124cd59cad2eadea4af7b9a0084cdc3d85873",
+    "runs": [
+      {
+        "after": {
+          "cpu0_ticks": [
+            "4701754",
+            "11640",
+            "118765",
+            "283984050",
+            "7263",
+            "0",
+            "486297",
+            "0",
+            "0",
+            "0"
+          ],
+          "load_average": [
+            0.39111328125,
+            0.21435546875,
+            0.32373046875
+          ],
+          "processes": [],
+          "utc": "2026-10-11T19:57:09.657032+00:00"
+        },
+        "argv": [
+          "bash",
+          "/home/picazio/projects/julia_clone_alloc_6d09319_20261011/baseline/scripts/allocation_remote.sh",
+          "/home/picazio/projects/julia_clone_alloc_6d09319_20261011/baseline",
+          "measure",
+          "6d09319c33162d7fb9957cf096ef29c3478c471e"
+        ],
+        "before": {
+          "cpu0_ticks": [
+            "4701754",
+            "9910",
+            "118737",
+            "283984037",
+            "7263",
+            "0",
+            "486297",
+            "0",
+            "0",
+            "0"
+          ],
+          "load_average": [
+            0.216796875,
+            0.1728515625,
+            0.31201171875
+          ],
+          "processes": [],
+          "utc": "2026-10-11T19:56:51.947360+00:00"
+        },
+        "concurrency_samples": 33,
+        "exit_code": 0,
+        "finished_utc": "2026-10-11T19:57:09.637515+00:00",
+        "started_utc": "2026-10-11T19:56:51.927281+00:00",
+        "workspace": "/home/picazio/projects/julia_clone_alloc_6d09319_20261011/baseline"
+      },
+      {
+        "after": {
+          "cpu0_ticks": [
+            "4701754",
+            "13160",
+            "118791",
+            "283984116",
+            "7263",
+            "0",
+            "486297",
+            "0",
+            "0",
+            "0"
+          ],
+          "load_average": [
+            0.6064453125,
+            0.27001953125,
+            0.3408203125
+          ],
+          "processes": [],
+          "utc": "2026-10-11T19:57:25.772153+00:00"
+        },
+        "argv": [
+          "bash",
+          "/home/picazio/projects/julia_clone_alloc_6d09319_20261011/candidate/scripts/allocation_remote.sh",
+          "/home/picazio/projects/julia_clone_alloc_6d09319_20261011/candidate",
+          "measure",
+          "candidate-result-checks",
+          "/home/picazio/projects/julia_clone_alloc_6d09319_20261011/qualification/paired-result-checks/baseline-measurement.json"
+        ],
+        "before": {
+          "cpu0_ticks": [
+            "4701754",
+            "11640",
+            "118765",
+            "283984052",
+            "7263",
+            "0",
+            "486297",
+            "0",
+            "0",
+            "0"
+          ],
+          "load_average": [
+            0.39111328125,
+            0.21435546875,
+            0.32373046875
+          ],
+          "processes": [],
+          "utc": "2026-10-11T19:57:09.677368+00:00"
+        },
+        "concurrency_samples": 30,
+        "exit_code": 0,
+        "finished_utc": "2026-10-11T19:57:25.739808+00:00",
+        "started_utc": "2026-10-11T19:57:09.658407+00:00",
+        "workspace": "/home/picazio/projects/julia_clone_alloc_6d09319_20261011/candidate"
+      }
+    ],
+    "source_matches_validated_snapshot_after": true,
+    "source_matches_validated_snapshot_before": true,
+    "started_utc": "2026-10-11T19:56:49.393219+00:00",
+    "unchanged_qualification": "Paired measurements were repeated with the strengthened per-sample result checks. Package tests, five-fixture traces/goldens and stride20 thread identity remain from the completed qualification run; application sources are byte-identical to that run. test_shot_scratch.jl was extended after the paired measurement; the extended file passes its direct run (98/98) and the full suite (5608/5608)."
+  },
+  "measurements": {
+    "baseline": {
+      "aims": {
+        "570": {
+          "bytes": {
+            "max": 69226960,
+            "mean": 69226960,
+            "median": 69226960,
+            "min": 69226960
+          },
+          "bytes_samples": [
+            69226960,
+            69226960,
+            69226960,
+            69226960,
+            69226960,
+            69226960,
+            69226960,
+            69226960,
+            69226960,
+            69226960,
+            69226960,
+            69226960,
+            69226960,
+            69226960,
+            69226960
+          ],
+          "nanoseconds": {
+            "max": 192530217,
+            "mean": 188014155.66666666,
+            "median": 187396795,
+            "min": 186491623
+          },
+          "nanoseconds_samples": [
+            187135014,
+            187588225,
+            192530217,
+            187641586,
+            186491623,
+            188029075,
+            187100601,
+            187396795,
+            191775567,
+            187237473,
+            187129167,
+            187009370,
+            187784533,
+            187201106,
+            188161983
+          ],
+          "result": {
+            "balls": 1,
+            "bonus": 10000,
+            "completed": true,
+            "is_fever": false,
+            "multiplier": 2,
+            "peg_score": 81600,
+            "pegs_hit": 60,
+            "reason": "fell_out",
+            "reds_hit": 7,
+            "score": 91600,
+            "spawned": 6,
+            "steps": 1797,
+            "style_points": 0,
+            "style_total": 0,
+            "styles": ""
+          },
+          "result_checks": {
+            "all_identical": true,
+            "first_result_sha256": "7cf81e52c20cc3834560dcdc8af98c024a22f0abb45f8529b351516ca60bb639",
+            "measured_results_checked": 15,
+            "reference": "first warmup result for this aim",
+            "warmup_results_checked": 5,
+            "wrapper_warmup_results_checked": 0
+          }
+        },
+        "900": {
+          "bytes": {
+            "max": 4341056,
+            "mean": 4341056,
+            "median": 4341056,
+            "min": 4341056
+          },
+          "bytes_samples": [
+            4341056,
+            4341056,
+            4341056,
+            4341056,
+            4341056,
+            4341056,
+            4341056,
+            4341056,
+            4341056,
+            4341056,
+            4341056,
+            4341056,
+            4341056,
+            4341056,
+            4341056
+          ],
+          "nanoseconds": {
+            "max": 8638687,
+            "mean": 8536644.333333334,
+            "median": 8533407,
+            "min": 8474555
+          },
+          "nanoseconds_samples": [
+            8474555,
+            8565397,
+            8509030,
+            8549588,
+            8533407,
+            8567332,
+            8533607,
+            8509732,
+            8515924,
+            8570728,
+            8502948,
+            8638687,
+            8543366,
+            8518829,
+            8516535
+          ],
+          "result": {
+            "balls": 1,
+            "bonus": 0,
+            "completed": true,
+            "is_fever": false,
+            "multiplier": 1,
+            "peg_score": 4000,
+            "pegs_hit": 16,
+            "reason": "fell_out",
+            "reds_hit": 1,
+            "score": 9000,
+            "spawned": 0,
+            "steps": 922,
+            "style_points": 5000,
+            "style_total": 1,
+            "styles": "slide:1"
+          },
+          "result_checks": {
+            "all_identical": true,
+            "first_result_sha256": "e6dbf8c25b6e51a2db030027b960afd8f8c0c9137b95e35ae2a8ec84b156496e",
+            "measured_results_checked": 15,
+            "reference": "first warmup result for this aim",
+            "warmup_results_checked": 5,
+            "wrapper_warmup_results_checked": 1
+          }
+        }
+      },
+      "balls": 1,
+      "clearing": false,
+      "config_sha256": "170487a48e936e82e911f45e021f7a7002b8e2f0e29bb2569e271fb62041002a",
+      "cpu": "znver1",
+      "format": "peggle.allocation_bench.v2",
+      "harness_sha256": "71a681c075b7d829d3b58835b33cd99cec67b87050b45a8fc37b813a079242d1",
+      "interactive_threads": 0,
+      "julia_version": "1.12.6",
+      "kernel": "Linux",
+      "label": "6d09319c33162d7fb9957cf096ef29c3478c471e",
+      "level_sha256": "ea33fadd70666980cf426fb4a2854f66c28d333fb9f1a57b15a282cfddd0f747",
+      "math_backend": {
+        "backend": "system_libm",
+        "glibc": "2.35",
+        "julia": "1.12.6",
+        "library": "libm.so.6",
+        "platform": "linux-x86_64"
+      },
+      "max_steps": 3600,
+      "method": "Base.gc_bytes and time_ns around reset+launch+run; no extraction; trace disabled; GC before each sample outside timed region",
+      "result_validation": "Every warmup, wrapper warmup, and measured result matches the first warmup result for its aim; canonical summary comparison outside measured region",
+      "samples_per_aim": 15,
+      "threads": 1,
+      "warmup_per_aim": 5,
+      "workspace": "/home/picazio/projects/julia_clone_alloc_6d09319_20261011/baseline"
+    },
+    "candidate": {
+      "aims": {
+        "570": {
+          "bytes": {
+            "max": 8915760,
+            "mean": 8915760,
+            "median": 8915760,
+            "min": 8915760
+          },
+          "bytes_samples": [
+            8915760,
+            8915760,
+            8915760,
+            8915760,
+            8915760,
+            8915760,
+            8915760,
+            8915760,
+            8915760,
+            8915760,
+            8915760,
+            8915760,
+            8915760,
+            8915760,
+            8915760
+          ],
+          "nanoseconds": {
+            "max": 75649399,
+            "mean": 73153492,
+            "median": 72744969,
+            "min": 72571699
+          },
+          "nanoseconds_samples": [
+            73513318,
+            72724389,
+            72777008,
+            73508128,
+            72571699,
+            72646651,
+            75649399,
+            73484304,
+            72638746,
+            73434098,
+            72744969,
+            72692539,
+            73505784,
+            72732826,
+            72678522
+          ],
+          "result": {
+            "balls": 1,
+            "bonus": 10000,
+            "completed": true,
+            "is_fever": false,
+            "multiplier": 2,
+            "peg_score": 81600,
+            "pegs_hit": 60,
+            "reason": "fell_out",
+            "reds_hit": 7,
+            "score": 91600,
+            "spawned": 6,
+            "steps": 1797,
+            "style_points": 0,
+            "style_total": 0,
+            "styles": ""
+          },
+          "result_checks": {
+            "all_identical": true,
+            "first_result_sha256": "7cf81e52c20cc3834560dcdc8af98c024a22f0abb45f8529b351516ca60bb639",
+            "measured_results_checked": 15,
+            "reference": "first warmup result for this aim",
+            "warmup_results_checked": 5,
+            "wrapper_warmup_results_checked": 0
+          }
+        },
+        "900": {
+          "bytes": {
+            "max": 1361248,
+            "mean": 1361248,
+            "median": 1361248,
+            "min": 1361248
+          },
+          "bytes_samples": [
+            1361248,
+            1361248,
+            1361248,
+            1361248,
+            1361248,
+            1361248,
+            1361248,
+            1361248,
+            1361248,
+            1361248,
+            1361248,
+            1361248,
+            1361248,
+            1361248,
+            1361248
+          ],
+          "nanoseconds": {
+            "max": 5928257,
+            "mean": 5838438.266666667,
+            "median": 5819400,
+            "min": 5807397
+          },
+          "nanoseconds_samples": [
+            5807397,
+            5819400,
+            5867641,
+            5807828,
+            5854768,
+            5809291,
+            5816494,
+            5928257,
+            5808840,
+            5856381,
+            5819269,
+            5861610,
+            5876790,
+            5818078,
+            5824530
+          ],
+          "result": {
+            "balls": 1,
+            "bonus": 0,
+            "completed": true,
+            "is_fever": false,
+            "multiplier": 1,
+            "peg_score": 4000,
+            "pegs_hit": 16,
+            "reason": "fell_out",
+            "reds_hit": 1,
+            "score": 9000,
+            "spawned": 0,
+            "steps": 922,
+            "style_points": 5000,
+            "style_total": 1,
+            "styles": "slide:1"
+          },
+          "result_checks": {
+            "all_identical": true,
+            "first_result_sha256": "e6dbf8c25b6e51a2db030027b960afd8f8c0c9137b95e35ae2a8ec84b156496e",
+            "measured_results_checked": 15,
+            "reference": "first warmup result for this aim",
+            "warmup_results_checked": 5,
+            "wrapper_warmup_results_checked": 1
+          }
+        }
+      },
+      "balls": 1,
+      "clearing": false,
+      "comparison": {
+        "570": {
+          "bytes_saved": 60311200,
+          "result_identical": true,
+          "time_ratio": 0.38818683638639606
+        },
+        "900": {
+          "bytes_saved": 2979808,
+          "result_identical": true,
+          "time_ratio": 0.6819550503099172
+        }
+      },
+      "config_sha256": "170487a48e936e82e911f45e021f7a7002b8e2f0e29bb2569e271fb62041002a",
+      "cpu": "znver1",
+      "format": "peggle.allocation_bench.v2",
+      "harness_sha256": "71a681c075b7d829d3b58835b33cd99cec67b87050b45a8fc37b813a079242d1",
+      "interactive_threads": 0,
+      "julia_version": "1.12.6",
+      "kernel": "Linux",
+      "label": "candidate-result-checks",
+      "level_sha256": "ea33fadd70666980cf426fb4a2854f66c28d333fb9f1a57b15a282cfddd0f747",
+      "math_backend": {
+        "backend": "system_libm",
+        "glibc": "2.35",
+        "julia": "1.12.6",
+        "library": "libm.so.6",
+        "platform": "linux-x86_64"
+      },
+      "max_steps": 3600,
+      "method": "Base.gc_bytes and time_ns around reset+launch+run; no extraction; trace disabled; GC before each sample outside timed region",
+      "result_validation": "Every warmup, wrapper warmup, and measured result matches the first warmup result for its aim; canonical summary comparison outside measured region",
+      "samples_per_aim": 15,
+      "threads": 1,
+      "warmup_per_aim": 5,
+      "workspace": "/home/picazio/projects/julia_clone_alloc_6d09319_20261011/candidate"
+    }
+  },
+  "orchestration_sha256": {
+    "allocation_bench.jl": "71a681c075b7d829d3b58835b33cd99cec67b87050b45a8fc37b813a079242d1",
+    "allocation_remote.sh": "7c40ed6f354e78bd3c772f593bd81baa4bdcdb9e59768707932ee211759097ef",
+    "allocation_validate.py": "03fa08909a01590dc7cddf22ce3b6d1869a889a96d5a84b5601f75d70a8331d0"
+  },
+  "parity": {
+    "authoritative_bit_identical": true,
+    "baseline": {
+      "authoritative": {
+        "geometry": {
+          "circle_level": "5ee270042c373571fc9a158ee350dc62dd0aca5d6150d1dcd6bd503c4417ef89",
+          "double_long_shot": "289e0452a77e33f6e7a162850b5a70ae38d68bd578b7694603259875d8ec4a94",
+          "long_shot": "6208132e25fe657c8d6e5c3d1ba8fe6e6314a558ef654181e6a4e211e2a48883",
+          "lucky_bounce": "97d8ff920c79993161338da791e40a1825a0ac5b4492672b6e28fac6271f71be",
+          "off_the_wall": "6692142def7d3b0f9f630781666d3d06b90c4d69b921649ba381ab28bc025dc4",
+          "slide": "6f987cf8a52e44b3934e3a80b803cb301ed1d1303f09c1260c324b6da977e008",
+          "slide.multiball3": "9899723e6841ae6c5a798b7721934ea165f019976703bd7ae88c81608fa8d6a0",
+          "squiggly_circle": "7ff26f8b6188bb02de133dead051efa8816b8ab729a4b20d909c57dc03eeaf7a",
+          "super_long_shot": "a2d8079bc5eb1b43a9310108594a9453ee739646f8e8e2b31492ac324c529e7f"
+        },
+        "levels": {
+          "circle_level": "a8c87a0976927b7f49ce17c3f58d48bf7cd8428416dcda012bd0ad307c82ef91",
+          "double_long_shot": "a290ed22f0ec8f542db5c6d938a76350e50a29925c6a435209fa716018a02774",
+          "long_shot": "e2e0c728beec6a97ec83a926725e33de5954722ea025f865f765e6fe2ca1d880",
+          "lucky_bounce": "b8b508b00fca0e1e479afb55761e6e949b1995007fdad2ac77d1b5eee803f1e7",
+          "off_the_wall": "be365d22c4d27341c63d631337183bf1d3a8bdb3c41c38b1b1c8a5344a35090a",
+          "slide": "8432b14c888aaa7746aa9ca5fe65ffba5b52f5fe552fc7cd513b25fe92d960a7",
+          "squiggly_circle": "85620cf9823590757c303599fa37f0ee074d8ae53404074f0d610e51fa28fdb9",
+          "super_long_shot": "ec26a7dfca28c923e5ed32ab75fa7c7ff096144b74f335fb7f200fa4d2a09344"
+        },
+        "math_census": {
+          "fixture_sha256": "fa052e173e188444439242a802a8c6e807b3a1db9399b652d9dbcdb7235786b0",
+          "mismatches": 0,
+          "total_cases": 15794,
+          "verified": true
+        },
+        "peg_colors": {
+          "checked": 39,
+          "computed_record_sha256": {
+            "level=circle_level": "2213eb3c001810791f35be1d9d3c3e1b4db1ce6dcaa5a06bdd9b79336de98559",
+            "level=double_long_shot": "f2963cd4082889cb7610227a6325f26fc3b0d03d1f25fe01d1d187ce6f87891c",
+            "level=long_shot": "53ab796008d93319a280d6a9147d4a010895160a0a8e2b413451f7f62f7d3d23",
+            "level=lucky_bounce": "30e687acba9eb149b4a8f06bdb776c60b81163d09d05e7736c21406c79475afd",
+            "level=off_the_wall": "89e8a445068a9edb595fac020c9d2c262554ddee0165d78c0e3a5ee2e86c816b",
+            "level=slide": "78b8e4924b45e8a24f9fe1318d596aec130f47f01d738df6c86a348facb7d803",
+            "level=squiggly_circle": "46beb4ccb241400ed303512cb3c023fd8ce4efe75bf85553d6a8dff1f4b523fb",
+            "level=super_long_shot": "7dccc605d661bfb68fba912f379fe43684b5dd213168c95404d3d7178587347f"
+          },
+          "computed_sha256": "06c5a57eea89cd5a1f4416ad51101b930be8d7fbb781dc8655bab5b22115fa88",
+          "fixture_sha256": "456552bcb4ab140ee0405d623c5cd8e8c3e2a2678fddff8b79cb17a0b6902032",
+          "mismatches": 0,
+          "verified": true
+        },
+        "reset": {
+          "circle_level": {
+            "checkpoint_sha256": "5ee270042c373571fc9a158ee350dc62dd0aca5d6150d1dcd6bd503c4417ef89",
+            "mutated_sha256": "3e931d1d4ba96a01486e74e5fecf1cd21706cf714dbc173331cdacd9a954b7b0",
+            "restored_matches_original": true,
+            "restored_sha256": [
+              "5ee270042c373571fc9a158ee350dc62dd0aca5d6150d1dcd6bd503c4417ef89",
+              "5ee270042c373571fc9a158ee350dc62dd0aca5d6150d1dcd6bd503c4417ef89"
+            ]
+          },
+          "double_long_shot": {
+            "checkpoint_sha256": "289e0452a77e33f6e7a162850b5a70ae38d68bd578b7694603259875d8ec4a94",
+            "mutated_sha256": "79c35a5437c4b29db4015a293d48d8f8c7d8fce4a60eef04d8792f55212a32ee",
+            "restored_matches_original": true,
+            "restored_sha256": [
+              "289e0452a77e33f6e7a162850b5a70ae38d68bd578b7694603259875d8ec4a94",
+              "289e0452a77e33f6e7a162850b5a70ae38d68bd578b7694603259875d8ec4a94"
+            ]
+          },
+          "long_shot": {
+            "checkpoint_sha256": "6208132e25fe657c8d6e5c3d1ba8fe6e6314a558ef654181e6a4e211e2a48883",
+            "mutated_sha256": "63538a53e861bb67d7e48b94ada6623367b54440d9c9daa6eefaa931b8821340",
+            "restored_matches_original": true,
+            "restored_sha256": [
+              "6208132e25fe657c8d6e5c3d1ba8fe6e6314a558ef654181e6a4e211e2a48883",
+              "6208132e25fe657c8d6e5c3d1ba8fe6e6314a558ef654181e6a4e211e2a48883"
+            ]
+          },
+          "lucky_bounce": {
+            "checkpoint_sha256": "97d8ff920c79993161338da791e40a1825a0ac5b4492672b6e28fac6271f71be",
+            "mutated_sha256": "60565868b6764fc8b6b7476a5f2c9bc690dece32c5d797a32624397a16a15116",
+            "restored_matches_original": true,
+            "restored_sha256": [
+              "97d8ff920c79993161338da791e40a1825a0ac5b4492672b6e28fac6271f71be",
+              "97d8ff920c79993161338da791e40a1825a0ac5b4492672b6e28fac6271f71be"
+            ]
+          },
+          "off_the_wall": {
+            "checkpoint_sha256": "6692142def7d3b0f9f630781666d3d06b90c4d69b921649ba381ab28bc025dc4",
+            "mutated_sha256": "db39f844f7fd0ba68e39b3c3cdd6c64bc513ce461f5095afbe3fc3acbe3ca4ba",
+            "restored_matches_original": true,
+            "restored_sha256": [
+              "6692142def7d3b0f9f630781666d3d06b90c4d69b921649ba381ab28bc025dc4",
+              "6692142def7d3b0f9f630781666d3d06b90c4d69b921649ba381ab28bc025dc4"
+            ]
+          },
+          "slide": {
+            "checkpoint_sha256": "6f987cf8a52e44b3934e3a80b803cb301ed1d1303f09c1260c324b6da977e008",
+            "mutated_sha256": "e2e490991faf6f14d50c409fc2f8acba3d5a2237924c6e4467e60345bc7322f4",
+            "restored_matches_original": true,
+            "restored_sha256": [
+              "6f987cf8a52e44b3934e3a80b803cb301ed1d1303f09c1260c324b6da977e008",
+              "6f987cf8a52e44b3934e3a80b803cb301ed1d1303f09c1260c324b6da977e008"
+            ]
+          },
+          "slide.multiball3": {
+            "checkpoint_sha256": "9899723e6841ae6c5a798b7721934ea165f019976703bd7ae88c81608fa8d6a0",
+            "mutated_sha256": "b99c9aaf4f2b421bc9d59e27ba23427fe6ce890f56d1aeb3d857426cbced483f",
+            "restored_matches_original": true,
+            "restored_sha256": [
+              "9899723e6841ae6c5a798b7721934ea165f019976703bd7ae88c81608fa8d6a0",
+              "9899723e6841ae6c5a798b7721934ea165f019976703bd7ae88c81608fa8d6a0"
+            ]
+          },
+          "squiggly_circle": {
+            "checkpoint_sha256": "7ff26f8b6188bb02de133dead051efa8816b8ab729a4b20d909c57dc03eeaf7a",
+            "mutated_sha256": "671d17abaa74463af2d83ac3f2200314f04bb31b99d2a7fd8df4d62de7a9ec22",
+            "restored_matches_original": true,
+            "restored_sha256": [
+              "7ff26f8b6188bb02de133dead051efa8816b8ab729a4b20d909c57dc03eeaf7a",
+              "7ff26f8b6188bb02de133dead051efa8816b8ab729a4b20d909c57dc03eeaf7a"
+            ]
+          },
+          "super_long_shot": {
+            "checkpoint_sha256": "a2d8079bc5eb1b43a9310108594a9453ee739646f8e8e2b31492ac324c529e7f",
+            "mutated_sha256": "fecc264051e3be8811f1f58936a0d15b8d1591e5667fd753bcdcf6a15c63c163",
+            "restored_matches_original": true,
+            "restored_sha256": [
+              "a2d8079bc5eb1b43a9310108594a9453ee739646f8e8e2b31492ac324c529e7f",
+              "a2d8079bc5eb1b43a9310108594a9453ee739646f8e8e2b31492ac324c529e7f"
+            ]
+          }
+        },
+        "reset_deterministic": true,
+        "rng_sequences": {
+          "checked": 514,
+          "computed_record_sha256": {
+            "seed_anchors[seed=0]": "a188ba7ed58c3b9e7611bbb3ad0faf70e0b9e47bb602f225e406fca28b16bb6b",
+            "seed_anchors[seed=345]": "8aadd691e559c9a46344a72aa2a4494fa41bb6433754775e390e0227a9a79c11",
+            "sequences[seed=0]": "e7b4399cce0cd108eff932e827f85433f93bda62dd0cf0e2eafec4e3a68616e9",
+            "sequences[seed=123]": "bf1b4d797e51eb9d77c753185924974248095480b09bc511a5089ae549e4dad9",
+            "sequences[seed=1]": "adef29cd112417edd7859bf97d6bb236e58ca9f07d56ab9893e82bef650b9e9d",
+            "sequences[seed=20260918]": "a75865c0fdd45cb3d661da8f45825161f78af354596150546d65b7369e95b6a7",
+            "sequences[seed=345]": "8ddb7cc1cc2ac29c2d212080ebe2729a41956c226d8b98ae0a8cab7947f02b12",
+            "sequences[seed=3735928559]": "acb30997839b76d6ae89aaa3ae38a4518150599c2b3d21e3552c6bd791dc74cf",
+            "sequences[seed=4294967295]": "86069b725ad6cc22a9342684f91461957768742e02ed27e966b6d009a9746da4",
+            "sequences[seed=4294967296]": "1aeae7bb59a7f9b0887b2e245d55fc380764449d56ea8fc7a16a8b6f0ccc7c8c",
+            "sequences[seed=42]": "798bc51deee098b63361dcaeff4b65a59bb00b73770345fa4093d6cc157f31e5",
+            "sequences[seed=9007199254740991]": "6874c077851dc5047c5675022b8692c531f6cd6752e75628b6f6be6fc7a5d99d",
+            "set_state[0x5e15348974525b7a]": "00042c385e22f5de6a60efec5dc6eb9626d81395e3c0c747a1e9cfa8dc628f1d",
+            "set_state[0x7837ac8e69b05bb3]": "2c79dacd79f3db6ed71523103c3535434810a493abd3afce0c9a7b85f83ee391",
+            "states[seed=0]": "32e153f3430112f1b6842e0613ad795268ba23ec1187eee78a79275d593fd929",
+            "states[seed=123]": "a7608a97fad3d6a58c99a8f4957ffb4758cfac4b59b6e6ff4fa4eb6153aa065e",
+            "states[seed=1]": "e37335447b4979682a5330a62fe35e40145ead6b4dd73369329bb3c2a35d704d",
+            "states[seed=20260918]": "fb68020dd3b06543349934b6973e78cbae33befe3aad85d420cb3fa0b64ec382",
+            "states[seed=345]": "23e94ceff64a53fc1da7b74ba943a16bb552c44475b9d320b5a5ca636af01600",
+            "states[seed=3735928559]": "f2f6a2b7cb90ef8a95c9b6971858997773aa8278ac78adfed649dec69a83860b",
+            "states[seed=4294967295]": "85ba60950842436c97329188fc87405ad2d2dd5e17a007eb486c7fe3d46fc874",
+            "states[seed=4294967296]": "eebb549e68d08dcf1c3d7246f494d664cd00bed46fb32c5e6314d3a5e803419d",
+            "states[seed=42]": "049fd68fdc0e2537c14dcc1d551c247b43ead0d4f2e3c62bf6a738415a886494",
+            "states[seed=9007199254740991]": "200bda12cec10188a9129be7ada794a676effbfeef2c5ec32c0e75204ede48a4"
+          },
+          "computed_sha256": "596d597b4c94b8ecb6140dae52750e976c99849a21a79e5f7fa29d4e1eb66972",
+          "fixture_sha256": "f105d119c5d0b20fd5d6c3bdb253d4c1983c411da0e0c297249d1f49350bec02",
+          "mismatches": 0,
+          "verified": true
+        }
+      },
+      "environment": {
+        "cpu_model": "AMD Ryzen Threadripper 2990WX 32-Core Processor",
+        "julia": "1.12.6",
+        "kernel": "Linux",
+        "label": "deathstar-allocation",
+        "libm": "system_libm:libm.so.6:glibc-2.35",
+        "logical_cores": 64,
+        "machine": "x86_64-linux-gnu",
+        "math_backend": {
+          "backend": "system_libm",
+          "glibc": "2.35",
+          "julia": "1.12.6",
+          "library": "libm.so.6",
+          "platform": "linux-x86_64"
+        }
+      },
+      "identity": {
+        "checkpoint_schema_version": 1,
+        "config_sha256": "455757c900c604563865b5195eda2f31cfeba3d8666b6d782390e38c47e91d4d",
+        "format": "peggle.parity",
+        "julia_source_sha256": "fae8791c0936853824a16ab831553518e4cdacf6c83d4121b60462e28e3f4261",
+        "package_version": "0.1.0",
+        "prerequisites": {
+          "census_fixture_sha256": "fa052e173e188444439242a802a8c6e807b3a1db9399b652d9dbcdb7235786b0",
+          "config_artifact_sha256": "f4a0a1482a6c791d3d38a935ffdb669ff91e65fb03367a258ef8f40d0b5d17b6",
+          "levels_sha256": "eeb217385f8feeb9098106b54bf775b780b14058daa21df26325df69036d2c8e",
+          "math_backend": {
+            "backend": "system_libm"
+          },
+          "package_version": "0.1.0",
+          "peg_colors_fixture_sha256": "456552bcb4ab140ee0405d623c5cd8e8c3e2a2678fddff8b79cb17a0b6902032",
+          "rng_sequences_fixture_sha256": "f105d119c5d0b20fd5d6c3bdb253d4c1983c411da0e0c297249d1f49350bec02"
+        },
+        "reference_revision": "d17f6e7089b6e761f4367fc6a6dcd5b4da0309b9",
+        "reference_tree": "3dc7ddfe19916e149d2531b20c73463c28a202c8",
+        "schema_version": 2
+      }
+    },
+    "candidate": {
+      "authoritative": {
+        "geometry": {
+          "circle_level": "5ee270042c373571fc9a158ee350dc62dd0aca5d6150d1dcd6bd503c4417ef89",
+          "double_long_shot": "289e0452a77e33f6e7a162850b5a70ae38d68bd578b7694603259875d8ec4a94",
+          "long_shot": "6208132e25fe657c8d6e5c3d1ba8fe6e6314a558ef654181e6a4e211e2a48883",
+          "lucky_bounce": "97d8ff920c79993161338da791e40a1825a0ac5b4492672b6e28fac6271f71be",
+          "off_the_wall": "6692142def7d3b0f9f630781666d3d06b90c4d69b921649ba381ab28bc025dc4",
+          "slide": "6f987cf8a52e44b3934e3a80b803cb301ed1d1303f09c1260c324b6da977e008",
+          "slide.multiball3": "9899723e6841ae6c5a798b7721934ea165f019976703bd7ae88c81608fa8d6a0",
+          "squiggly_circle": "7ff26f8b6188bb02de133dead051efa8816b8ab729a4b20d909c57dc03eeaf7a",
+          "super_long_shot": "a2d8079bc5eb1b43a9310108594a9453ee739646f8e8e2b31492ac324c529e7f"
+        },
+        "levels": {
+          "circle_level": "a8c87a0976927b7f49ce17c3f58d48bf7cd8428416dcda012bd0ad307c82ef91",
+          "double_long_shot": "a290ed22f0ec8f542db5c6d938a76350e50a29925c6a435209fa716018a02774",
+          "long_shot": "e2e0c728beec6a97ec83a926725e33de5954722ea025f865f765e6fe2ca1d880",
+          "lucky_bounce": "b8b508b00fca0e1e479afb55761e6e949b1995007fdad2ac77d1b5eee803f1e7",
+          "off_the_wall": "be365d22c4d27341c63d631337183bf1d3a8bdb3c41c38b1b1c8a5344a35090a",
+          "slide": "8432b14c888aaa7746aa9ca5fe65ffba5b52f5fe552fc7cd513b25fe92d960a7",
+          "squiggly_circle": "85620cf9823590757c303599fa37f0ee074d8ae53404074f0d610e51fa28fdb9",
+          "super_long_shot": "ec26a7dfca28c923e5ed32ab75fa7c7ff096144b74f335fb7f200fa4d2a09344"
+        },
+        "math_census": {
+          "fixture_sha256": "fa052e173e188444439242a802a8c6e807b3a1db9399b652d9dbcdb7235786b0",
+          "mismatches": 0,
+          "total_cases": 15794,
+          "verified": true
+        },
+        "peg_colors": {
+          "checked": 39,
+          "computed_record_sha256": {
+            "level=circle_level": "2213eb3c001810791f35be1d9d3c3e1b4db1ce6dcaa5a06bdd9b79336de98559",
+            "level=double_long_shot": "f2963cd4082889cb7610227a6325f26fc3b0d03d1f25fe01d1d187ce6f87891c",
+            "level=long_shot": "53ab796008d93319a280d6a9147d4a010895160a0a8e2b413451f7f62f7d3d23",
+            "level=lucky_bounce": "30e687acba9eb149b4a8f06bdb776c60b81163d09d05e7736c21406c79475afd",
+            "level=off_the_wall": "89e8a445068a9edb595fac020c9d2c262554ddee0165d78c0e3a5ee2e86c816b",
+            "level=slide": "78b8e4924b45e8a24f9fe1318d596aec130f47f01d738df6c86a348facb7d803",
+            "level=squiggly_circle": "46beb4ccb241400ed303512cb3c023fd8ce4efe75bf85553d6a8dff1f4b523fb",
+            "level=super_long_shot": "7dccc605d661bfb68fba912f379fe43684b5dd213168c95404d3d7178587347f"
+          },
+          "computed_sha256": "06c5a57eea89cd5a1f4416ad51101b930be8d7fbb781dc8655bab5b22115fa88",
+          "fixture_sha256": "456552bcb4ab140ee0405d623c5cd8e8c3e2a2678fddff8b79cb17a0b6902032",
+          "mismatches": 0,
+          "verified": true
+        },
+        "reset": {
+          "circle_level": {
+            "checkpoint_sha256": "5ee270042c373571fc9a158ee350dc62dd0aca5d6150d1dcd6bd503c4417ef89",
+            "mutated_sha256": "3e931d1d4ba96a01486e74e5fecf1cd21706cf714dbc173331cdacd9a954b7b0",
+            "restored_matches_original": true,
+            "restored_sha256": [
+              "5ee270042c373571fc9a158ee350dc62dd0aca5d6150d1dcd6bd503c4417ef89",
+              "5ee270042c373571fc9a158ee350dc62dd0aca5d6150d1dcd6bd503c4417ef89"
+            ]
+          },
+          "double_long_shot": {
+            "checkpoint_sha256": "289e0452a77e33f6e7a162850b5a70ae38d68bd578b7694603259875d8ec4a94",
+            "mutated_sha256": "79c35a5437c4b29db4015a293d48d8f8c7d8fce4a60eef04d8792f55212a32ee",
+            "restored_matches_original": true,
+            "restored_sha256": [
+              "289e0452a77e33f6e7a162850b5a70ae38d68bd578b7694603259875d8ec4a94",
+              "289e0452a77e33f6e7a162850b5a70ae38d68bd578b7694603259875d8ec4a94"
+            ]
+          },
+          "long_shot": {
+            "checkpoint_sha256": "6208132e25fe657c8d6e5c3d1ba8fe6e6314a558ef654181e6a4e211e2a48883",
+            "mutated_sha256": "63538a53e861bb67d7e48b94ada6623367b54440d9c9daa6eefaa931b8821340",
+            "restored_matches_original": true,
+            "restored_sha256": [
+              "6208132e25fe657c8d6e5c3d1ba8fe6e6314a558ef654181e6a4e211e2a48883",
+              "6208132e25fe657c8d6e5c3d1ba8fe6e6314a558ef654181e6a4e211e2a48883"
+            ]
+          },
+          "lucky_bounce": {
+            "checkpoint_sha256": "97d8ff920c79993161338da791e40a1825a0ac5b4492672b6e28fac6271f71be",
+            "mutated_sha256": "60565868b6764fc8b6b7476a5f2c9bc690dece32c5d797a32624397a16a15116",
+            "restored_matches_original": true,
+            "restored_sha256": [
+              "97d8ff920c79993161338da791e40a1825a0ac5b4492672b6e28fac6271f71be",
+              "97d8ff920c79993161338da791e40a1825a0ac5b4492672b6e28fac6271f71be"
+            ]
+          },
+          "off_the_wall": {
+            "checkpoint_sha256": "6692142def7d3b0f9f630781666d3d06b90c4d69b921649ba381ab28bc025dc4",
+            "mutated_sha256": "db39f844f7fd0ba68e39b3c3cdd6c64bc513ce461f5095afbe3fc3acbe3ca4ba",
+            "restored_matches_original": true,
+            "restored_sha256": [
+              "6692142def7d3b0f9f630781666d3d06b90c4d69b921649ba381ab28bc025dc4",
+              "6692142def7d3b0f9f630781666d3d06b90c4d69b921649ba381ab28bc025dc4"
+            ]
+          },
+          "slide": {
+            "checkpoint_sha256": "6f987cf8a52e44b3934e3a80b803cb301ed1d1303f09c1260c324b6da977e008",
+            "mutated_sha256": "e2e490991faf6f14d50c409fc2f8acba3d5a2237924c6e4467e60345bc7322f4",
+            "restored_matches_original": true,
+            "restored_sha256": [
+              "6f987cf8a52e44b3934e3a80b803cb301ed1d1303f09c1260c324b6da977e008",
+              "6f987cf8a52e44b3934e3a80b803cb301ed1d1303f09c1260c324b6da977e008"
+            ]
+          },
+          "slide.multiball3": {
+            "checkpoint_sha256": "9899723e6841ae6c5a798b7721934ea165f019976703bd7ae88c81608fa8d6a0",
+            "mutated_sha256": "b99c9aaf4f2b421bc9d59e27ba23427fe6ce890f56d1aeb3d857426cbced483f",
+            "restored_matches_original": true,
+            "restored_sha256": [
+              "9899723e6841ae6c5a798b7721934ea165f019976703bd7ae88c81608fa8d6a0",
+              "9899723e6841ae6c5a798b7721934ea165f019976703bd7ae88c81608fa8d6a0"
+            ]
+          },
+          "squiggly_circle": {
+            "checkpoint_sha256": "7ff26f8b6188bb02de133dead051efa8816b8ab729a4b20d909c57dc03eeaf7a",
+            "mutated_sha256": "671d17abaa74463af2d83ac3f2200314f04bb31b99d2a7fd8df4d62de7a9ec22",
+            "restored_matches_original": true,
+            "restored_sha256": [
+              "7ff26f8b6188bb02de133dead051efa8816b8ab729a4b20d909c57dc03eeaf7a",
+              "7ff26f8b6188bb02de133dead051efa8816b8ab729a4b20d909c57dc03eeaf7a"
+            ]
+          },
+          "super_long_shot": {
+            "checkpoint_sha256": "a2d8079bc5eb1b43a9310108594a9453ee739646f8e8e2b31492ac324c529e7f",
+            "mutated_sha256": "fecc264051e3be8811f1f58936a0d15b8d1591e5667fd753bcdcf6a15c63c163",
+            "restored_matches_original": true,
+            "restored_sha256": [
+              "a2d8079bc5eb1b43a9310108594a9453ee739646f8e8e2b31492ac324c529e7f",
+              "a2d8079bc5eb1b43a9310108594a9453ee739646f8e8e2b31492ac324c529e7f"
+            ]
+          }
+        },
+        "reset_deterministic": true,
+        "rng_sequences": {
+          "checked": 514,
+          "computed_record_sha256": {
+            "seed_anchors[seed=0]": "a188ba7ed58c3b9e7611bbb3ad0faf70e0b9e47bb602f225e406fca28b16bb6b",
+            "seed_anchors[seed=345]": "8aadd691e559c9a46344a72aa2a4494fa41bb6433754775e390e0227a9a79c11",
+            "sequences[seed=0]": "e7b4399cce0cd108eff932e827f85433f93bda62dd0cf0e2eafec4e3a68616e9",
+            "sequences[seed=123]": "bf1b4d797e51eb9d77c753185924974248095480b09bc511a5089ae549e4dad9",
+            "sequences[seed=1]": "adef29cd112417edd7859bf97d6bb236e58ca9f07d56ab9893e82bef650b9e9d",
+            "sequences[seed=20260918]": "a75865c0fdd45cb3d661da8f45825161f78af354596150546d65b7369e95b6a7",
+            "sequences[seed=345]": "8ddb7cc1cc2ac29c2d212080ebe2729a41956c226d8b98ae0a8cab7947f02b12",
+            "sequences[seed=3735928559]": "acb30997839b76d6ae89aaa3ae38a4518150599c2b3d21e3552c6bd791dc74cf",
+            "sequences[seed=4294967295]": "86069b725ad6cc22a9342684f91461957768742e02ed27e966b6d009a9746da4",
+            "sequences[seed=4294967296]": "1aeae7bb59a7f9b0887b2e245d55fc380764449d56ea8fc7a16a8b6f0ccc7c8c",
+            "sequences[seed=42]": "798bc51deee098b63361dcaeff4b65a59bb00b73770345fa4093d6cc157f31e5",
+            "sequences[seed=9007199254740991]": "6874c077851dc5047c5675022b8692c531f6cd6752e75628b6f6be6fc7a5d99d",
+            "set_state[0x5e15348974525b7a]": "00042c385e22f5de6a60efec5dc6eb9626d81395e3c0c747a1e9cfa8dc628f1d",
+            "set_state[0x7837ac8e69b05bb3]": "2c79dacd79f3db6ed71523103c3535434810a493abd3afce0c9a7b85f83ee391",
+            "states[seed=0]": "32e153f3430112f1b6842e0613ad795268ba23ec1187eee78a79275d593fd929",
+            "states[seed=123]": "a7608a97fad3d6a58c99a8f4957ffb4758cfac4b59b6e6ff4fa4eb6153aa065e",
+            "states[seed=1]": "e37335447b4979682a5330a62fe35e40145ead6b4dd73369329bb3c2a35d704d",
+            "states[seed=20260918]": "fb68020dd3b06543349934b6973e78cbae33befe3aad85d420cb3fa0b64ec382",
+            "states[seed=345]": "23e94ceff64a53fc1da7b74ba943a16bb552c44475b9d320b5a5ca636af01600",
+            "states[seed=3735928559]": "f2f6a2b7cb90ef8a95c9b6971858997773aa8278ac78adfed649dec69a83860b",
+            "states[seed=4294967295]": "85ba60950842436c97329188fc87405ad2d2dd5e17a007eb486c7fe3d46fc874",
+            "states[seed=4294967296]": "eebb549e68d08dcf1c3d7246f494d664cd00bed46fb32c5e6314d3a5e803419d",
+            "states[seed=42]": "049fd68fdc0e2537c14dcc1d551c247b43ead0d4f2e3c62bf6a738415a886494",
+            "states[seed=9007199254740991]": "200bda12cec10188a9129be7ada794a676effbfeef2c5ec32c0e75204ede48a4"
+          },
+          "computed_sha256": "596d597b4c94b8ecb6140dae52750e976c99849a21a79e5f7fa29d4e1eb66972",
+          "fixture_sha256": "f105d119c5d0b20fd5d6c3bdb253d4c1983c411da0e0c297249d1f49350bec02",
+          "mismatches": 0,
+          "verified": true
+        }
+      },
+      "environment": {
+        "cpu_model": "AMD Ryzen Threadripper 2990WX 32-Core Processor",
+        "julia": "1.12.6",
+        "kernel": "Linux",
+        "label": "deathstar-allocation-candidate",
+        "libm": "system_libm:libm.so.6:glibc-2.35",
+        "logical_cores": 64,
+        "machine": "x86_64-linux-gnu",
+        "math_backend": {
+          "backend": "system_libm",
+          "glibc": "2.35",
+          "julia": "1.12.6",
+          "library": "libm.so.6",
+          "platform": "linux-x86_64"
+        }
+      },
+      "identity": {
+        "checkpoint_schema_version": 1,
+        "config_sha256": "455757c900c604563865b5195eda2f31cfeba3d8666b6d782390e38c47e91d4d",
+        "format": "peggle.parity",
+        "julia_source_sha256": "d31ae4dce40a5bd31c1db9f2cac6d48dba9c541601482873deea778687ce9e4c",
+        "package_version": "0.1.0",
+        "prerequisites": {
+          "census_fixture_sha256": "fa052e173e188444439242a802a8c6e807b3a1db9399b652d9dbcdb7235786b0",
+          "config_artifact_sha256": "f4a0a1482a6c791d3d38a935ffdb669ff91e65fb03367a258ef8f40d0b5d17b6",
+          "levels_sha256": "eeb217385f8feeb9098106b54bf775b780b14058daa21df26325df69036d2c8e",
+          "math_backend": {
+            "backend": "system_libm"
+          },
+          "package_version": "0.1.0",
+          "peg_colors_fixture_sha256": "456552bcb4ab140ee0405d623c5cd8e8c3e2a2678fddff8b79cb17a0b6902032",
+          "rng_sequences_fixture_sha256": "f105d119c5d0b20fd5d6c3bdb253d4c1983c411da0e0c297249d1f49350bec02"
+        },
+        "reference_revision": "d17f6e7089b6e761f4367fc6a6dcd5b4da0309b9",
+        "reference_tree": "3dc7ddfe19916e149d2531b20c73463c28a202c8",
+        "schema_version": 2
+      }
+    },
+    "identity_different_keys": [
+      "julia_source_sha256"
+    ]
+  },
+  "passed": true,
+  "remote_root": "/home/picazio/projects/julia_clone_alloc_6d09319_20261011",
+  "resources": {
+    "julia_gc_threads": 1,
+    "julia_interactive_threads": 0,
+    "measurement_cpu_affinity": [
+      0
+    ],
+    "nice": 10,
+    "timeout_seconds_per_julia_process": 900
+  },
+  "source_manifest_sha256": {
+    "baseline": "1fb51ab3ecc2cca436d55bf8a0696f581db6457d4e91c7181aa33aac66c3b07c",
+    "candidate": "3614082343363dcf8dec30596bb02f7fcc04ab73016113de1826af2eb632925d"
+  },
+  "source_manifests": {
+    "baseline": {
+      "julia/PeggleSim/Manifest.toml": "a1c8030a05d2c2c6c721d1fa352556a828a4aa485fe58813f748d9d4a373becb",
+      "julia/PeggleSim/Project.toml": "b5e7f64468b7886259e5a02d71c6c47764d6f1f9749a9ae8ee0e8c2f00bcdd26",
+      "julia/PeggleSim/bin/checkpoint_bench.jl": "7437b2291093b86ebbcbddf8845c023ea5f8f916cf4722205f301d3679873044",
+      "julia/PeggleSim/bin/math_bench.jl": "c5ca4dd3ee46a717aa792765e77082aecbd24bbb55c65f700ebab194c2863803",
+      "julia/PeggleSim/bin/math_census.jl": "56b603c012a17fe017c57b9b770c700430a4babac9bd11a832c8c63ad9552f83",
+      "julia/PeggleSim/bin/native_qualify.jl": "bd984c338f6aac799ea9bff23921fc4024cae3d9d19e2e6a4cc9265452d24882",
+      "julia/PeggleSim/bin/parity_emit.jl": "0e9e53c915d31b71583d5b155ee682709e44d8e84994595ae805add79374b607",
+      "julia/PeggleSim/bin/shot_bench.jl": "d97fa7f7868d3b714a4b02ccc1c65779254aa30c517071a7fe013faf9b2d00d3",
+      "julia/PeggleSim/bin/wpd_census_inputs.jl": "3a9c9f03ab3a8b4f7e4eafe3b282735ce96161ca6e09870f2d44095f8f0fc675",
+      "julia/PeggleSim/bin/wpd_compare.jl": "374d7cf75133fbd138aa466d1180f28cdd2491728a5600f331f260afe916ba3f",
+      "julia/PeggleSim/bin/wpd_state_compare.jl": "87c8bad49236c1ae603a0a9cca83f41927f66ce44c53fc712d608b3a728db4ea",
+      "julia/PeggleSim/bin/wpd_state_summary.jl": "43e4337c2b8e7d7030db023fb76b489502d2d22713f5991c60ab95c7f7470709",
+      "julia/PeggleSim/bin/wpd_summary.jl": "ab1e543d1e11eb6e14bd147cffd634d3f1129ac0324231411b3a50735dd504e4",
+      "julia/PeggleSim/src/PeggleSim.jl": "d79a4233acd6348b31a1dc96db7ec19b4f83a145ba3a9f236ec7c1d254b8e768",
+      "julia/PeggleSim/src/ball_state.jl": "8d8a7a1c938d8b603ad0c7d7149edef79ed135376c1d7a99a4eb75fd87faec19",
+      "julia/PeggleSim/src/bucket.jl": "dc56442152ea786f541c080490b379fe4c2916bff2739e808b8ef28061c5eb2e",
+      "julia/PeggleSim/src/canonical.jl": "8c04f8ca91e8523e9cdcd61e1253a0466950e84c36abfd4d0cd5c3fdddbf6527",
+      "julia/PeggleSim/src/checkpoint.jl": "caab70ffa8b770d6fa02f95d00a7d0bc86ef0634c56962dd9e81f5360830b913",
+      "julia/PeggleSim/src/colorstate.jl": "0c043c19b3fd14191fb209867e5c28600f25332bfa3ab158ee564d03cdec3e5c",
+      "julia/PeggleSim/src/config.jl": "9f287ecdb14c223009a7476e1d4efa8e1cb8c845a2ece9801f028af26e0aa98e",
+      "julia/PeggleSim/src/detmath.jl": "fa43d49ca6f78722eb1571e2d0ecb3f77f41331d409234b15d70045de4b74185",
+      "julia/PeggleSim/src/engine.jl": "8c9bee4a7e8c58b715f06c3aeeb27d2d731ed7710cc0565edac8b567919c448b",
+      "julia/PeggleSim/src/events.jl": "56b3ce839df32ef583e909cf6a2b286d804bc67ca7471c17ca626bdb6449a50b",
+      "julia/PeggleSim/src/fever_buckets.jl": "72ec7fa0c1466d831d6c77d80c8c7824f8c696d3a1bfec953bcca4acee3d7431",
+      "julia/PeggleSim/src/impact_geometry.jl": "6a859247ac65880c401a0442ab91e7be0b83a6bf59d59fe677abd38f9ec3c52a",
+      "julia/PeggleSim/src/jsonio.jl": "0e4d0c80997de7de65622dad6efd491fe016240dec1c92c0cf7d284617960edb",
+      "julia/PeggleSim/src/level.jl": "105a93987aac299dd63097464b554c7dd41efb21072c4d15473f1e2190d293a6",
+      "julia/PeggleSim/src/parity.jl": "3341728bbb8620cfb951c9a4fbe56ff83a84e074a3d593f917b43a7d07a63c96",
+      "julia/PeggleSim/src/physics.jl": "d9533868c147a0d041d9e8a179abd04a4da9740e84a6fe1e8809c85ba052bdd4",
+      "julia/PeggleSim/src/powers.jl": "23c002f47559506cdfb2ce6f34a5d8538062e58b4b71ec3fd13aed0d159e75ff",
+      "julia/PeggleSim/src/rng.jl": "3d71e0f8d5a5340b89e96b57b302db8e2c9d4d469b9b8f783a3b37024cbdacc5",
+      "julia/PeggleSim/src/scratch.jl": "8223b04f09d72fc33d61e298e4e81f3f05f6088945593e6c3703474d586ed36c",
+      "julia/PeggleSim/src/slide_inversion.jl": "7e68b5209ffa33dab731dae074f9d4d96fdc6dcb9fe9bafe3275240f21e63c89",
+      "julia/PeggleSim/src/snapshot.jl": "83644f0e3da51d6a7a9a2fa73cd37809d6b9b0f547c1d73765b586df0baf97ec",
+      "julia/PeggleSim/src/state.jl": "a2c38d243525527c3969b07d3bd4c81c7043fa1cfcd5731ee12acdafa6c5d73a",
+      "julia/PeggleSim/src/style_shots.jl": "5666f3a4454fbe463deecebc4a1cd453d315649ea1d198f895409b9cd6597863",
+      "julia/PeggleSim/src/trace.jl": "ef67c1b55806a022a9cbddb490caf9645f393acc141616fd8d1dfa151c2cf76a",
+      "julia/PeggleSim/test/runtests.jl": "385e0fde59a01a85d9aa3b2094fd5eedf52e457f0ba0bf2cee02edc6087be7c8",
+      "julia/PeggleSim/test/test_ball_state.jl": "8aa2e32a953b0fa3a063ddf890c71ce4884e13446bc75fb50b0f38e5dd7f9bda",
+      "julia/PeggleSim/test/test_bucket.jl": "86c53fa75d4965fe2b38d3fc2c8803f114ada57221aff1891aec32959acf4720",
+      "julia/PeggleSim/test/test_canonical.jl": "86eb6d358804aebc4d5baeab6771f7519b9e967b1fec1628108a654b4bb8b39e",
+      "julia/PeggleSim/test/test_census.jl": "3447150ac881e51e4a038ef9a3f4bdabafe9500ce26f4f1fd80755ee48c8a29c",
+      "julia/PeggleSim/test/test_checkpoint.jl": "7efcb5a6801603998d854e1eed4e0e295e88e29fac44ecd2d5d33db73cfe8760",
+      "julia/PeggleSim/test/test_colors.jl": "22f1fc05204b19fe56c264238346e06cb52ad3962d966a6c72b71fdab98308af",
+      "julia/PeggleSim/test/test_detmath.jl": "ae6b38bb1e685891472cb31b55d16f885e305e7eafdeecd4017e370be6e45d05",
+      "julia/PeggleSim/test/test_engine.jl": "92796ead7a1185c789f52e55ef6a44d9e3746bc5651b062d8c8938eecc1967e2",
+      "julia/PeggleSim/test/test_events.jl": "70bcc29ce2553b6336d6c06c72352ea13dbeb4b75254f402e92c12d11aecef47",
+      "julia/PeggleSim/test/test_fever.jl": "e1639fe1a6d611a9c615fbeac991c49c8250ae48c7cc60fa78f4efac3f8f87e9",
+      "julia/PeggleSim/test/test_impact_geometry.jl": "eaed4fdb9937e5ac30f30b1e5e826191c803109f3e1dff30c85ab8cb008fd0f0",
+      "julia/PeggleSim/test/test_level.jl": "30cf3835b796b0207fad486b86a4e59c647160ecc1ca542bc6836efcfb0d13f3",
+      "julia/PeggleSim/test/test_parity.jl": "8fae543a82ef71ace8aa67ba8a48789d74789b310cd6ebb61789ec6b03466c2e",
+      "julia/PeggleSim/test/test_physics.jl": "4673e98b554a2224e22799a792a201499f2e19550ccb4cdf670704349d2af39a",
+      "julia/PeggleSim/test/test_powers.jl": "af28f8bad816a5a1da21597aeb31d230841c4b7c6d5115050ebd9ddc433d75ba",
+      "julia/PeggleSim/test/test_rng.jl": "cf092e79584789029648dc55976bebd4f387c52ad07891dd40a5e17fb5a62297",
+      "julia/PeggleSim/test/test_slide_inversion.jl": "3f3ac7a61c6ae159ea3498b089acd415b31ad0c24d9ddfcd18a9302293b70811",
+      "julia/PeggleSim/test/test_snapshot.jl": "8e535667cb747f273bb14b3c000745edf244bc682d522dfa0ae6647f6075cdf5",
+      "julia/PeggleSim/test/test_style_shots.jl": "3e35b7db47d9269ebacf9c92f4aea719b029f10085810f6e20791f559f60bf18",
+      "julia/PeggleSim/test/test_trace.jl": "067212b180f89c9f1bf3176062e5b9fa9bb9c387951d9a191116d1d83961e184"
+    },
+    "candidate": {
+      "julia/PeggleSim/Manifest.toml": "a1c8030a05d2c2c6c721d1fa352556a828a4aa485fe58813f748d9d4a373becb",
+      "julia/PeggleSim/Project.toml": "b5e7f64468b7886259e5a02d71c6c47764d6f1f9749a9ae8ee0e8c2f00bcdd26",
+      "julia/PeggleSim/bin/checkpoint_bench.jl": "7437b2291093b86ebbcbddf8845c023ea5f8f916cf4722205f301d3679873044",
+      "julia/PeggleSim/bin/math_bench.jl": "c5ca4dd3ee46a717aa792765e77082aecbd24bbb55c65f700ebab194c2863803",
+      "julia/PeggleSim/bin/math_census.jl": "56b603c012a17fe017c57b9b770c700430a4babac9bd11a832c8c63ad9552f83",
+      "julia/PeggleSim/bin/native_qualify.jl": "bd984c338f6aac799ea9bff23921fc4024cae3d9d19e2e6a4cc9265452d24882",
+      "julia/PeggleSim/bin/parity_emit.jl": "0e9e53c915d31b71583d5b155ee682709e44d8e84994595ae805add79374b607",
+      "julia/PeggleSim/bin/shot_bench.jl": "d97fa7f7868d3b714a4b02ccc1c65779254aa30c517071a7fe013faf9b2d00d3",
+      "julia/PeggleSim/bin/wpd_census_inputs.jl": "3a9c9f03ab3a8b4f7e4eafe3b282735ce96161ca6e09870f2d44095f8f0fc675",
+      "julia/PeggleSim/bin/wpd_compare.jl": "374d7cf75133fbd138aa466d1180f28cdd2491728a5600f331f260afe916ba3f",
+      "julia/PeggleSim/bin/wpd_state_compare.jl": "87c8bad49236c1ae603a0a9cca83f41927f66ce44c53fc712d608b3a728db4ea",
+      "julia/PeggleSim/bin/wpd_state_summary.jl": "43e4337c2b8e7d7030db023fb76b489502d2d22713f5991c60ab95c7f7470709",
+      "julia/PeggleSim/bin/wpd_summary.jl": "ab1e543d1e11eb6e14bd147cffd634d3f1129ac0324231411b3a50735dd504e4",
+      "julia/PeggleSim/src/PeggleSim.jl": "d79a4233acd6348b31a1dc96db7ec19b4f83a145ba3a9f236ec7c1d254b8e768",
+      "julia/PeggleSim/src/ball_state.jl": "dcb22a72e6ffd693a26a9a41eccb3af2a3c30d71b61d9009beaeadd4d542d6fc",
+      "julia/PeggleSim/src/bucket.jl": "dc56442152ea786f541c080490b379fe4c2916bff2739e808b8ef28061c5eb2e",
+      "julia/PeggleSim/src/canonical.jl": "8c04f8ca91e8523e9cdcd61e1253a0466950e84c36abfd4d0cd5c3fdddbf6527",
+      "julia/PeggleSim/src/checkpoint.jl": "caab70ffa8b770d6fa02f95d00a7d0bc86ef0634c56962dd9e81f5360830b913",
+      "julia/PeggleSim/src/colorstate.jl": "0c043c19b3fd14191fb209867e5c28600f25332bfa3ab158ee564d03cdec3e5c",
+      "julia/PeggleSim/src/config.jl": "9f287ecdb14c223009a7476e1d4efa8e1cb8c845a2ece9801f028af26e0aa98e",
+      "julia/PeggleSim/src/contact_payloads.jl": "6522c2c9fd7c222c638e57e6810b91acf903ac6e0982d50bdbd107eb53b33f34",
+      "julia/PeggleSim/src/detmath.jl": "fa43d49ca6f78722eb1571e2d0ecb3f77f41331d409234b15d70045de4b74185",
+      "julia/PeggleSim/src/engine.jl": "fa434f1a317152e9b2a39d3d50e8e0925107cd5f0b114e93ea05353e2bdd28eb",
+      "julia/PeggleSim/src/events.jl": "803eca3967e83f9f30f552ea819686dfd26ac4abd2e972c2054ef4823ff91ecd",
+      "julia/PeggleSim/src/fever_buckets.jl": "72ec7fa0c1466d831d6c77d80c8c7824f8c696d3a1bfec953bcca4acee3d7431",
+      "julia/PeggleSim/src/impact_geometry.jl": "6a859247ac65880c401a0442ab91e7be0b83a6bf59d59fe677abd38f9ec3c52a",
+      "julia/PeggleSim/src/jsonio.jl": "0e4d0c80997de7de65622dad6efd491fe016240dec1c92c0cf7d284617960edb",
+      "julia/PeggleSim/src/level.jl": "105a93987aac299dd63097464b554c7dd41efb21072c4d15473f1e2190d293a6",
+      "julia/PeggleSim/src/parity.jl": "3341728bbb8620cfb951c9a4fbe56ff83a84e074a3d593f917b43a7d07a63c96",
+      "julia/PeggleSim/src/physics.jl": "3b62a8fc7b3359db7e7b44144a640e5ec1c9ef6db46f2d43b32dd4a43c243f67",
+      "julia/PeggleSim/src/powers.jl": "23c002f47559506cdfb2ce6f34a5d8538062e58b4b71ec3fd13aed0d159e75ff",
+      "julia/PeggleSim/src/rng.jl": "3d71e0f8d5a5340b89e96b57b302db8e2c9d4d469b9b8f783a3b37024cbdacc5",
+      "julia/PeggleSim/src/scratch.jl": "8223b04f09d72fc33d61e298e4e81f3f05f6088945593e6c3703474d586ed36c",
+      "julia/PeggleSim/src/slide_inversion.jl": "e88ebe0869d2b20548c2e8675f6c4c88baf6980ebaeec03dab1d2bb66e4b1018",
+      "julia/PeggleSim/src/snapshot.jl": "83644f0e3da51d6a7a9a2fa73cd37809d6b9b0f547c1d73765b586df0baf97ec",
+      "julia/PeggleSim/src/state.jl": "a2c38d243525527c3969b07d3bd4c81c7043fa1cfcd5731ee12acdafa6c5d73a",
+      "julia/PeggleSim/src/style_shots.jl": "26ea6a03a24008b9bdd57a88fabb81f349c0ae08020b83b91626c7dff63e6441",
+      "julia/PeggleSim/src/trace.jl": "ef67c1b55806a022a9cbddb490caf9645f393acc141616fd8d1dfa151c2cf76a",
+      "julia/PeggleSim/test/runtests.jl": "385e0fde59a01a85d9aa3b2094fd5eedf52e457f0ba0bf2cee02edc6087be7c8",
+      "julia/PeggleSim/test/test_ball_state.jl": "8aa2e32a953b0fa3a063ddf890c71ce4884e13446bc75fb50b0f38e5dd7f9bda",
+      "julia/PeggleSim/test/test_bucket.jl": "86c53fa75d4965fe2b38d3fc2c8803f114ada57221aff1891aec32959acf4720",
+      "julia/PeggleSim/test/test_canonical.jl": "86eb6d358804aebc4d5baeab6771f7519b9e967b1fec1628108a654b4bb8b39e",
+      "julia/PeggleSim/test/test_census.jl": "3447150ac881e51e4a038ef9a3f4bdabafe9500ce26f4f1fd80755ee48c8a29c",
+      "julia/PeggleSim/test/test_checkpoint.jl": "7efcb5a6801603998d854e1eed4e0e295e88e29fac44ecd2d5d33db73cfe8760",
+      "julia/PeggleSim/test/test_colors.jl": "22f1fc05204b19fe56c264238346e06cb52ad3962d966a6c72b71fdab98308af",
+      "julia/PeggleSim/test/test_contact_payloads.jl": "0fa1d17d6277f443a0d7dc0e362c08de3c0a6dc1023366883982cad2d28b9bbe",
+      "julia/PeggleSim/test/test_detmath.jl": "ae6b38bb1e685891472cb31b55d16f885e305e7eafdeecd4017e370be6e45d05",
+      "julia/PeggleSim/test/test_engine.jl": "92796ead7a1185c789f52e55ef6a44d9e3746bc5651b062d8c8938eecc1967e2",
+      "julia/PeggleSim/test/test_events.jl": "70bcc29ce2553b6336d6c06c72352ea13dbeb4b75254f402e92c12d11aecef47",
+      "julia/PeggleSim/test/test_fever.jl": "e1639fe1a6d611a9c615fbeac991c49c8250ae48c7cc60fa78f4efac3f8f87e9",
+      "julia/PeggleSim/test/test_impact_geometry.jl": "eaed4fdb9937e5ac30f30b1e5e826191c803109f3e1dff30c85ab8cb008fd0f0",
+      "julia/PeggleSim/test/test_level.jl": "30cf3835b796b0207fad486b86a4e59c647160ecc1ca542bc6836efcfb0d13f3",
+      "julia/PeggleSim/test/test_parity.jl": "8fae543a82ef71ace8aa67ba8a48789d74789b310cd6ebb61789ec6b03466c2e",
+      "julia/PeggleSim/test/test_physics.jl": "4673e98b554a2224e22799a792a201499f2e19550ccb4cdf670704349d2af39a",
+      "julia/PeggleSim/test/test_powers.jl": "af28f8bad816a5a1da21597aeb31d230841c4b7c6d5115050ebd9ddc433d75ba",
+      "julia/PeggleSim/test/test_rng.jl": "cf092e79584789029648dc55976bebd4f387c52ad07891dd40a5e17fb5a62297",
+      "julia/PeggleSim/test/test_shot_scratch.jl": "3530d64ec6c29de713d02d6d45caf5d37fc893b3d18ef6790bcd46b3d5f8db9e",
+      "julia/PeggleSim/test/test_slide_inversion.jl": "3f3ac7a61c6ae159ea3498b089acd415b31ad0c24d9ddfcd18a9302293b70811",
+      "julia/PeggleSim/test/test_snapshot.jl": "8e535667cb747f273bb14b3c000745edf244bc682d522dfa0ae6647f6075cdf5",
+      "julia/PeggleSim/test/test_style_shots.jl": "3e35b7db47d9269ebacf9c92f4aea719b029f10085810f6e20791f559f60bf18",
+      "julia/PeggleSim/test/test_trace.jl": "067212b180f89c9f1bf3176062e5b9fa9bb9c387951d9a191116d1d83961e184"
+    }
+  },
+  "sweeps": {
+    "baseline": {
+      "1": {
+        "alloc_method": null,
+        "alloc_requested": false,
+        "balls": 1,
+        "candidates": 91,
+        "candidates_per_second": 31.26340961932115,
+        "clearing": false,
+        "format": "peggle.shot_sweep",
+        "level": "mustache",
+        "level_sha256": "ea33fadd70666980cf426fb4a2854f66c28d333fb9f1a57b15a282cfddd0f747",
+        "max_steps": 3600,
+        "parallel": {
+          "candidates_per_second": 32.27911331284838,
+          "phases": {
+            "extract": {
+              "count": 91,
+              "mean_ns": 12095.065934065935,
+              "p50_ns": 10831,
+              "p99_ns": 28455,
+              "total_ns": 1100651
+            },
+            "reset": {
+              "count": 91,
+              "mean_ns": 22297.065934065933,
+              "p50_ns": 19548,
+              "p99_ns": 75244,
+              "total_ns": 2029033
+            },
+            "sim": {
+              "count": 91,
+              "mean_ns": 30164290.725274727,
+              "p50_ns": 13146091,
+              "p99_ns": 231461855,
+              "total_ns": 2744950456
+            }
+          },
+          "steps": {
+            "max": 3010,
+            "mean": 843.010989010989,
+            "min": 100,
+            "p50": 765,
+            "p99": 3010
+          },
+          "steps_per_second": 27211.647238262096,
+          "wall_seconds": 2.819160462
+        },
+        "phases": {
+          "extract": {
+            "count": 91,
+            "mean_ns": 12169.637362637362,
+            "p50_ns": 10410,
+            "p99_ns": 31881,
+            "total_ns": 1107437
+          },
+          "reset": {
+            "count": 91,
+            "mean_ns": 23393.648351648353,
+            "p50_ns": 18595,
+            "p99_ns": 207286,
+            "total_ns": 2128822
+          },
+          "sim": {
+            "count": 91,
+            "mean_ns": 31950314.53846154,
+            "p50_ns": 13608544,
+            "p99_ns": 228220806,
+            "total_ns": 2907478623
+          }
+        },
+        "requested_threads": 1,
+        "schema_version": 1,
+        "serial": {
+          "candidates_per_second": 31.26340961932115,
+          "phases": {
+            "extract": {
+              "count": 91,
+              "mean_ns": 12169.637362637362,
+              "p50_ns": 10410,
+              "p99_ns": 31881,
+              "total_ns": 1107437
+            },
+            "reset": {
+              "count": 91,
+              "mean_ns": 23393.648351648353,
+              "p50_ns": 18595,
+              "p99_ns": 207286,
+              "total_ns": 2128822
+            },
+            "sim": {
+              "count": 91,
+              "mean_ns": 31950314.53846154,
+              "p50_ns": 13608544,
+              "p99_ns": 228220806,
+              "total_ns": 2907478623
+            }
+          },
+          "steps": {
+            "max": 3010,
+            "mean": 843.010989010989,
+            "min": 100,
+            "p50": 765,
+            "p99": 3010
+          },
+          "steps_per_second": 26355.39786303959,
+          "wall_seconds": 2.910750974
+        },
+        "serial_parallel_identical": true,
+        "steps": {
+          "max": 3010,
+          "mean": 843.010989010989,
+          "min": 100,
+          "p50": 765,
+          "p99": 3010
+        },
+        "steps_per_second": 26355.39786303959,
+        "threads": 1,
+        "verify_serial": true,
+        "wall_seconds": 2.910750974
+      },
+      "2": {
+        "alloc_method": null,
+        "alloc_requested": false,
+        "balls": 1,
+        "candidates": 91,
+        "candidates_per_second": 31.988891724471745,
+        "clearing": false,
+        "format": "peggle.shot_sweep",
+        "level": "mustache",
+        "level_sha256": "ea33fadd70666980cf426fb4a2854f66c28d333fb9f1a57b15a282cfddd0f747",
+        "max_steps": 3600,
+        "parallel": {
+          "candidates_per_second": 49.906153096938034,
+          "phases": {
+            "extract": {
+              "count": 91,
+              "mean_ns": 12061.824175824177,
+              "p50_ns": 11532,
+              "p99_ns": 24227,
+              "total_ns": 1097626
+            },
+            "reset": {
+              "count": 91,
+              "mean_ns": 23331.10989010989,
+              "p50_ns": 21261,
+              "p99_ns": 61016,
+              "total_ns": 2123131
+            },
+            "sim": {
+              "count": 91,
+              "mean_ns": 32245723.46153846,
+              "p50_ns": 14615203,
+              "p99_ns": 226214128,
+              "total_ns": 2934360835
+            }
+          },
+          "steps": {
+            "max": 3010,
+            "mean": 843.010989010989,
+            "min": 100,
+            "p50": 765,
+            "p99": 3010
+          },
+          "steps_per_second": 42071.435479983564,
+          "wall_seconds": 1.823422451
+        },
+        "phases": {
+          "extract": {
+            "count": 91,
+            "mean_ns": 11901.373626373626,
+            "p50_ns": 10119,
+            "p99_ns": 31480,
+            "total_ns": 1083025
+          },
+          "reset": {
+            "count": 91,
+            "mean_ns": 22779.91208791209,
+            "p50_ns": 19487,
+            "p99_ns": 62098,
+            "total_ns": 2072972
+          },
+          "sim": {
+            "count": 91,
+            "mean_ns": 31225776.13186813,
+            "p50_ns": 14007014,
+            "p99_ns": 229138205,
+            "total_ns": 2841545628
+          }
+        },
+        "requested_threads": 2,
+        "schema_version": 1,
+        "serial": {
+          "candidates_per_second": 31.988891724471745,
+          "phases": {
+            "extract": {
+              "count": 91,
+              "mean_ns": 11901.373626373626,
+              "p50_ns": 10119,
+              "p99_ns": 31480,
+              "total_ns": 1083025
+            },
+            "reset": {
+              "count": 91,
+              "mean_ns": 22779.91208791209,
+              "p50_ns": 19487,
+              "p99_ns": 62098,
+              "total_ns": 2072972
+            },
+            "sim": {
+              "count": 91,
+              "mean_ns": 31225776.13186813,
+              "p50_ns": 14007014,
+              "p99_ns": 229138205,
+              "total_ns": 2841545628
+            }
+          },
+          "steps": {
+            "max": 3010,
+            "mean": 843.010989010989,
+            "min": 100,
+            "p50": 765,
+            "p99": 3010
+          },
+          "steps_per_second": 26966.987250012367,
+          "wall_seconds": 2.844737504
+        },
+        "serial_parallel_identical": true,
+        "steps": {
+          "max": 3010,
+          "mean": 843.010989010989,
+          "min": 100,
+          "p50": 765,
+          "p99": 3010
+        },
+        "steps_per_second": 26966.987250012367,
+        "threads": 2,
+        "verify_serial": true,
+        "wall_seconds": 2.844737504
+      },
+      "4": {
+        "alloc_method": null,
+        "alloc_requested": false,
+        "balls": 1,
+        "candidates": 91,
+        "candidates_per_second": 30.70957311166078,
+        "clearing": false,
+        "format": "peggle.shot_sweep",
+        "level": "mustache",
+        "level_sha256": "ea33fadd70666980cf426fb4a2854f66c28d333fb9f1a57b15a282cfddd0f747",
+        "max_steps": 3600,
+        "parallel": {
+          "candidates_per_second": 67.20997774927274,
+          "phases": {
+            "extract": {
+              "count": 91,
+              "mean_ns": 13849.362637362638,
+              "p50_ns": 13135,
+              "p99_ns": 31711,
+              "total_ns": 1260292
+            },
+            "reset": {
+              "count": 91,
+              "mean_ns": 48554.494505494506,
+              "p50_ns": 28575,
+              "p99_ns": 1793360,
+              "total_ns": 4418459
+            },
+            "sim": {
+              "count": 91,
+              "mean_ns": 39151292.32967033,
+              "p50_ns": 17688955,
+              "p99_ns": 234637432,
+              "total_ns": 3562767602
+            }
+          },
+          "steps": {
+            "max": 3010,
+            "mean": 843.010989010989,
+            "min": 100,
+            "p50": 765,
+            "p99": 3010
+          },
+          "steps_per_second": 56658.74981382098,
+          "wall_seconds": 1.353965632
+        },
+        "phases": {
+          "extract": {
+            "count": 91,
+            "mean_ns": 12329.274725274725,
+            "p50_ns": 11752,
+            "p99_ns": 35368,
+            "total_ns": 1121964
+          },
+          "reset": {
+            "count": 91,
+            "mean_ns": 23740.186813186814,
+            "p50_ns": 20860,
+            "p99_ns": 65566,
+            "total_ns": 2160357
+          },
+          "sim": {
+            "count": 91,
+            "mean_ns": 32526605.02197802,
+            "p50_ns": 14176587,
+            "p99_ns": 233626074,
+            "total_ns": 2959921057
+          }
+        },
+        "requested_threads": 4,
+        "schema_version": 1,
+        "serial": {
+          "candidates_per_second": 30.70957311166078,
+          "phases": {
+            "extract": {
+              "count": 91,
+              "mean_ns": 12329.274725274725,
+              "p50_ns": 11752,
+              "p99_ns": 35368,
+              "total_ns": 1121964
+            },
+            "reset": {
+              "count": 91,
+              "mean_ns": 23740.186813186814,
+              "p50_ns": 20860,
+              "p99_ns": 65566,
+              "total_ns": 2160357
+            },
+            "sim": {
+              "count": 91,
+              "mean_ns": 32526605.02197802,
+              "p50_ns": 14176587,
+              "p99_ns": 233626074,
+              "total_ns": 2959921057
+            }
+          },
+          "steps": {
+            "max": 3010,
+            "mean": 843.010989010989,
+            "min": 100,
+            "p50": 765,
+            "p99": 3010
+          },
+          "steps_per_second": 25888.50760096643,
+          "wall_seconds": 2.963245359
+        },
+        "serial_parallel_identical": true,
+        "steps": {
+          "max": 3010,
+          "mean": 843.010989010989,
+          "min": 100,
+          "p50": 765,
+          "p99": 3010
+        },
+        "steps_per_second": 25888.50760096643,
+        "threads": 4,
+        "verify_serial": true,
+        "wall_seconds": 2.963245359
+      },
+      "cross_thread_identical": true,
+      "rows_sha256": "e6453258bdce9fdadf137deb9bf5bc9512950a55cfedce03695ab2d0c185aadd"
+    },
+    "baseline_candidate_identical": true,
+    "candidate": {
+      "1": {
+        "alloc_method": null,
+        "alloc_requested": false,
+        "balls": 1,
+        "candidates": 91,
+        "candidates_per_second": 58.470131063953595,
+        "clearing": false,
+        "format": "peggle.shot_sweep",
+        "level": "mustache",
+        "level_sha256": "ea33fadd70666980cf426fb4a2854f66c28d333fb9f1a57b15a282cfddd0f747",
+        "max_steps": 3600,
+        "parallel": {
+          "candidates_per_second": 63.068750352093424,
+          "phases": {
+            "extract": {
+              "count": 91,
+              "mean_ns": 9888.967032967033,
+              "p50_ns": 7985,
+              "p99_ns": 21421,
+              "total_ns": 899896
+            },
+            "reset": {
+              "count": 91,
+              "mean_ns": 17899.296703296703,
+              "p50_ns": 15429,
+              "p99_ns": 38333,
+              "total_ns": 1628836
+            },
+            "sim": {
+              "count": 91,
+              "mean_ns": 15086700.395604396,
+              "p50_ns": 10193501,
+              "p99_ns": 74254853,
+              "total_ns": 1372889736
+            }
+          },
+          "steps": {
+            "max": 3010,
+            "mean": 843.010989010989,
+            "min": 100,
+            "p50": 765,
+            "p99": 3010
+          },
+          "steps_per_second": 53167.64961000544,
+          "wall_seconds": 1.442869876
+        },
+        "phases": {
+          "extract": {
+            "count": 91,
+            "mean_ns": 10188.912087912087,
+            "p50_ns": 8246,
+            "p99_ns": 29316,
+            "total_ns": 927191
+          },
+          "reset": {
+            "count": 91,
+            "mean_ns": 19118.24175824176,
+            "p50_ns": 15309,
+            "p99_ns": 44094,
+            "total_ns": 1739760
+          },
+          "sim": {
+            "count": 91,
+            "mean_ns": 17073196.31868132,
+            "p50_ns": 10377672,
+            "p99_ns": 115226872,
+            "total_ns": 1553660865
+          }
+        },
+        "requested_threads": 1,
+        "schema_version": 1,
+        "serial": {
+          "candidates_per_second": 58.470131063953595,
+          "phases": {
+            "extract": {
+              "count": 91,
+              "mean_ns": 10188.912087912087,
+              "p50_ns": 8246,
+              "p99_ns": 29316,
+              "total_ns": 927191
+            },
+            "reset": {
+              "count": 91,
+              "mean_ns": 19118.24175824176,
+              "p50_ns": 15309,
+              "p99_ns": 44094,
+              "total_ns": 1739760
+            },
+            "sim": {
+              "count": 91,
+              "mean_ns": 17073196.31868132,
+              "p50_ns": 10377672,
+              "p99_ns": 115226872,
+              "total_ns": 1553660865
+            }
+          },
+          "steps": {
+            "max": 3010,
+            "mean": 843.010989010989,
+            "min": 100,
+            "p50": 765,
+            "p99": 3010
+          },
+          "steps_per_second": 49290.96301582567,
+          "wall_seconds": 1.556350197
+        },
+        "serial_parallel_identical": true,
+        "steps": {
+          "max": 3010,
+          "mean": 843.010989010989,
+          "min": 100,
+          "p50": 765,
+          "p99": 3010
+        },
+        "steps_per_second": 49290.96301582567,
+        "threads": 1,
+        "verify_serial": true,
+        "wall_seconds": 1.556350197
+      },
+      "2": {
+        "alloc_method": null,
+        "alloc_requested": false,
+        "balls": 1,
+        "candidates": 91,
+        "candidates_per_second": 59.31362563121503,
+        "clearing": false,
+        "format": "peggle.shot_sweep",
+        "level": "mustache",
+        "level_sha256": "ea33fadd70666980cf426fb4a2854f66c28d333fb9f1a57b15a282cfddd0f747",
+        "max_steps": 3600,
+        "parallel": {
+          "candidates_per_second": 102.34368466188683,
+          "phases": {
+            "extract": {
+              "count": 91,
+              "mean_ns": 10159.252747252747,
+              "p50_ns": 8637,
+              "p99_ns": 21831,
+              "total_ns": 924492
+            },
+            "reset": {
+              "count": 91,
+              "mean_ns": 17078.08791208791,
+              "p50_ns": 14939,
+              "p99_ns": 43824,
+              "total_ns": 1554106
+            },
+            "sim": {
+              "count": 91,
+              "mean_ns": 15580493.395604396,
+              "p50_ns": 10135128,
+              "p99_ns": 75403404,
+              "total_ns": 1417824899
+            }
+          },
+          "steps": {
+            "max": 3010,
+            "mean": 843.010989010989,
+            "min": 100,
+            "p50": 765,
+            "p99": 3010
+          },
+          "steps_per_second": 86276.85082584599,
+          "wall_seconds": 0.889160873
+        },
+        "phases": {
+          "extract": {
+            "count": 91,
+            "mean_ns": 10345.538461538461,
+            "p50_ns": 8346,
+            "p99_ns": 34045,
+            "total_ns": 941444
+          },
+          "reset": {
+            "count": 91,
+            "mean_ns": 16464.527472527472,
+            "p50_ns": 14277,
+            "p99_ns": 40447,
+            "total_ns": 1498272
+          },
+          "sim": {
+            "count": 91,
+            "mean_ns": 16832475.32967033,
+            "p50_ns": 10195915,
+            "p99_ns": 114014219,
+            "total_ns": 1531755255
+          }
+        },
+        "requested_threads": 2,
+        "schema_version": 1,
+        "serial": {
+          "candidates_per_second": 59.31362563121503,
+          "phases": {
+            "extract": {
+              "count": 91,
+              "mean_ns": 10345.538461538461,
+              "p50_ns": 8346,
+              "p99_ns": 34045,
+              "total_ns": 941444
+            },
+            "reset": {
+              "count": 91,
+              "mean_ns": 16464.527472527472,
+              "p50_ns": 14277,
+              "p99_ns": 40447,
+              "total_ns": 1498272
+            },
+            "sim": {
+              "count": 91,
+              "mean_ns": 16832475.32967033,
+              "p50_ns": 10195915,
+              "p99_ns": 114014219,
+              "total_ns": 1531755255
+            }
+          },
+          "steps": {
+            "max": 3010,
+            "mean": 843.010989010989,
+            "min": 100,
+            "p50": 765,
+            "p99": 3010
+          },
+          "steps_per_second": 50002.038205198136,
+          "wall_seconds": 1.534217459
+        },
+        "serial_parallel_identical": true,
+        "steps": {
+          "max": 3010,
+          "mean": 843.010989010989,
+          "min": 100,
+          "p50": 765,
+          "p99": 3010
+        },
+        "steps_per_second": 50002.038205198136,
+        "threads": 2,
+        "verify_serial": true,
+        "wall_seconds": 1.534217459
+      },
+      "4": {
+        "alloc_method": null,
+        "alloc_requested": false,
+        "balls": 1,
+        "candidates": 91,
+        "candidates_per_second": 57.96984505106977,
+        "clearing": false,
+        "format": "peggle.shot_sweep",
+        "level": "mustache",
+        "level_sha256": "ea33fadd70666980cf426fb4a2854f66c28d333fb9f1a57b15a282cfddd0f747",
+        "max_steps": 3600,
+        "parallel": {
+          "candidates_per_second": 156.54738842898593,
+          "phases": {
+            "extract": {
+              "count": 91,
+              "mean_ns": 11578.197802197803,
+              "p50_ns": 10009,
+              "p99_ns": 30508,
+              "total_ns": 1053616
+            },
+            "reset": {
+              "count": 91,
+              "mean_ns": 22125.69230769231,
+              "p50_ns": 21361,
+              "p99_ns": 39415,
+              "total_ns": 2013438
+            },
+            "sim": {
+              "count": 91,
+              "mean_ns": 17584057.076923076,
+              "p50_ns": 11481196,
+              "p99_ns": 80710786,
+              "total_ns": 1600149194
+            }
+          },
+          "steps": {
+            "max": 3010,
+            "mean": 843.010989010989,
+            "min": 100,
+            "p50": 765,
+            "p99": 3010
+          },
+          "steps_per_second": 131971.16874660688,
+          "wall_seconds": 0.581293632
+        },
+        "phases": {
+          "extract": {
+            "count": 91,
+            "mean_ns": 9971.692307692309,
+            "p50_ns": 7655,
+            "p99_ns": 22784,
+            "total_ns": 907424
+          },
+          "reset": {
+            "count": 91,
+            "mean_ns": 17865.505494505494,
+            "p50_ns": 14548,
+            "p99_ns": 45167,
+            "total_ns": 1625761
+          },
+          "sim": {
+            "count": 91,
+            "mean_ns": 17222291.85714286,
+            "p50_ns": 10048835,
+            "p99_ns": 161978073,
+            "total_ns": 1567228559
+          }
+        },
+        "requested_threads": 4,
+        "schema_version": 1,
+        "serial": {
+          "candidates_per_second": 57.96984505106977,
+          "phases": {
+            "extract": {
+              "count": 91,
+              "mean_ns": 9971.692307692309,
+              "p50_ns": 7655,
+              "p99_ns": 22784,
+              "total_ns": 907424
+            },
+            "reset": {
+              "count": 91,
+              "mean_ns": 17865.505494505494,
+              "p50_ns": 14548,
+              "p99_ns": 45167,
+              "total_ns": 1625761
+            },
+            "sim": {
+              "count": 91,
+              "mean_ns": 17222291.85714286,
+              "p50_ns": 10048835,
+              "p99_ns": 161978073,
+              "total_ns": 1567228559
+            }
+          },
+          "steps": {
+            "max": 3010,
+            "mean": 843.010989010989,
+            "min": 100,
+            "p50": 765,
+            "p99": 3010
+          },
+          "steps_per_second": 48869.21640931611,
+          "wall_seconds": 1.569781667
+        },
+        "serial_parallel_identical": true,
+        "steps": {
+          "max": 3010,
+          "mean": 843.010989010989,
+          "min": 100,
+          "p50": 765,
+          "p99": 3010
+        },
+        "steps_per_second": 48869.21640931611,
+        "threads": 4,
+        "verify_serial": true,
+        "wall_seconds": 1.569781667
+      },
+      "cross_thread_identical": true,
+      "rows_sha256": "e6453258bdce9fdadf137deb9bf5bc9512950a55cfedce03695ab2d0c185aadd"
+    }
+  },
+  "timing_interpretation": "Observed warmed per-shot latency for sequential baseline and candidate processes. Each sample follows a full GC outside measurement. These are not sustained-throughput measurements. The shared host was not reserved. Polling cannot exclude all intervening activity. ps CPU percentages are lifetime averages, not interval utilization.",
+  "trace_summary_note": "Absent snapshot step lists are represented by count and first/last step. Full comparator reports remain in qualification/.",
+  "traces": {
+    "baseline_goldens": {
+      "byte_identity": {
+        "m3_mustache_bucket": {
+          "actual_sha256": "96ed1cc6a566b9a189b15cd160a4b6194aa2f72477c8e0942bdd75c53d32a51c",
+          "golden_sha256": "96ed1cc6a566b9a189b15cd160a4b6194aa2f72477c8e0942bdd75c53d32a51c",
+          "identical": true
+        },
+        "m3_mustache_center": {
+          "actual_sha256": "ecdf5d806fdca98a0fca16e896a2940684c3c07f8bd364c05418fe264ed7a04d",
+          "golden_sha256": "ecdf5d806fdca98a0fca16e896a2940684c3c07f8bd364c05418fe264ed7a04d",
+          "identical": true
+        },
+        "m3_mustache_left_wall": {
+          "actual_sha256": "1c4ef8a8d21eeeda50341af2bbac7fa2e623879a2fe140992b31277cedc5c629",
+          "golden_sha256": "1c4ef8a8d21eeeda50341af2bbac7fa2e623879a2fe140992b31277cedc5c629",
+          "identical": true
+        },
+        "m3_mustache_multiball": {
+          "actual_sha256": "8d74f0c066b6cefe8f465a0fe8852382d0ef74348ae982e129599f2651ab64e7",
+          "golden_sha256": "8d74f0c066b6cefe8f465a0fe8852382d0ef74348ae982e129599f2651ab64e7",
+          "identical": true
+        },
+        "m3_mustache_right_wall": {
+          "actual_sha256": "c476084b74ed3b51044ff10eb4d868050e4aa87d98a16b80372f1b247a068609",
+          "golden_sha256": "c476084b74ed3b51044ff10eb4d868050e4aa87d98a16b80372f1b247a068609",
+          "identical": true
+        }
+      },
+      "comparison": {
+        "control": {
+          "checked": false,
+          "clean": true,
+          "expected_records_identical": true,
+          "failures": [],
+          "fixtures_compared": 5,
+          "identical_fixtures": 5,
+          "left_label": "left",
+          "require_identical": true,
+          "right_label": "right",
+          "strict_reference": false,
+          "volatile_differences": 0,
+          "volatile_paths": []
+        },
+        "environment": null,
+        "failures": [],
+        "fixtures": {
+          "m3_mustache_bucket": {
+            "classifications": {},
+            "difference_counts": {},
+            "expected_nonvolatile_differences": 0,
+            "first_difference": null,
+            "first_difference_step": null,
+            "first_expected_difference": null,
+            "identical": true,
+            "math_backend": {
+              "left": null,
+              "right": null
+            },
+            "math_backend_identity_equal": null,
+            "snapshot_coverage": {
+              "left": {
+                "first_missing_step": 1,
+                "last_missing_step": 178,
+                "missing_step_count": 178,
+                "steps_total": 178,
+                "steps_with_snapshot": 0
+              },
+              "right": {
+                "first_missing_step": 1,
+                "last_missing_step": 178,
+                "missing_step_count": 178,
+                "steps_total": 178,
+                "steps_with_snapshot": 0
+              }
+            },
+            "snapshot_steps_compared": 0,
+            "state_comparison": "not_captured",
+            "state_difference_counts": {},
+            "state_scope": {
+              "left_include_snapshot": false,
+              "right_include_snapshot": false
+            },
+            "traces_compared": true,
+            "ulp_histogram": {},
+            "volatile_differences": []
+          },
+          "m3_mustache_center": {
+            "classifications": {},
+            "difference_counts": {},
+            "expected_nonvolatile_differences": 0,
+            "first_difference": null,
+            "first_difference_step": null,
+            "first_expected_difference": null,
+            "identical": true,
+            "math_backend": {
+              "left": null,
+              "right": null
+            },
+            "math_backend_identity_equal": null,
+            "snapshot_coverage": {
+              "left": {
+                "first_missing_step": 1,
+                "last_missing_step": 922,
+                "missing_step_count": 922,
+                "steps_total": 922,
+                "steps_with_snapshot": 0
+              },
+              "right": {
+                "first_missing_step": 1,
+                "last_missing_step": 922,
+                "missing_step_count": 922,
+                "steps_total": 922,
+                "steps_with_snapshot": 0
+              }
+            },
+            "snapshot_steps_compared": 0,
+            "state_comparison": "not_captured",
+            "state_difference_counts": {},
+            "state_scope": {
+              "left_include_snapshot": false,
+              "right_include_snapshot": false
+            },
+            "traces_compared": true,
+            "ulp_histogram": {},
+            "volatile_differences": []
+          },
+          "m3_mustache_left_wall": {
+            "classifications": {},
+            "difference_counts": {},
+            "expected_nonvolatile_differences": 0,
+            "first_difference": null,
+            "first_difference_step": null,
+            "first_expected_difference": null,
+            "identical": true,
+            "math_backend": {
+              "left": null,
+              "right": null
+            },
+            "math_backend_identity_equal": null,
+            "snapshot_coverage": {
+              "left": {
+                "first_missing_step": 1,
+                "last_missing_step": 1507,
+                "missing_step_count": 1507,
+                "steps_total": 1507,
+                "steps_with_snapshot": 0
+              },
+              "right": {
+                "first_missing_step": 1,
+                "last_missing_step": 1507,
+                "missing_step_count": 1507,
+                "steps_total": 1507,
+                "steps_with_snapshot": 0
+              }
+            },
+            "snapshot_steps_compared": 0,
+            "state_comparison": "not_captured",
+            "state_difference_counts": {},
+            "state_scope": {
+              "left_include_snapshot": false,
+              "right_include_snapshot": false
+            },
+            "traces_compared": true,
+            "ulp_histogram": {},
+            "volatile_differences": []
+          },
+          "m3_mustache_multiball": {
+            "classifications": {},
+            "difference_counts": {},
+            "expected_nonvolatile_differences": 0,
+            "first_difference": null,
+            "first_difference_step": null,
+            "first_expected_difference": null,
+            "identical": true,
+            "math_backend": {
+              "left": null,
+              "right": null
+            },
+            "math_backend_identity_equal": null,
+            "snapshot_coverage": {
+              "left": {
+                "first_missing_step": 1,
+                "last_missing_step": 1797,
+                "missing_step_count": 1797,
+                "steps_total": 1797,
+                "steps_with_snapshot": 0
+              },
+              "right": {
+                "first_missing_step": 1,
+                "last_missing_step": 1797,
+                "missing_step_count": 1797,
+                "steps_total": 1797,
+                "steps_with_snapshot": 0
+              }
+            },
+            "snapshot_steps_compared": 0,
+            "state_comparison": "not_captured",
+            "state_difference_counts": {},
+            "state_scope": {
+              "left_include_snapshot": false,
+              "right_include_snapshot": false
+            },
+            "traces_compared": true,
+            "ulp_histogram": {},
+            "volatile_differences": []
+          },
+          "m3_mustache_right_wall": {
+            "classifications": {},
+            "difference_counts": {},
+            "expected_nonvolatile_differences": 0,
+            "first_difference": null,
+            "first_difference_step": null,
+            "first_expected_difference": null,
+            "identical": true,
+            "math_backend": {
+              "left": null,
+              "right": null
+            },
+            "math_backend_identity_equal": null,
+            "snapshot_coverage": {
+              "left": {
+                "first_missing_step": 1,
+                "last_missing_step": 886,
+                "missing_step_count": 886,
+                "steps_total": 886,
+                "steps_with_snapshot": 0
+              },
+              "right": {
+                "first_missing_step": 1,
+                "last_missing_step": 886,
+                "missing_step_count": 886,
+                "steps_total": 886,
+                "steps_with_snapshot": 0
+              }
+            },
+            "snapshot_steps_compared": 0,
+            "state_comparison": "not_captured",
+            "state_difference_counts": {},
+            "state_scope": {
+              "left_include_snapshot": false,
+              "right_include_snapshot": false
+            },
+            "traces_compared": true,
+            "ulp_histogram": {},
+            "volatile_differences": []
+          }
+        },
+        "format": "peggle.trace_comparison",
+        "left": {
+          "expected": "/home/picazio/projects/julia_clone_alloc_6d09319_20261011/baseline/fixtures/mustache/expected",
+          "label": "left",
+          "traces": "/home/picazio/projects/julia_clone_alloc_6d09319_20261011/baseline/fixtures/mustache/traces"
+        },
+        "mode": "require_identical",
+        "right": {
+          "expected": "/home/picazio/projects/julia_clone_alloc_6d09319_20261011/qualification/baseline/plain/expected",
+          "label": "right",
+          "traces": "/home/picazio/projects/julia_clone_alloc_6d09319_20261011/qualification/baseline/plain/traces"
+        },
+        "schema_version": 1,
+        "semantic_differences": [],
+        "state_comparison": {
+          "full": 0,
+          "not_captured": 5,
+          "partial": 0,
+          "scope_mismatch": 0
+        },
+        "state_scope_note": "Some fixtures were not compared with full simulation state (state_comparison is not \"full\") and those results are not complete simulation-state agreement: \"not_captured\" and \"scope_mismatch\" are event/result agreement only, and \"partial\" means the capture is missing per-step snapshots (a coverage failure).",
+        "ulp_histogram": {},
+        "volatile_paths_discovered": [],
+        "volatile_policy": {
+          "allowed_paths": [],
+          "known_fields": [],
+          "note": "No volatile exemptions exist: VOLATILE_ANIMATION_FIELDS is intentionally empty. snapshot.fever_buckets.animating and snapshot.fever_buckets.dividers[].y are authoritative (snapshot.fever_buckets.dividers feed Physics.update collision geometry; animating gates the per-step bucket/divider update), so any observed difference is an authoritative state_bit_difference/state_structure failure or an explicitly unresolved determinism finding requiring investigation. Allowlist additions require review.",
+          "source": "explicit-allowlist",
+          "unapproved_differences": []
+        }
+      }
+    },
+    "candidate_goldens": {
+      "byte_identity": {
+        "m3_mustache_bucket": {
+          "actual_sha256": "96ed1cc6a566b9a189b15cd160a4b6194aa2f72477c8e0942bdd75c53d32a51c",
+          "golden_sha256": "96ed1cc6a566b9a189b15cd160a4b6194aa2f72477c8e0942bdd75c53d32a51c",
+          "identical": true
+        },
+        "m3_mustache_center": {
+          "actual_sha256": "ecdf5d806fdca98a0fca16e896a2940684c3c07f8bd364c05418fe264ed7a04d",
+          "golden_sha256": "ecdf5d806fdca98a0fca16e896a2940684c3c07f8bd364c05418fe264ed7a04d",
+          "identical": true
+        },
+        "m3_mustache_left_wall": {
+          "actual_sha256": "1c4ef8a8d21eeeda50341af2bbac7fa2e623879a2fe140992b31277cedc5c629",
+          "golden_sha256": "1c4ef8a8d21eeeda50341af2bbac7fa2e623879a2fe140992b31277cedc5c629",
+          "identical": true
+        },
+        "m3_mustache_multiball": {
+          "actual_sha256": "8d74f0c066b6cefe8f465a0fe8852382d0ef74348ae982e129599f2651ab64e7",
+          "golden_sha256": "8d74f0c066b6cefe8f465a0fe8852382d0ef74348ae982e129599f2651ab64e7",
+          "identical": true
+        },
+        "m3_mustache_right_wall": {
+          "actual_sha256": "c476084b74ed3b51044ff10eb4d868050e4aa87d98a16b80372f1b247a068609",
+          "golden_sha256": "c476084b74ed3b51044ff10eb4d868050e4aa87d98a16b80372f1b247a068609",
+          "identical": true
+        }
+      },
+      "comparison": {
+        "control": {
+          "checked": false,
+          "clean": true,
+          "expected_records_identical": true,
+          "failures": [],
+          "fixtures_compared": 5,
+          "identical_fixtures": 5,
+          "left_label": "left",
+          "require_identical": true,
+          "right_label": "right",
+          "strict_reference": false,
+          "volatile_differences": 0,
+          "volatile_paths": []
+        },
+        "environment": null,
+        "failures": [],
+        "fixtures": {
+          "m3_mustache_bucket": {
+            "classifications": {},
+            "difference_counts": {},
+            "expected_nonvolatile_differences": 0,
+            "first_difference": null,
+            "first_difference_step": null,
+            "first_expected_difference": null,
+            "identical": true,
+            "math_backend": {
+              "left": null,
+              "right": null
+            },
+            "math_backend_identity_equal": null,
+            "snapshot_coverage": {
+              "left": {
+                "first_missing_step": 1,
+                "last_missing_step": 178,
+                "missing_step_count": 178,
+                "steps_total": 178,
+                "steps_with_snapshot": 0
+              },
+              "right": {
+                "first_missing_step": 1,
+                "last_missing_step": 178,
+                "missing_step_count": 178,
+                "steps_total": 178,
+                "steps_with_snapshot": 0
+              }
+            },
+            "snapshot_steps_compared": 0,
+            "state_comparison": "not_captured",
+            "state_difference_counts": {},
+            "state_scope": {
+              "left_include_snapshot": false,
+              "right_include_snapshot": false
+            },
+            "traces_compared": true,
+            "ulp_histogram": {},
+            "volatile_differences": []
+          },
+          "m3_mustache_center": {
+            "classifications": {},
+            "difference_counts": {},
+            "expected_nonvolatile_differences": 0,
+            "first_difference": null,
+            "first_difference_step": null,
+            "first_expected_difference": null,
+            "identical": true,
+            "math_backend": {
+              "left": null,
+              "right": null
+            },
+            "math_backend_identity_equal": null,
+            "snapshot_coverage": {
+              "left": {
+                "first_missing_step": 1,
+                "last_missing_step": 922,
+                "missing_step_count": 922,
+                "steps_total": 922,
+                "steps_with_snapshot": 0
+              },
+              "right": {
+                "first_missing_step": 1,
+                "last_missing_step": 922,
+                "missing_step_count": 922,
+                "steps_total": 922,
+                "steps_with_snapshot": 0
+              }
+            },
+            "snapshot_steps_compared": 0,
+            "state_comparison": "not_captured",
+            "state_difference_counts": {},
+            "state_scope": {
+              "left_include_snapshot": false,
+              "right_include_snapshot": false
+            },
+            "traces_compared": true,
+            "ulp_histogram": {},
+            "volatile_differences": []
+          },
+          "m3_mustache_left_wall": {
+            "classifications": {},
+            "difference_counts": {},
+            "expected_nonvolatile_differences": 0,
+            "first_difference": null,
+            "first_difference_step": null,
+            "first_expected_difference": null,
+            "identical": true,
+            "math_backend": {
+              "left": null,
+              "right": null
+            },
+            "math_backend_identity_equal": null,
+            "snapshot_coverage": {
+              "left": {
+                "first_missing_step": 1,
+                "last_missing_step": 1507,
+                "missing_step_count": 1507,
+                "steps_total": 1507,
+                "steps_with_snapshot": 0
+              },
+              "right": {
+                "first_missing_step": 1,
+                "last_missing_step": 1507,
+                "missing_step_count": 1507,
+                "steps_total": 1507,
+                "steps_with_snapshot": 0
+              }
+            },
+            "snapshot_steps_compared": 0,
+            "state_comparison": "not_captured",
+            "state_difference_counts": {},
+            "state_scope": {
+              "left_include_snapshot": false,
+              "right_include_snapshot": false
+            },
+            "traces_compared": true,
+            "ulp_histogram": {},
+            "volatile_differences": []
+          },
+          "m3_mustache_multiball": {
+            "classifications": {},
+            "difference_counts": {},
+            "expected_nonvolatile_differences": 0,
+            "first_difference": null,
+            "first_difference_step": null,
+            "first_expected_difference": null,
+            "identical": true,
+            "math_backend": {
+              "left": null,
+              "right": null
+            },
+            "math_backend_identity_equal": null,
+            "snapshot_coverage": {
+              "left": {
+                "first_missing_step": 1,
+                "last_missing_step": 1797,
+                "missing_step_count": 1797,
+                "steps_total": 1797,
+                "steps_with_snapshot": 0
+              },
+              "right": {
+                "first_missing_step": 1,
+                "last_missing_step": 1797,
+                "missing_step_count": 1797,
+                "steps_total": 1797,
+                "steps_with_snapshot": 0
+              }
+            },
+            "snapshot_steps_compared": 0,
+            "state_comparison": "not_captured",
+            "state_difference_counts": {},
+            "state_scope": {
+              "left_include_snapshot": false,
+              "right_include_snapshot": false
+            },
+            "traces_compared": true,
+            "ulp_histogram": {},
+            "volatile_differences": []
+          },
+          "m3_mustache_right_wall": {
+            "classifications": {},
+            "difference_counts": {},
+            "expected_nonvolatile_differences": 0,
+            "first_difference": null,
+            "first_difference_step": null,
+            "first_expected_difference": null,
+            "identical": true,
+            "math_backend": {
+              "left": null,
+              "right": null
+            },
+            "math_backend_identity_equal": null,
+            "snapshot_coverage": {
+              "left": {
+                "first_missing_step": 1,
+                "last_missing_step": 886,
+                "missing_step_count": 886,
+                "steps_total": 886,
+                "steps_with_snapshot": 0
+              },
+              "right": {
+                "first_missing_step": 1,
+                "last_missing_step": 886,
+                "missing_step_count": 886,
+                "steps_total": 886,
+                "steps_with_snapshot": 0
+              }
+            },
+            "snapshot_steps_compared": 0,
+            "state_comparison": "not_captured",
+            "state_difference_counts": {},
+            "state_scope": {
+              "left_include_snapshot": false,
+              "right_include_snapshot": false
+            },
+            "traces_compared": true,
+            "ulp_histogram": {},
+            "volatile_differences": []
+          }
+        },
+        "format": "peggle.trace_comparison",
+        "left": {
+          "expected": "/home/picazio/projects/julia_clone_alloc_6d09319_20261011/candidate/fixtures/mustache/expected",
+          "label": "left",
+          "traces": "/home/picazio/projects/julia_clone_alloc_6d09319_20261011/candidate/fixtures/mustache/traces"
+        },
+        "mode": "require_identical",
+        "right": {
+          "expected": "/home/picazio/projects/julia_clone_alloc_6d09319_20261011/qualification/candidate/plain/expected",
+          "label": "right",
+          "traces": "/home/picazio/projects/julia_clone_alloc_6d09319_20261011/qualification/candidate/plain/traces"
+        },
+        "schema_version": 1,
+        "semantic_differences": [],
+        "state_comparison": {
+          "full": 0,
+          "not_captured": 5,
+          "partial": 0,
+          "scope_mismatch": 0
+        },
+        "state_scope_note": "Some fixtures were not compared with full simulation state (state_comparison is not \"full\") and those results are not complete simulation-state agreement: \"not_captured\" and \"scope_mismatch\" are event/result agreement only, and \"partial\" means the capture is missing per-step snapshots (a coverage failure).",
+        "ulp_histogram": {},
+        "volatile_paths_discovered": [],
+        "volatile_policy": {
+          "allowed_paths": [],
+          "known_fields": [],
+          "note": "No volatile exemptions exist: VOLATILE_ANIMATION_FIELDS is intentionally empty. snapshot.fever_buckets.animating and snapshot.fever_buckets.dividers[].y are authoritative (snapshot.fever_buckets.dividers feed Physics.update collision geometry; animating gates the per-step bucket/divider update), so any observed difference is an authoritative state_bit_difference/state_structure failure or an explicitly unresolved determinism finding requiring investigation. Allowlist additions require review.",
+          "source": "explicit-allowlist",
+          "unapproved_differences": []
+        }
+      }
+    },
+    "plain": {
+      "byte_identity": {
+        "m3_mustache_bucket": {
+          "baseline_sha256": "96ed1cc6a566b9a189b15cd160a4b6194aa2f72477c8e0942bdd75c53d32a51c",
+          "candidate_sha256": "96ed1cc6a566b9a189b15cd160a4b6194aa2f72477c8e0942bdd75c53d32a51c",
+          "identical": true
+        },
+        "m3_mustache_center": {
+          "baseline_sha256": "ecdf5d806fdca98a0fca16e896a2940684c3c07f8bd364c05418fe264ed7a04d",
+          "candidate_sha256": "ecdf5d806fdca98a0fca16e896a2940684c3c07f8bd364c05418fe264ed7a04d",
+          "identical": true
+        },
+        "m3_mustache_left_wall": {
+          "baseline_sha256": "1c4ef8a8d21eeeda50341af2bbac7fa2e623879a2fe140992b31277cedc5c629",
+          "candidate_sha256": "1c4ef8a8d21eeeda50341af2bbac7fa2e623879a2fe140992b31277cedc5c629",
+          "identical": true
+        },
+        "m3_mustache_multiball": {
+          "baseline_sha256": "8d74f0c066b6cefe8f465a0fe8852382d0ef74348ae982e129599f2651ab64e7",
+          "candidate_sha256": "8d74f0c066b6cefe8f465a0fe8852382d0ef74348ae982e129599f2651ab64e7",
+          "identical": true
+        },
+        "m3_mustache_right_wall": {
+          "baseline_sha256": "c476084b74ed3b51044ff10eb4d868050e4aa87d98a16b80372f1b247a068609",
+          "candidate_sha256": "c476084b74ed3b51044ff10eb4d868050e4aa87d98a16b80372f1b247a068609",
+          "identical": true
+        }
+      },
+      "comparison": {
+        "control": {
+          "checked": true,
+          "clean": true,
+          "expected_records_identical": true,
+          "failures": [],
+          "fixtures_compared": 5,
+          "identical_fixtures": 5,
+          "left_label": "left",
+          "require_identical": false,
+          "right_label": "right",
+          "strict_reference": false,
+          "volatile_differences": 0,
+          "volatile_paths": []
+        },
+        "environment": null,
+        "failures": [],
+        "fixtures": {
+          "m3_mustache_bucket": {
+            "classifications": {},
+            "difference_counts": {},
+            "expected_nonvolatile_differences": 0,
+            "first_difference": null,
+            "first_difference_step": null,
+            "first_expected_difference": null,
+            "identical": true,
+            "math_backend": {
+              "left": null,
+              "right": null
+            },
+            "math_backend_identity_equal": null,
+            "snapshot_coverage": {
+              "left": {
+                "first_missing_step": 1,
+                "last_missing_step": 178,
+                "missing_step_count": 178,
+                "steps_total": 178,
+                "steps_with_snapshot": 0
+              },
+              "right": {
+                "first_missing_step": 1,
+                "last_missing_step": 178,
+                "missing_step_count": 178,
+                "steps_total": 178,
+                "steps_with_snapshot": 0
+              }
+            },
+            "snapshot_steps_compared": 0,
+            "state_comparison": "not_captured",
+            "state_difference_counts": {},
+            "state_scope": {
+              "left_include_snapshot": false,
+              "right_include_snapshot": false
+            },
+            "traces_compared": true,
+            "ulp_histogram": {},
+            "volatile_differences": []
+          },
+          "m3_mustache_center": {
+            "classifications": {},
+            "difference_counts": {},
+            "expected_nonvolatile_differences": 0,
+            "first_difference": null,
+            "first_difference_step": null,
+            "first_expected_difference": null,
+            "identical": true,
+            "math_backend": {
+              "left": null,
+              "right": null
+            },
+            "math_backend_identity_equal": null,
+            "snapshot_coverage": {
+              "left": {
+                "first_missing_step": 1,
+                "last_missing_step": 922,
+                "missing_step_count": 922,
+                "steps_total": 922,
+                "steps_with_snapshot": 0
+              },
+              "right": {
+                "first_missing_step": 1,
+                "last_missing_step": 922,
+                "missing_step_count": 922,
+                "steps_total": 922,
+                "steps_with_snapshot": 0
+              }
+            },
+            "snapshot_steps_compared": 0,
+            "state_comparison": "not_captured",
+            "state_difference_counts": {},
+            "state_scope": {
+              "left_include_snapshot": false,
+              "right_include_snapshot": false
+            },
+            "traces_compared": true,
+            "ulp_histogram": {},
+            "volatile_differences": []
+          },
+          "m3_mustache_left_wall": {
+            "classifications": {},
+            "difference_counts": {},
+            "expected_nonvolatile_differences": 0,
+            "first_difference": null,
+            "first_difference_step": null,
+            "first_expected_difference": null,
+            "identical": true,
+            "math_backend": {
+              "left": null,
+              "right": null
+            },
+            "math_backend_identity_equal": null,
+            "snapshot_coverage": {
+              "left": {
+                "first_missing_step": 1,
+                "last_missing_step": 1507,
+                "missing_step_count": 1507,
+                "steps_total": 1507,
+                "steps_with_snapshot": 0
+              },
+              "right": {
+                "first_missing_step": 1,
+                "last_missing_step": 1507,
+                "missing_step_count": 1507,
+                "steps_total": 1507,
+                "steps_with_snapshot": 0
+              }
+            },
+            "snapshot_steps_compared": 0,
+            "state_comparison": "not_captured",
+            "state_difference_counts": {},
+            "state_scope": {
+              "left_include_snapshot": false,
+              "right_include_snapshot": false
+            },
+            "traces_compared": true,
+            "ulp_histogram": {},
+            "volatile_differences": []
+          },
+          "m3_mustache_multiball": {
+            "classifications": {},
+            "difference_counts": {},
+            "expected_nonvolatile_differences": 0,
+            "first_difference": null,
+            "first_difference_step": null,
+            "first_expected_difference": null,
+            "identical": true,
+            "math_backend": {
+              "left": null,
+              "right": null
+            },
+            "math_backend_identity_equal": null,
+            "snapshot_coverage": {
+              "left": {
+                "first_missing_step": 1,
+                "last_missing_step": 1797,
+                "missing_step_count": 1797,
+                "steps_total": 1797,
+                "steps_with_snapshot": 0
+              },
+              "right": {
+                "first_missing_step": 1,
+                "last_missing_step": 1797,
+                "missing_step_count": 1797,
+                "steps_total": 1797,
+                "steps_with_snapshot": 0
+              }
+            },
+            "snapshot_steps_compared": 0,
+            "state_comparison": "not_captured",
+            "state_difference_counts": {},
+            "state_scope": {
+              "left_include_snapshot": false,
+              "right_include_snapshot": false
+            },
+            "traces_compared": true,
+            "ulp_histogram": {},
+            "volatile_differences": []
+          },
+          "m3_mustache_right_wall": {
+            "classifications": {},
+            "difference_counts": {},
+            "expected_nonvolatile_differences": 0,
+            "first_difference": null,
+            "first_difference_step": null,
+            "first_expected_difference": null,
+            "identical": true,
+            "math_backend": {
+              "left": null,
+              "right": null
+            },
+            "math_backend_identity_equal": null,
+            "snapshot_coverage": {
+              "left": {
+                "first_missing_step": 1,
+                "last_missing_step": 886,
+                "missing_step_count": 886,
+                "steps_total": 886,
+                "steps_with_snapshot": 0
+              },
+              "right": {
+                "first_missing_step": 1,
+                "last_missing_step": 886,
+                "missing_step_count": 886,
+                "steps_total": 886,
+                "steps_with_snapshot": 0
+              }
+            },
+            "snapshot_steps_compared": 0,
+            "state_comparison": "not_captured",
+            "state_difference_counts": {},
+            "state_scope": {
+              "left_include_snapshot": false,
+              "right_include_snapshot": false
+            },
+            "traces_compared": true,
+            "ulp_histogram": {},
+            "volatile_differences": []
+          }
+        },
+        "format": "peggle.trace_comparison",
+        "left": {
+          "expected": "/home/picazio/projects/julia_clone_alloc_6d09319_20261011/qualification/baseline/plain/expected",
+          "label": "left",
+          "traces": "/home/picazio/projects/julia_clone_alloc_6d09319_20261011/qualification/baseline/plain/traces"
+        },
+        "mode": "control",
+        "right": {
+          "expected": "/home/picazio/projects/julia_clone_alloc_6d09319_20261011/qualification/candidate/plain/expected",
+          "label": "right",
+          "traces": "/home/picazio/projects/julia_clone_alloc_6d09319_20261011/qualification/candidate/plain/traces"
+        },
+        "schema_version": 1,
+        "semantic_differences": [],
+        "state_comparison": {
+          "full": 0,
+          "not_captured": 5,
+          "partial": 0,
+          "scope_mismatch": 0
+        },
+        "state_scope_note": "Some fixtures were not compared with full simulation state (state_comparison is not \"full\") and those results are not complete simulation-state agreement: \"not_captured\" and \"scope_mismatch\" are event/result agreement only, and \"partial\" means the capture is missing per-step snapshots (a coverage failure).",
+        "ulp_histogram": {},
+        "volatile_paths_discovered": [],
+        "volatile_policy": {
+          "allowed_paths": [],
+          "known_fields": [],
+          "note": "No volatile exemptions exist: VOLATILE_ANIMATION_FIELDS is intentionally empty. snapshot.fever_buckets.animating and snapshot.fever_buckets.dividers[].y are authoritative (snapshot.fever_buckets.dividers feed Physics.update collision geometry; animating gates the per-step bucket/divider update), so any observed difference is an authoritative state_bit_difference/state_structure failure or an explicitly unresolved determinism finding requiring investigation. Allowlist additions require review.",
+          "source": "explicit-allowlist",
+          "unapproved_differences": []
+        }
+      }
+    },
+    "snapshots": {
+      "byte_identity": {
+        "m3_mustache_bucket": {
+          "baseline_sha256": "2524be520438a4a01e8a44c55db9b3894cc1da083b0ca6b1fd66cb606e63d42a",
+          "candidate_sha256": "2524be520438a4a01e8a44c55db9b3894cc1da083b0ca6b1fd66cb606e63d42a",
+          "identical": true
+        },
+        "m3_mustache_center": {
+          "baseline_sha256": "6ff31d0bffb7a7e55c23bb4e0c8c394e129f550360c3e30100c1684b33887a00",
+          "candidate_sha256": "6ff31d0bffb7a7e55c23bb4e0c8c394e129f550360c3e30100c1684b33887a00",
+          "identical": true
+        },
+        "m3_mustache_left_wall": {
+          "baseline_sha256": "4473eb4f95dd87c4fcd2366b46ab114b94b1c018074fa9f9c708845dd7ce3a37",
+          "candidate_sha256": "4473eb4f95dd87c4fcd2366b46ab114b94b1c018074fa9f9c708845dd7ce3a37",
+          "identical": true
+        },
+        "m3_mustache_multiball": {
+          "baseline_sha256": "8f8c2c1c3d2e115fdb3e89bd99e1691c3051c5213603e1929343e27380626699",
+          "candidate_sha256": "8f8c2c1c3d2e115fdb3e89bd99e1691c3051c5213603e1929343e27380626699",
+          "identical": true
+        },
+        "m3_mustache_right_wall": {
+          "baseline_sha256": "239f405424f33abdb6eda7fe91409b53e3657dc8a115a1a51b3bc6633e5432ac",
+          "candidate_sha256": "239f405424f33abdb6eda7fe91409b53e3657dc8a115a1a51b3bc6633e5432ac",
+          "identical": true
+        }
+      },
+      "comparison": {
+        "control": {
+          "checked": true,
+          "clean": true,
+          "expected_records_identical": true,
+          "failures": [],
+          "fixtures_compared": 5,
+          "identical_fixtures": 5,
+          "left_label": "left",
+          "require_identical": false,
+          "right_label": "right",
+          "strict_reference": false,
+          "volatile_differences": 0,
+          "volatile_paths": []
+        },
+        "environment": null,
+        "failures": [],
+        "fixtures": {
+          "m3_mustache_bucket": {
+            "classifications": {},
+            "difference_counts": {},
+            "expected_nonvolatile_differences": 0,
+            "first_difference": null,
+            "first_difference_step": null,
+            "first_expected_difference": null,
+            "identical": true,
+            "math_backend": {
+              "left": null,
+              "right": null
+            },
+            "math_backend_identity_equal": null,
+            "snapshot_coverage": {
+              "left": {
+                "first_missing_step": null,
+                "last_missing_step": null,
+                "missing_step_count": 0,
+                "steps_total": 178,
+                "steps_with_snapshot": 178
+              },
+              "right": {
+                "first_missing_step": null,
+                "last_missing_step": null,
+                "missing_step_count": 0,
+                "steps_total": 178,
+                "steps_with_snapshot": 178
+              }
+            },
+            "snapshot_steps_compared": 178,
+            "state_comparison": "full",
+            "state_difference_counts": {},
+            "state_scope": {
+              "left_include_snapshot": true,
+              "right_include_snapshot": true
+            },
+            "traces_compared": true,
+            "ulp_histogram": {},
+            "volatile_differences": []
+          },
+          "m3_mustache_center": {
+            "classifications": {},
+            "difference_counts": {},
+            "expected_nonvolatile_differences": 0,
+            "first_difference": null,
+            "first_difference_step": null,
+            "first_expected_difference": null,
+            "identical": true,
+            "math_backend": {
+              "left": null,
+              "right": null
+            },
+            "math_backend_identity_equal": null,
+            "snapshot_coverage": {
+              "left": {
+                "first_missing_step": null,
+                "last_missing_step": null,
+                "missing_step_count": 0,
+                "steps_total": 922,
+                "steps_with_snapshot": 922
+              },
+              "right": {
+                "first_missing_step": null,
+                "last_missing_step": null,
+                "missing_step_count": 0,
+                "steps_total": 922,
+                "steps_with_snapshot": 922
+              }
+            },
+            "snapshot_steps_compared": 922,
+            "state_comparison": "full",
+            "state_difference_counts": {},
+            "state_scope": {
+              "left_include_snapshot": true,
+              "right_include_snapshot": true
+            },
+            "traces_compared": true,
+            "ulp_histogram": {},
+            "volatile_differences": []
+          },
+          "m3_mustache_left_wall": {
+            "classifications": {},
+            "difference_counts": {},
+            "expected_nonvolatile_differences": 0,
+            "first_difference": null,
+            "first_difference_step": null,
+            "first_expected_difference": null,
+            "identical": true,
+            "math_backend": {
+              "left": null,
+              "right": null
+            },
+            "math_backend_identity_equal": null,
+            "snapshot_coverage": {
+              "left": {
+                "first_missing_step": null,
+                "last_missing_step": null,
+                "missing_step_count": 0,
+                "steps_total": 1507,
+                "steps_with_snapshot": 1507
+              },
+              "right": {
+                "first_missing_step": null,
+                "last_missing_step": null,
+                "missing_step_count": 0,
+                "steps_total": 1507,
+                "steps_with_snapshot": 1507
+              }
+            },
+            "snapshot_steps_compared": 1507,
+            "state_comparison": "full",
+            "state_difference_counts": {},
+            "state_scope": {
+              "left_include_snapshot": true,
+              "right_include_snapshot": true
+            },
+            "traces_compared": true,
+            "ulp_histogram": {},
+            "volatile_differences": []
+          },
+          "m3_mustache_multiball": {
+            "classifications": {},
+            "difference_counts": {},
+            "expected_nonvolatile_differences": 0,
+            "first_difference": null,
+            "first_difference_step": null,
+            "first_expected_difference": null,
+            "identical": true,
+            "math_backend": {
+              "left": null,
+              "right": null
+            },
+            "math_backend_identity_equal": null,
+            "snapshot_coverage": {
+              "left": {
+                "first_missing_step": null,
+                "last_missing_step": null,
+                "missing_step_count": 0,
+                "steps_total": 1797,
+                "steps_with_snapshot": 1797
+              },
+              "right": {
+                "first_missing_step": null,
+                "last_missing_step": null,
+                "missing_step_count": 0,
+                "steps_total": 1797,
+                "steps_with_snapshot": 1797
+              }
+            },
+            "snapshot_steps_compared": 1797,
+            "state_comparison": "full",
+            "state_difference_counts": {},
+            "state_scope": {
+              "left_include_snapshot": true,
+              "right_include_snapshot": true
+            },
+            "traces_compared": true,
+            "ulp_histogram": {},
+            "volatile_differences": []
+          },
+          "m3_mustache_right_wall": {
+            "classifications": {},
+            "difference_counts": {},
+            "expected_nonvolatile_differences": 0,
+            "first_difference": null,
+            "first_difference_step": null,
+            "first_expected_difference": null,
+            "identical": true,
+            "math_backend": {
+              "left": null,
+              "right": null
+            },
+            "math_backend_identity_equal": null,
+            "snapshot_coverage": {
+              "left": {
+                "first_missing_step": null,
+                "last_missing_step": null,
+                "missing_step_count": 0,
+                "steps_total": 886,
+                "steps_with_snapshot": 886
+              },
+              "right": {
+                "first_missing_step": null,
+                "last_missing_step": null,
+                "missing_step_count": 0,
+                "steps_total": 886,
+                "steps_with_snapshot": 886
+              }
+            },
+            "snapshot_steps_compared": 886,
+            "state_comparison": "full",
+            "state_difference_counts": {},
+            "state_scope": {
+              "left_include_snapshot": true,
+              "right_include_snapshot": true
+            },
+            "traces_compared": true,
+            "ulp_histogram": {},
+            "volatile_differences": []
+          }
+        },
+        "format": "peggle.trace_comparison",
+        "left": {
+          "expected": "/home/picazio/projects/julia_clone_alloc_6d09319_20261011/qualification/baseline/snapshots/expected",
+          "label": "left",
+          "traces": "/home/picazio/projects/julia_clone_alloc_6d09319_20261011/qualification/baseline/snapshots/traces"
+        },
+        "mode": "control",
+        "right": {
+          "expected": "/home/picazio/projects/julia_clone_alloc_6d09319_20261011/qualification/candidate/snapshots/expected",
+          "label": "right",
+          "traces": "/home/picazio/projects/julia_clone_alloc_6d09319_20261011/qualification/candidate/snapshots/traces"
+        },
+        "schema_version": 1,
+        "semantic_differences": [],
+        "state_comparison": {
+          "full": 5,
+          "not_captured": 0,
+          "partial": 0,
+          "scope_mismatch": 0
+        },
+        "state_scope_note": null,
+        "ulp_histogram": {},
+        "volatile_paths_discovered": [],
+        "volatile_policy": {
+          "allowed_paths": [],
+          "known_fields": [],
+          "note": "No volatile exemptions exist: VOLATILE_ANIMATION_FIELDS is intentionally empty. snapshot.fever_buckets.animating and snapshot.fever_buckets.dividers[].y are authoritative (snapshot.fever_buckets.dividers feed Physics.update collision geometry; animating gates the per-step bucket/divider update), so any observed difference is an authoritative state_bit_difference/state_structure failure or an explicitly unresolved determinism finding requiring investigation. Allowlist additions require review.",
+          "source": "explicit-allowlist",
+          "unapproved_differences": []
+        }
+      }
+    }
+  }
+}

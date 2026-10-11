@@ -23,8 +23,10 @@
 # Payload ownership: payloads are deep-copied on entry into the journal, so a
 # producer mutating its dict after emit/stage cannot change stored events
 # (gameplay_events.lua lines 19-24, exportable.lua copy_value). Payloads only
-# contain strings, finite numbers, booleans, and recursive Dicts/Vectors;
-# unlike the Lua version no rejection layer exists in M3 -- unsupported values
+# contain strings, finite numbers, booleans, and recursive Dicts/Vectors.
+# Physics contacts use immutable typed payloads and can be retained directly;
+# snapshot/export boundaries still return detached recursive dictionaries.
+# Unlike the Lua version no rejection layer exists in M3 -- unsupported values
 # are stored by reference.
 #
 # Events generated outside an open fixed step (e.g. launch input) are staged
@@ -33,13 +35,17 @@
 
 const GAMEPLAY_EVENT_SCHEMA_VERSION = 1
 
+include("contact_payloads.jl")
+
+const EventPayload = Union{Dict{String,Any},ContactPayload}
+
 struct GameEvent
     type::String
     phase::Symbol                      # :raw | :derived
     step::Int
     shot_id::Int
     sequence::Int
-    fields::Dict{String,Any}
+    fields::EventPayload
 end
 
 # Envelope keys + payload, JSON-ready. The payload is copied so callers can
@@ -89,6 +95,9 @@ end
 _owned_payload(::Nothing) = Dict{String,Any}()
 _owned_payload(fields::AbstractDict) = _copy_payload(fields)
 _owned_payload(fields::NamedTuple) = _copy_payload(fields)
+# Safe to retain: every field, including line metadata, is immutable. Export
+# still goes through _copy_payload, which materializes detached dictionaries.
+_owned_payload(fields::ContactPayload) = fields
 
 # ---------------------------------------------------------------------------
 # GameplayJournal
@@ -102,14 +111,14 @@ mutable struct GameplayJournal
     open::Bool
     raw::Vector{GameEvent}
     derived::Vector{GameEvent}
-    staged::Vector{Tuple{String,Union{Nothing,Dict{String,Any}}}}
+    staged::Vector{Tuple{String,Union{Nothing,EventPayload}}}
 end
 
 function GameplayJournal()
     j = GameplayJournal(
         0, 0, 0, false, false,
         GameEvent[], GameEvent[],
-        Vector{Tuple{String,Union{Nothing,Dict{String,Any}}}}())
+        Vector{Tuple{String,Union{Nothing,EventPayload}}}())
     return reset!(j)
 end
 
@@ -128,8 +137,8 @@ end
 
 # GameplayEvents:stage (lines 80-86). The payload is copied NOW: later
 # mutation of the caller's dict cannot affect the staged event. The frozen
-# API writes `fields::Union{Nothing,Dict{String,Any}}`; the annotation is
-# widened to accept any dict literal (the copy normalizes the key type).
+# API accepts any dict literal (the copy normalizes the key type). Immutable
+# contact payloads are retained directly, as with immediate emission.
 function stage!(j::GameplayJournal, event_type::AbstractString, fields = nothing)
     owned = fields === nothing ? nothing : _owned_payload(fields)
     push!(j.staged, (String(event_type), owned))
@@ -250,7 +259,7 @@ end
 # GameplayCommands:push (lines 60-80). The payload is deep-copied at push
 # time, so caller-owned arrays (e.g. source_sequences) are never retained.
 function push_command!(c::GameplayCommands, command_type::AbstractString, fields = nothing)
-    owned = _owned_payload(fields)
+    owned = fields isa ContactPayload ? _copy_payload(fields) : _owned_payload(fields)
     c.sequence += 1
     cmd = Dict{String,Any}(
         "step" => c.step_id,

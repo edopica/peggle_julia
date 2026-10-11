@@ -1,0 +1,1163 @@
+{
+  "format": "peggle.allocation_idict_validation.v1",
+  "generated_utc": "2026-10-11T21:30:33.756675+00:00",
+  "task": "Validate the IdDict->Dict scratch fix (engine.jl ContactReductionScratch, physics.jl PhysicsContext.ball_frame) on deathstar against baseline 6d09319 and the prior optimized candidate.",
+  "baseline_commit": "6d09319c33162d7fb9957cf096ef29c3478c471e",
+  "candidate_kind": "uncommitted worktree snapshot: prior optimized candidate plus the IdDict->Dict fix",
+  "host": "deathstar",
+  "remote_root": "/home/picazio/projects/julia_clone_alloc_6d09319_20261011",
+  "workspaces": {
+    "baseline": "/home/picazio/projects/julia_clone_alloc_6d09319_20261011/baseline",
+    "prior_candidate": "/home/picazio/projects/julia_clone_alloc_6d09319_20261011/candidate",
+    "fixed_candidate": "/home/picazio/projects/julia_clone_alloc_6d09319_20261011/idict-fix"
+  },
+  "julia_executable": "/home/picazio/.julia/juliaup/julia-1.12.6+0.x64.linux.gnu/bin/julia",
+  "julia_version": "1.12.6",
+  "environment": {
+    "JULIA_NUM_THREADS": "1",
+    "JULIA_NUM_PRECOMPILE_TASKS": "1",
+    "JULIA_PKG_PRECOMPILE_AUTO": "0",
+    "OPENBLAS_NUM_THREADS": "1",
+    "OMP_NUM_THREADS": "1",
+    "PEGGLE_MATH_BACKEND": "system_libm",
+    "taskset": "cpu 0 for measurements/profiles; 0-7 for sweeps",
+    "nice": 10,
+    "timeout_seconds": "900 per julia process (1800 for Pkg.test/profile)",
+    "julia_gcthreads": 1,
+    "julia_interactive_threads": 0
+  },
+  "source_hashes": {
+    "fixed_candidate": {
+      "engine.jl": "9194020b31d340a4e1a101cece803e1476c7fb720697fc6537d9a2a33e995029",
+      "physics.jl": "f438ab75db7df856b351e5eef7e255b5c2507d1e3787bdf603456d18e735eef7",
+      "scripts/allocation_bench.jl": "71a681c075b7d829d3b58835b33cd99cec67b87050b45a8fc37b813a079242d1",
+      "scripts/allocation_remote.sh": "7c40ed6f354e78bd3c772f593bd81baa4bdcdb9e59768707932ee211759097ef",
+      "manifest_files": 97,
+      "manifest_sha256": "9a1ec56763e3eba9272e0bc1a2bb54c168b374ee8a0da9341d46fab01cdc70fd",
+      "manifest": [
+        "7437b2291093b86ebbcbddf8845c023ea5f8f916cf4722205f301d3679873044  julia/PeggleSim/bin/checkpoint_bench.jl",
+        "c5ca4dd3ee46a717aa792765e77082aecbd24bbb55c65f700ebab194c2863803  julia/PeggleSim/bin/math_bench.jl",
+        "56b603c012a17fe017c57b9b770c700430a4babac9bd11a832c8c63ad9552f83  julia/PeggleSim/bin/math_census.jl",
+        "bd984c338f6aac799ea9bff23921fc4024cae3d9d19e2e6a4cc9265452d24882  julia/PeggleSim/bin/native_qualify.jl",
+        "0e9e53c915d31b71583d5b155ee682709e44d8e84994595ae805add79374b607  julia/PeggleSim/bin/parity_emit.jl",
+        "d97fa7f7868d3b714a4b02ccc1c65779254aa30c517071a7fe013faf9b2d00d3  julia/PeggleSim/bin/shot_bench.jl",
+        "3a9c9f03ab3a8b4f7e4eafe3b282735ce96161ca6e09870f2d44095f8f0fc675  julia/PeggleSim/bin/wpd_census_inputs.jl",
+        "374d7cf75133fbd138aa466d1180f28cdd2491728a5600f331f260afe916ba3f  julia/PeggleSim/bin/wpd_compare.jl",
+        "87c8bad49236c1ae603a0a9cca83f41927f66ce44c53fc712d608b3a728db4ea  julia/PeggleSim/bin/wpd_state_compare.jl",
+        "43e4337c2b8e7d7030db023fb76b489502d2d22713f5991c60ab95c7f7470709  julia/PeggleSim/bin/wpd_state_summary.jl",
+        "ab1e543d1e11eb6e14bd147cffd634d3f1129ac0324231411b3a50735dd504e4  julia/PeggleSim/bin/wpd_summary.jl",
+        "a1c8030a05d2c2c6c721d1fa352556a828a4aa485fe58813f748d9d4a373becb  julia/PeggleSim/Manifest.toml",
+        "b5e7f64468b7886259e5a02d71c6c47764d6f1f9749a9ae8ee0e8c2f00bcdd26  julia/PeggleSim/Project.toml",
+        "76d77cc836443d8f8da379ff75d4aeaa0b6ab0d271a9ab8dbe5ae71aa8fab8e5  julia/PeggleSim/README.md",
+        "dcb22a72e6ffd693a26a9a41eccb3af2a3c30d71b61d9009beaeadd4d542d6fc  julia/PeggleSim/src/ball_state.jl",
+        "dc56442152ea786f541c080490b379fe4c2916bff2739e808b8ef28061c5eb2e  julia/PeggleSim/src/bucket.jl",
+        "8c04f8ca91e8523e9cdcd61e1253a0466950e84c36abfd4d0cd5c3fdddbf6527  julia/PeggleSim/src/canonical.jl",
+        "caab70ffa8b770d6fa02f95d00a7d0bc86ef0634c56962dd9e81f5360830b913  julia/PeggleSim/src/checkpoint.jl",
+        "0c043c19b3fd14191fb209867e5c28600f25332bfa3ab158ee564d03cdec3e5c  julia/PeggleSim/src/colorstate.jl",
+        "9f287ecdb14c223009a7476e1d4efa8e1cb8c845a2ece9801f028af26e0aa98e  julia/PeggleSim/src/config.jl",
+        "6522c2c9fd7c222c638e57e6810b91acf903ac6e0982d50bdbd107eb53b33f34  julia/PeggleSim/src/contact_payloads.jl",
+        "fa43d49ca6f78722eb1571e2d0ecb3f77f41331d409234b15d70045de4b74185  julia/PeggleSim/src/detmath.jl",
+        "9194020b31d340a4e1a101cece803e1476c7fb720697fc6537d9a2a33e995029  julia/PeggleSim/src/engine.jl",
+        "803eca3967e83f9f30f552ea819686dfd26ac4abd2e972c2054ef4823ff91ecd  julia/PeggleSim/src/events.jl",
+        "72ec7fa0c1466d831d6c77d80c8c7824f8c696d3a1bfec953bcca4acee3d7431  julia/PeggleSim/src/fever_buckets.jl",
+        "6a859247ac65880c401a0442ab91e7be0b83a6bf59d59fe677abd38f9ec3c52a  julia/PeggleSim/src/impact_geometry.jl",
+        "0e4d0c80997de7de65622dad6efd491fe016240dec1c92c0cf7d284617960edb  julia/PeggleSim/src/jsonio.jl",
+        "105a93987aac299dd63097464b554c7dd41efb21072c4d15473f1e2190d293a6  julia/PeggleSim/src/level.jl",
+        "3341728bbb8620cfb951c9a4fbe56ff83a84e074a3d593f917b43a7d07a63c96  julia/PeggleSim/src/parity.jl",
+        "d79a4233acd6348b31a1dc96db7ec19b4f83a145ba3a9f236ec7c1d254b8e768  julia/PeggleSim/src/PeggleSim.jl",
+        "f438ab75db7df856b351e5eef7e255b5c2507d1e3787bdf603456d18e735eef7  julia/PeggleSim/src/physics.jl",
+        "23c002f47559506cdfb2ce6f34a5d8538062e58b4b71ec3fd13aed0d159e75ff  julia/PeggleSim/src/powers.jl",
+        "3d71e0f8d5a5340b89e96b57b302db8e2c9d4d469b9b8f783a3b37024cbdacc5  julia/PeggleSim/src/rng.jl",
+        "8223b04f09d72fc33d61e298e4e81f3f05f6088945593e6c3703474d586ed36c  julia/PeggleSim/src/scratch.jl",
+        "e88ebe0869d2b20548c2e8675f6c4c88baf6980ebaeec03dab1d2bb66e4b1018  julia/PeggleSim/src/slide_inversion.jl",
+        "83644f0e3da51d6a7a9a2fa73cd37809d6b9b0f547c1d73765b586df0baf97ec  julia/PeggleSim/src/snapshot.jl",
+        "a2c38d243525527c3969b07d3bd4c81c7043fa1cfcd5731ee12acdafa6c5d73a  julia/PeggleSim/src/state.jl",
+        "26ea6a03a24008b9bdd57a88fabb81f349c0ae08020b83b91626c7dff63e6441  julia/PeggleSim/src/style_shots.jl",
+        "ef67c1b55806a022a9cbddb490caf9645f393acc141616fd8d1dfa151c2cf76a  julia/PeggleSim/src/trace.jl",
+        "385e0fde59a01a85d9aa3b2094fd5eedf52e457f0ba0bf2cee02edc6087be7c8  julia/PeggleSim/test/runtests.jl",
+        "8aa2e32a953b0fa3a063ddf890c71ce4884e13446bc75fb50b0f38e5dd7f9bda  julia/PeggleSim/test/test_ball_state.jl",
+        "86c53fa75d4965fe2b38d3fc2c8803f114ada57221aff1891aec32959acf4720  julia/PeggleSim/test/test_bucket.jl",
+        "86eb6d358804aebc4d5baeab6771f7519b9e967b1fec1628108a654b4bb8b39e  julia/PeggleSim/test/test_canonical.jl",
+        "3447150ac881e51e4a038ef9a3f4bdabafe9500ce26f4f1fd80755ee48c8a29c  julia/PeggleSim/test/test_census.jl",
+        "7efcb5a6801603998d854e1eed4e0e295e88e29fac44ecd2d5d33db73cfe8760  julia/PeggleSim/test/test_checkpoint.jl",
+        "22f1fc05204b19fe56c264238346e06cb52ad3962d966a6c72b71fdab98308af  julia/PeggleSim/test/test_colors.jl",
+        "0fa1d17d6277f443a0d7dc0e362c08de3c0a6dc1023366883982cad2d28b9bbe  julia/PeggleSim/test/test_contact_payloads.jl",
+        "ae6b38bb1e685891472cb31b55d16f885e305e7eafdeecd4017e370be6e45d05  julia/PeggleSim/test/test_detmath.jl",
+        "92796ead7a1185c789f52e55ef6a44d9e3746bc5651b062d8c8938eecc1967e2  julia/PeggleSim/test/test_engine.jl",
+        "70bcc29ce2553b6336d6c06c72352ea13dbeb4b75254f402e92c12d11aecef47  julia/PeggleSim/test/test_events.jl",
+        "e1639fe1a6d611a9c615fbeac991c49c8250ae48c7cc60fa78f4efac3f8f87e9  julia/PeggleSim/test/test_fever.jl",
+        "eaed4fdb9937e5ac30f30b1e5e826191c803109f3e1dff30c85ab8cb008fd0f0  julia/PeggleSim/test/test_impact_geometry.jl",
+        "30cf3835b796b0207fad486b86a4e59c647160ecc1ca542bc6836efcfb0d13f3  julia/PeggleSim/test/test_level.jl",
+        "8fae543a82ef71ace8aa67ba8a48789d74789b310cd6ebb61789ec6b03466c2e  julia/PeggleSim/test/test_parity.jl",
+        "4673e98b554a2224e22799a792a201499f2e19550ccb4cdf670704349d2af39a  julia/PeggleSim/test/test_physics.jl",
+        "af28f8bad816a5a1da21597aeb31d230841c4b7c6d5115050ebd9ddc433d75ba  julia/PeggleSim/test/test_powers.jl",
+        "cf092e79584789029648dc55976bebd4f387c52ad07891dd40a5e17fb5a62297  julia/PeggleSim/test/test_rng.jl",
+        "fbcf6c538f7b72d46a956b4dc0147ef520d005ed39b23df7f0d1fe60688065cd  julia/PeggleSim/test/test_shot_scratch.jl",
+        "3f3ac7a61c6ae159ea3498b089acd415b31ad0c24d9ddfcd18a9302293b70811  julia/PeggleSim/test/test_slide_inversion.jl",
+        "8e535667cb747f273bb14b3c000745edf244bc682d522dfa0ae6647f6075cdf5  julia/PeggleSim/test/test_snapshot.jl",
+        "3e35b7db47d9269ebacf9c92f4aea719b029f10085810f6e20791f559f60bf18  julia/PeggleSim/test/test_style_shots.jl",
+        "067212b180f89c9f1bf3176062e5b9fa9bb9c387951d9a191116d1d83961e184  julia/PeggleSim/test/test_trace.jl",
+        "71a681c075b7d829d3b58835b33cd99cec67b87050b45a8fc37b813a079242d1  scripts/allocation_bench.jl",
+        "7c40ed6f354e78bd3c772f593bd81baa4bdcdb9e59768707932ee211759097ef  scripts/allocation_remote.sh",
+        "03fa08909a01590dc7cddf22ce3b6d1869a889a96d5a84b5601f75d70a8331d0  scripts/allocation_validate.py",
+        "3618a1518509a7123178ec2952bf99574caf1ba023e412963e7ecdd34c31303f  scripts/bench_m3.sh",
+        "77d9c3abaf2f18e4e2c5d25a12c4ef49ff3bdc6701083bf7c873bf589a7c8b63  scripts/capture_fixtures.sh",
+        "7598c0bca79c68897a89cc0f7487e040ccd7690ba002eaf4b33d33f5f79573f7  scripts/capture_m2.sh",
+        "521089964f09630b206352f13a42db7547b070b507cf0d423e8721880d1f76c1  scripts/capture_m3_mustache.sh",
+        "e74c5843934cb4f02fa22c8b6394c8ad6f0383a8e0474bc2245459ca2e093567  scripts/capture_math_census.sh",
+        "c2119f2aba788cfd83d7456a218155c4782262bfae2fec241466cdc3d08825e1  scripts/capture_wpd_parity_census.sh",
+        "5091e010b985c4b24d5155aa2c85ae27a823656e74e1e64946a4614caba05369  scripts/capture_wpd_state.sh",
+        "d3755c822baa1dc389d911a2903942b12501f1c93ee666ebdb514cc65d2e6f98  scripts/check_interchange.sh",
+        "8f3a4e189ab700543946506ab0374e137f892dccdd69509e3f6a3ca8901443a2  scripts/compare_m3_mustache.sh",
+        "795e1aac28c25bce9fa6557af384f2520612e03706c0f5e8f1609bf7a9ceda4d  scripts/compare_m3_sweeps.py",
+        "cd5f2c550d10e9198f154668cb0497a6e521d202fa6871739de867fd980f641f  scripts/compare_parity.sh",
+        "556d59c4dfad20197b072ca647f0acf03cd20d423875b503a4dad1ea38f93367  scripts/compare_wpd_state.sh",
+        "3b687d39db2ab4b5f800886ba792b1605216e0db9dac5ff889e6d18f8156030a  scripts/core_math_compare.sh",
+        "6633bb845a7111c538429996e276ea171ffd9dda8037851db0d023785a4c2b9a  scripts/core_math_perf.sh",
+        "da1c7ea920b8e78b386c21a79256f00e8e4202707e2b46f03777d91a4e675b29  scripts/core_math_trace.sh",
+        "87372a4065e2cb52bf0e5cd80c9d53f979cf42b27cf526fcfc16f82474c2b420  scripts/export_interchange.sh",
+        "9e2bbb667f36c439c6cbd3082f9bd055d8c372f4867db3100a7e6218dd28cdfe  scripts/love.sh",
+        "3a110fd1083bd9bd2ddfc78ba423e312496e0f6bd5b1e3ff2cfb2501ad6cb8b9  scripts/render_level_svg.py",
+        "8a405103108bd6f34f78a0fe50eea169c8a7b94cc68cb626b5f6d1b6301ce052  scripts/render_summary.py",
+        "dac74f67f4ab5a5ee6df857db55328cbd09f11caa5ffa5992c2ede0c7c886357  scripts/run_baseline.sh",
+        "07ab24b20a156bcf019e23006b88d0b46b17ce4774d679dda223510fde079a80  scripts/test_checkpoint_contract.sh",
+        "d74631e38275a63843dd813ef867b1a2a619ec830124f7ebb8fffd2c87a5d923  scripts/test_compare_m3_sweeps.sh",
+        "88729cd4003a55a1c5f21353e53d9c2877697c88fdae083ad27010e9fb4adcd8  scripts/test_compare_parity.sh",
+        "9025e5a1de52ca3b82b5e4f59387ab337c2cade1124b67083bb81c5c6ed98381  scripts/test_compare_traces.sh",
+        "94b9aaa4b4e37805e7d5d249413562ab38ea054d01590208942b9e7b5ac1a795  scripts/test_fixture_check.sh",
+        "a3c4c0a37214f65cf75a1709403b440659217d1b85b8e27c333dbbc46a1949bd  scripts/validate_interchange.py",
+        "3293837acc5b6d029b201959ef63eb4323bcc410354c126a2625f4edb6b8637a  scripts/verify_core_math.sh",
+        "a3c3c3bfbf5e50eef7fdbdc6dfe71ad9f1647c3d4e8c9f1abfb345322e9cb515  scripts/verify_interchange.sh",
+        "284dd6fd26607ee1cb58592a3078e0f820c3e9b3b25deea698c2d78513228e29  scripts/verify_reference.sh",
+        "d33aeb51c9f00a4d138076578e33a3c0110a9e1a36fc275b21830dca390230e2  scripts/wpd_capture_host.sh",
+        "daa5ec8cd8debdbb0db5c5529211b39087ff59387b40b47ea0dd3bd7744763f9  scripts/wpd_compare_hosts.sh",
+        "ef22748bbc9ab690e11bb79d51698f2362110e0644cca922eafa3c4d7015a92f  scripts/wpd_parity_check.sh"
+      ]
+    },
+    "prior_candidate": {
+      "engine.jl": "fa434f1a317152e9b2a39d3d50e8e0925107cd5f0b114e93ea05353e2bdd28eb",
+      "physics.jl": "3b62a8fc7b3359db7e7b44144a640e5ec1c9ef6db46f2d43b32dd4a43c243f67"
+    },
+    "baseline": {
+      "engine.jl": "8c9bee4a7e8c58b715f06c3aeeb27d2d731ed7710cc0565edac8b567919c448b",
+      "physics.jl": "d9533868c147a0d041d9e8a179abd04a4da9740e84a6fe1e8809c85ba052bdd4"
+    }
+  },
+  "fix_diff": "engine.jl: ContactReductionScratch.suppressed_pool Vector{IdDict{Peg,Bool}} -> Vector{Dict{Peg,Bool}}; scored IdDict{Peg,Bool} -> Dict{Peg,Bool}; constructor literals and the single push!(scratch.suppressed_pool, ...) site updated.\nphysics.jl: PhysicsContext.ball_frame IdDict{BallState,BallFrameState} -> Dict{BallState,BallFrameState}; constructor literal updated.\nNo other source/test/script file differs from the prior optimized candidate.",
+  "transfer": {
+    "method": "rsync -az --exclude='.git/' --exclude='tmp/' --exclude='results/raw/' --exclude='__pycache__'",
+    "verification": "find julia/PeggleSim scripts tools fixtures/mustache reference -type f | sort | xargs sha256sum",
+    "result": "byte-identical for every transferred file (only local __pycache__ excluded); final post-run manifest check of julia/PeggleSim + scripts identical (97 files)"
+  },
+  "gates": {
+    "package_tests": {
+      "passed": 5608,
+      "total": 5608,
+      "command": "Pkg.test(; julia_args=[\"--startup-file=no\", \"--threads=1,0\", \"--gcthreads=1\"])",
+      "log": "idict-fix/tmp/idict-validation/logs/tests.log",
+      "log_sha256": "5c19653ff49cdf9cd64d3e2b921861a7a538a2c7c0d189c9aaa0768207a072b1"
+    },
+    "reference_verification": {
+      "files": 133,
+      "status": "133/133 before prepare, after prepare, before measure, after measure, and final",
+      "logs_sha256": {
+        "verify-before.log": "f8ba5a3fdbd1332b4d7fbe4b17142665280f4cfed4eccb3fbef094da72a0e88a",
+        "verify-after.log": "f8ba5a3fdbd1332b4d7fbe4b17142665280f4cfed4eccb3fbef094da72a0e88a",
+        "verify-final.log": "f8ba5a3fdbd1332b4d7fbe4b17142665280f4cfed4eccb3fbef094da72a0e88a"
+      }
+    },
+    "traces": {
+      "fixtures": [
+        "m3_mustache_bucket",
+        "m3_mustache_center",
+        "m3_mustache_left_wall",
+        "m3_mustache_multiball",
+        "m3_mustache_right_wall"
+      ],
+      "plain_vs_baseline": {
+        "mode": "control",
+        "failures": [],
+        "semantic_differences": 0,
+        "state_comparison": {
+          "full": 0,
+          "not_captured": 5,
+          "partial": 0,
+          "scope_mismatch": 0
+        },
+        "identities": {
+          "m3_mustache_bucket": "identical",
+          "m3_mustache_center": "identical",
+          "m3_mustache_left_wall": "identical",
+          "m3_mustache_multiball": "identical",
+          "m3_mustache_right_wall": "identical"
+        },
+        "report_sha256": "b87661b48d9e824a0ea44a2de7b467437dc190434b677ec4c2ab3d3a1ef19d75"
+      },
+      "snapshots_vs_baseline": {
+        "mode": "control",
+        "failures": [],
+        "semantic_differences": 0,
+        "state_comparison": {
+          "full": 5,
+          "not_captured": 0,
+          "partial": 0,
+          "scope_mismatch": 0
+        },
+        "identities": {
+          "m3_mustache_bucket": "identical",
+          "m3_mustache_center": "identical",
+          "m3_mustache_left_wall": "identical",
+          "m3_mustache_multiball": "identical",
+          "m3_mustache_right_wall": "identical"
+        },
+        "report_sha256": "e1bb3e570e77dc22b2d7531bd1aa275dae61405ca28d9c04de69ce2979f4d115"
+      },
+      "plain_vs_committed_goldens": {
+        "mode": "require_identical",
+        "failures": [],
+        "semantic_differences": 0,
+        "state_comparison": {
+          "full": 0,
+          "not_captured": 5,
+          "partial": 0,
+          "scope_mismatch": 0
+        },
+        "identities": {
+          "m3_mustache_bucket": "identical",
+          "m3_mustache_center": "identical",
+          "m3_mustache_left_wall": "identical",
+          "m3_mustache_multiball": "identical",
+          "m3_mustache_right_wall": "identical"
+        },
+        "report_sha256": "52bf6000e97215d09de2b0373a46b7306fa1327e4ae2abfbe2d2be44788e6195"
+      },
+      "byte_sha256": {
+        "m3_mustache_bucket": {
+          "committed_golden": "96ed1cc6a566b9a189b15cd160a4b6194aa2f72477c8e0942bdd75c53d32a51c",
+          "baseline_workspace_plain": "96ed1cc6a566b9a189b15cd160a4b6194aa2f72477c8e0942bdd75c53d32a51c",
+          "fixed_candidate_plain": "96ed1cc6a566b9a189b15cd160a4b6194aa2f72477c8e0942bdd75c53d32a51c",
+          "baseline_workspace_snapshots": "2524be520438a4a01e8a44c55db9b3894cc1da083b0ca6b1fd66cb606e63d42a",
+          "fixed_candidate_snapshots": "2524be520438a4a01e8a44c55db9b3894cc1da083b0ca6b1fd66cb606e63d42a",
+          "plain_all_identical": true,
+          "snapshots_identical": true
+        },
+        "m3_mustache_center": {
+          "committed_golden": "ecdf5d806fdca98a0fca16e896a2940684c3c07f8bd364c05418fe264ed7a04d",
+          "baseline_workspace_plain": "ecdf5d806fdca98a0fca16e896a2940684c3c07f8bd364c05418fe264ed7a04d",
+          "fixed_candidate_plain": "ecdf5d806fdca98a0fca16e896a2940684c3c07f8bd364c05418fe264ed7a04d",
+          "baseline_workspace_snapshots": "6ff31d0bffb7a7e55c23bb4e0c8c394e129f550360c3e30100c1684b33887a00",
+          "fixed_candidate_snapshots": "6ff31d0bffb7a7e55c23bb4e0c8c394e129f550360c3e30100c1684b33887a00",
+          "plain_all_identical": true,
+          "snapshots_identical": true
+        },
+        "m3_mustache_left_wall": {
+          "committed_golden": "1c4ef8a8d21eeeda50341af2bbac7fa2e623879a2fe140992b31277cedc5c629",
+          "baseline_workspace_plain": "1c4ef8a8d21eeeda50341af2bbac7fa2e623879a2fe140992b31277cedc5c629",
+          "fixed_candidate_plain": "1c4ef8a8d21eeeda50341af2bbac7fa2e623879a2fe140992b31277cedc5c629",
+          "baseline_workspace_snapshots": "4473eb4f95dd87c4fcd2366b46ab114b94b1c018074fa9f9c708845dd7ce3a37",
+          "fixed_candidate_snapshots": "4473eb4f95dd87c4fcd2366b46ab114b94b1c018074fa9f9c708845dd7ce3a37",
+          "plain_all_identical": true,
+          "snapshots_identical": true
+        },
+        "m3_mustache_multiball": {
+          "committed_golden": "8d74f0c066b6cefe8f465a0fe8852382d0ef74348ae982e129599f2651ab64e7",
+          "baseline_workspace_plain": "8d74f0c066b6cefe8f465a0fe8852382d0ef74348ae982e129599f2651ab64e7",
+          "fixed_candidate_plain": "8d74f0c066b6cefe8f465a0fe8852382d0ef74348ae982e129599f2651ab64e7",
+          "baseline_workspace_snapshots": "8f8c2c1c3d2e115fdb3e89bd99e1691c3051c5213603e1929343e27380626699",
+          "fixed_candidate_snapshots": "8f8c2c1c3d2e115fdb3e89bd99e1691c3051c5213603e1929343e27380626699",
+          "plain_all_identical": true,
+          "snapshots_identical": true
+        },
+        "m3_mustache_right_wall": {
+          "committed_golden": "c476084b74ed3b51044ff10eb4d868050e4aa87d98a16b80372f1b247a068609",
+          "baseline_workspace_plain": "c476084b74ed3b51044ff10eb4d868050e4aa87d98a16b80372f1b247a068609",
+          "fixed_candidate_plain": "c476084b74ed3b51044ff10eb4d868050e4aa87d98a16b80372f1b247a068609",
+          "baseline_workspace_snapshots": "239f405424f33abdb6eda7fe91409b53e3657dc8a115a1a51b3bc6633e5432ac",
+          "fixed_candidate_snapshots": "239f405424f33abdb6eda7fe91409b53e3657dc8a115a1a51b3bc6633e5432ac",
+          "plain_all_identical": true,
+          "snapshots_identical": true
+        }
+      }
+    },
+    "sweeps": {
+      "stride": 20,
+      "candidates": 91,
+      "threads_tested": [
+        1,
+        2,
+        4
+      ],
+      "verify_serial": {
+        "1": true,
+        "2": true,
+        "4": true
+      },
+      "serial_parallel_identical": {
+        "1": true,
+        "2": true,
+        "4": true
+      },
+      "rows_sha256": {
+        "1": "e6453258bdce9fdadf137deb9bf5bc9512950a55cfedce03695ab2d0c185aadd",
+        "2": "e6453258bdce9fdadf137deb9bf5bc9512950a55cfedce03695ab2d0c185aadd",
+        "4": "e6453258bdce9fdadf137deb9bf5bc9512950a55cfedce03695ab2d0c185aadd"
+      },
+      "baseline_rows_sha256": "e6453258bdce9fdadf137deb9bf5bc9512950a55cfedce03695ab2d0c185aadd",
+      "cross_thread_identical": true,
+      "baseline_identical": true
+    }
+  },
+  "measurements": {
+    "method": "Base.gc_bytes and time_ns around reset+launch+run; no extraction; trace disabled; GC before each sample outside timed region",
+    "result_validation": "Every warmup, wrapper warmup, and measured result matches the first warmup result for its aim; canonical summary comparison outside measured region",
+    "harness_sha256": "71a681c075b7d829d3b58835b33cd99cec67b87050b45a8fc37b813a079242d1",
+    "baseline": {
+      "aims": {
+        "570": {
+          "bytes": {
+            "max": 69226960,
+            "mean": 69226960,
+            "median": 69226960,
+            "min": 69226960
+          },
+          "bytes_samples": [
+            69226960,
+            69226960,
+            69226960,
+            69226960,
+            69226960,
+            69226960,
+            69226960,
+            69226960,
+            69226960,
+            69226960,
+            69226960,
+            69226960,
+            69226960,
+            69226960,
+            69226960
+          ],
+          "nanoseconds": {
+            "max": 190966823,
+            "mean": 184937339.13333333,
+            "median": 184458232,
+            "min": 183063851
+          },
+          "nanoseconds_samples": [
+            190966823,
+            184960431,
+            183172127,
+            184727737,
+            184458232,
+            183994207,
+            183711076,
+            183063851,
+            183318878,
+            184499320,
+            183978978,
+            184063309,
+            189836847,
+            184606875,
+            184701396
+          ],
+          "result": {
+            "balls": 1,
+            "bonus": 10000,
+            "completed": true,
+            "is_fever": false,
+            "multiplier": 2,
+            "peg_score": 81600,
+            "pegs_hit": 60,
+            "reason": "fell_out",
+            "reds_hit": 7,
+            "score": 91600,
+            "spawned": 6,
+            "steps": 1797,
+            "style_points": 0,
+            "style_total": 0,
+            "styles": ""
+          },
+          "result_checks": {
+            "all_identical": true,
+            "first_result_sha256": "7cf81e52c20cc3834560dcdc8af98c024a22f0abb45f8529b351516ca60bb639",
+            "measured_results_checked": 15,
+            "reference": "first warmup result for this aim",
+            "warmup_results_checked": 5,
+            "wrapper_warmup_results_checked": 0
+          }
+        },
+        "900": {
+          "bytes": {
+            "max": 4341056,
+            "mean": 4341056,
+            "median": 4341056,
+            "min": 4341056
+          },
+          "bytes_samples": [
+            4341056,
+            4341056,
+            4341056,
+            4341056,
+            4341056,
+            4341056,
+            4341056,
+            4341056,
+            4341056,
+            4341056,
+            4341056,
+            4341056,
+            4341056,
+            4341056,
+            4341056
+          ],
+          "nanoseconds": {
+            "max": 8522404,
+            "mean": 8394404.266666668,
+            "median": 8381775,
+            "min": 8350646
+          },
+          "nanoseconds_samples": [
+            8350646,
+            8390512,
+            8430880,
+            8367669,
+            8370183,
+            8379731,
+            8522404,
+            8354454,
+            8378529,
+            8384511,
+            8389230,
+            8451228,
+            8385211,
+            8379101,
+            8381775
+          ],
+          "result": {
+            "balls": 1,
+            "bonus": 0,
+            "completed": true,
+            "is_fever": false,
+            "multiplier": 1,
+            "peg_score": 4000,
+            "pegs_hit": 16,
+            "reason": "fell_out",
+            "reds_hit": 1,
+            "score": 9000,
+            "spawned": 0,
+            "steps": 922,
+            "style_points": 5000,
+            "style_total": 1,
+            "styles": "slide:1"
+          },
+          "result_checks": {
+            "all_identical": true,
+            "first_result_sha256": "e6dbf8c25b6e51a2db030027b960afd8f8c0c9137b95e35ae2a8ec84b156496e",
+            "measured_results_checked": 15,
+            "reference": "first warmup result for this aim",
+            "warmup_results_checked": 5,
+            "wrapper_warmup_results_checked": 1
+          }
+        }
+      },
+      "balls": 1,
+      "clearing": false,
+      "config_sha256": "170487a48e936e82e911f45e021f7a7002b8e2f0e29bb2569e271fb62041002a",
+      "cpu": "znver1",
+      "format": "peggle.allocation_bench.v2",
+      "harness_sha256": "71a681c075b7d829d3b58835b33cd99cec67b87050b45a8fc37b813a079242d1",
+      "interactive_threads": 0,
+      "julia_version": "1.12.6",
+      "kernel": "Linux",
+      "label": "6d09319c33162d7fb9957cf096ef29c3478c471e",
+      "level_sha256": "ea33fadd70666980cf426fb4a2854f66c28d333fb9f1a57b15a282cfddd0f747",
+      "math_backend": {
+        "backend": "system_libm",
+        "glibc": "2.35",
+        "julia": "1.12.6",
+        "library": "libm.so.6",
+        "platform": "linux-x86_64"
+      },
+      "max_steps": 3600,
+      "method": "Base.gc_bytes and time_ns around reset+launch+run; no extraction; trace disabled; GC before each sample outside timed region",
+      "result_validation": "Every warmup, wrapper warmup, and measured result matches the first warmup result for its aim; canonical summary comparison outside measured region",
+      "samples_per_aim": 15,
+      "threads": 1,
+      "warmup_per_aim": 5,
+      "workspace": "/home/picazio/projects/julia_clone_alloc_6d09319_20261011/baseline"
+    },
+    "prior_candidate": {
+      "aims": {
+        "570": {
+          "bytes": {
+            "max": 8915760,
+            "mean": 8915760,
+            "median": 8915760,
+            "min": 8915760
+          },
+          "bytes_samples": [
+            8915760,
+            8915760,
+            8915760,
+            8915760,
+            8915760,
+            8915760,
+            8915760,
+            8915760,
+            8915760,
+            8915760,
+            8915760,
+            8915760,
+            8915760,
+            8915760,
+            8915760
+          ],
+          "nanoseconds": {
+            "max": 74662090,
+            "mean": 72768433.46666667,
+            "median": 72574085,
+            "min": 72426293
+          },
+          "nanoseconds_samples": [
+            72500335,
+            72599884,
+            72426293,
+            72610145,
+            72465308,
+            72465348,
+            74662090,
+            73014556,
+            72533187,
+            73232181,
+            72500976,
+            72670979,
+            72572883,
+            72698252,
+            72574085
+          ],
+          "result": {
+            "balls": 1,
+            "bonus": 10000,
+            "completed": true,
+            "is_fever": false,
+            "multiplier": 2,
+            "peg_score": 81600,
+            "pegs_hit": 60,
+            "reason": "fell_out",
+            "reds_hit": 7,
+            "score": 91600,
+            "spawned": 6,
+            "steps": 1797,
+            "style_points": 0,
+            "style_total": 0,
+            "styles": ""
+          },
+          "result_checks": {
+            "all_identical": true,
+            "first_result_sha256": "7cf81e52c20cc3834560dcdc8af98c024a22f0abb45f8529b351516ca60bb639",
+            "measured_results_checked": 15,
+            "reference": "first warmup result for this aim",
+            "warmup_results_checked": 5,
+            "wrapper_warmup_results_checked": 0
+          }
+        },
+        "900": {
+          "bytes": {
+            "max": 1361248,
+            "mean": 1361248,
+            "median": 1361248,
+            "min": 1361248
+          },
+          "bytes_samples": [
+            1361248,
+            1361248,
+            1361248,
+            1361248,
+            1361248,
+            1361248,
+            1361248,
+            1361248,
+            1361248,
+            1361248,
+            1361248,
+            1361248,
+            1361248,
+            1361248,
+            1361248
+          ],
+          "nanoseconds": {
+            "max": 5868700,
+            "mean": 5822175.333333333,
+            "median": 5812652,
+            "min": 5801591
+          },
+          "nanoseconds_samples": [
+            5832280,
+            5812652,
+            5801621,
+            5868700,
+            5810589,
+            5801591,
+            5806321,
+            5824185,
+            5812081,
+            5810488,
+            5863309,
+            5817652,
+            5834894,
+            5812142,
+            5824125
+          ],
+          "result": {
+            "balls": 1,
+            "bonus": 0,
+            "completed": true,
+            "is_fever": false,
+            "multiplier": 1,
+            "peg_score": 4000,
+            "pegs_hit": 16,
+            "reason": "fell_out",
+            "reds_hit": 1,
+            "score": 9000,
+            "spawned": 0,
+            "steps": 922,
+            "style_points": 5000,
+            "style_total": 1,
+            "styles": "slide:1"
+          },
+          "result_checks": {
+            "all_identical": true,
+            "first_result_sha256": "e6dbf8c25b6e51a2db030027b960afd8f8c0c9137b95e35ae2a8ec84b156496e",
+            "measured_results_checked": 15,
+            "reference": "first warmup result for this aim",
+            "warmup_results_checked": 5,
+            "wrapper_warmup_results_checked": 1
+          }
+        }
+      },
+      "balls": 1,
+      "clearing": false,
+      "comparison": {
+        "570": {
+          "bytes_saved": 60311200,
+          "result_identical": true,
+          "time_ratio": 0.3934445441285591
+        },
+        "900": {
+          "bytes_saved": 2979808,
+          "result_identical": true,
+          "time_ratio": 0.6934870000686012
+        }
+      },
+      "config_sha256": "170487a48e936e82e911f45e021f7a7002b8e2f0e29bb2569e271fb62041002a",
+      "cpu": "znver1",
+      "format": "peggle.allocation_bench.v2",
+      "harness_sha256": "71a681c075b7d829d3b58835b33cd99cec67b87050b45a8fc37b813a079242d1",
+      "interactive_threads": 0,
+      "julia_version": "1.12.6",
+      "kernel": "Linux",
+      "label": "prior-candidate",
+      "level_sha256": "ea33fadd70666980cf426fb4a2854f66c28d333fb9f1a57b15a282cfddd0f747",
+      "math_backend": {
+        "backend": "system_libm",
+        "glibc": "2.35",
+        "julia": "1.12.6",
+        "library": "libm.so.6",
+        "platform": "linux-x86_64"
+      },
+      "max_steps": 3600,
+      "method": "Base.gc_bytes and time_ns around reset+launch+run; no extraction; trace disabled; GC before each sample outside timed region",
+      "result_validation": "Every warmup, wrapper warmup, and measured result matches the first warmup result for its aim; canonical summary comparison outside measured region",
+      "samples_per_aim": 15,
+      "threads": 1,
+      "warmup_per_aim": 5,
+      "workspace": "/home/picazio/projects/julia_clone_alloc_6d09319_20261011/candidate"
+    },
+    "fixed_candidate": {
+      "aims": {
+        "570": {
+          "bytes": {
+            "max": 7088688,
+            "mean": 7088688,
+            "median": 7088688,
+            "min": 7088688
+          },
+          "bytes_samples": [
+            7088688,
+            7088688,
+            7088688,
+            7088688,
+            7088688,
+            7088688,
+            7088688,
+            7088688,
+            7088688,
+            7088688,
+            7088688,
+            7088688,
+            7088688,
+            7088688,
+            7088688
+          ],
+          "nanoseconds": {
+            "max": 73904552,
+            "mean": 72519371.53333333,
+            "median": 72422784,
+            "min": 72120718
+          },
+          "nanoseconds_samples": [
+            72548905,
+            72715945,
+            72120718,
+            72460607,
+            72428856,
+            73904552,
+            72814042,
+            72422784,
+            72398488,
+            72452451,
+            72210479,
+            72349635,
+            72411223,
+            72212102,
+            72339786
+          ],
+          "result": {
+            "balls": 1,
+            "bonus": 10000,
+            "completed": true,
+            "is_fever": false,
+            "multiplier": 2,
+            "peg_score": 81600,
+            "pegs_hit": 60,
+            "reason": "fell_out",
+            "reds_hit": 7,
+            "score": 91600,
+            "spawned": 6,
+            "steps": 1797,
+            "style_points": 0,
+            "style_total": 0,
+            "styles": ""
+          },
+          "result_checks": {
+            "all_identical": true,
+            "first_result_sha256": "7cf81e52c20cc3834560dcdc8af98c024a22f0abb45f8529b351516ca60bb639",
+            "measured_results_checked": 15,
+            "reference": "first warmup result for this aim",
+            "warmup_results_checked": 5,
+            "wrapper_warmup_results_checked": 0
+          }
+        },
+        "900": {
+          "bytes": {
+            "max": 309472,
+            "mean": 309472,
+            "median": 309472,
+            "min": 309472
+          },
+          "bytes_samples": [
+            309472,
+            309472,
+            309472,
+            309472,
+            309472,
+            309472,
+            309472,
+            309472,
+            309472,
+            309472,
+            309472,
+            309472,
+            309472,
+            309472,
+            309472
+          ],
+          "nanoseconds": {
+            "max": 5799296,
+            "mean": 5751739.133333334,
+            "median": 5745534,
+            "min": 5735245
+          },
+          "nanoseconds_samples": [
+            5744062,
+            5766835,
+            5738741,
+            5753289,
+            5735245,
+            5752327,
+            5738861,
+            5799296,
+            5745534,
+            5775581,
+            5755663,
+            5745644,
+            5739182,
+            5743800,
+            5742027
+          ],
+          "result": {
+            "balls": 1,
+            "bonus": 0,
+            "completed": true,
+            "is_fever": false,
+            "multiplier": 1,
+            "peg_score": 4000,
+            "pegs_hit": 16,
+            "reason": "fell_out",
+            "reds_hit": 1,
+            "score": 9000,
+            "spawned": 0,
+            "steps": 922,
+            "style_points": 5000,
+            "style_total": 1,
+            "styles": "slide:1"
+          },
+          "result_checks": {
+            "all_identical": true,
+            "first_result_sha256": "e6dbf8c25b6e51a2db030027b960afd8f8c0c9137b95e35ae2a8ec84b156496e",
+            "measured_results_checked": 15,
+            "reference": "first warmup result for this aim",
+            "warmup_results_checked": 5,
+            "wrapper_warmup_results_checked": 1
+          }
+        }
+      },
+      "balls": 1,
+      "clearing": false,
+      "comparison": {
+        "570": {
+          "bytes_saved": 62138272,
+          "result_identical": true,
+          "time_ratio": 0.39262429881687255
+        },
+        "900": {
+          "bytes_saved": 4031584,
+          "result_identical": true,
+          "time_ratio": 0.6854793883157208
+        }
+      },
+      "config_sha256": "170487a48e936e82e911f45e021f7a7002b8e2f0e29bb2569e271fb62041002a",
+      "cpu": "znver1",
+      "format": "peggle.allocation_bench.v2",
+      "harness_sha256": "71a681c075b7d829d3b58835b33cd99cec67b87050b45a8fc37b813a079242d1",
+      "interactive_threads": 0,
+      "julia_version": "1.12.6",
+      "kernel": "Linux",
+      "label": "idict-fix",
+      "level_sha256": "ea33fadd70666980cf426fb4a2854f66c28d333fb9f1a57b15a282cfddd0f747",
+      "math_backend": {
+        "backend": "system_libm",
+        "glibc": "2.35",
+        "julia": "1.12.6",
+        "library": "libm.so.6",
+        "platform": "linux-x86_64"
+      },
+      "max_steps": 3600,
+      "method": "Base.gc_bytes and time_ns around reset+launch+run; no extraction; trace disabled; GC before each sample outside timed region",
+      "result_validation": "Every warmup, wrapper warmup, and measured result matches the first warmup result for its aim; canonical summary comparison outside measured region",
+      "samples_per_aim": 15,
+      "threads": 1,
+      "warmup_per_aim": 5,
+      "workspace": "/home/picazio/projects/julia_clone_alloc_6d09319_20261011/idict-fix"
+    },
+    "summary": {
+      "900": {
+        "baseline_bytes": 4341056,
+        "prior_candidate_bytes": 1361248,
+        "fixed_candidate_bytes": 309472,
+        "baseline_median_ms": 8.381775,
+        "prior_candidate_median_ms": 5.812652,
+        "fixed_candidate_median_ms": 5.745534,
+        "bytes_saved_vs_baseline": 4031584,
+        "bytes_saved_vs_prior": 1051776,
+        "steps": 922,
+        "fixed_bytes_per_step": 335.6529284164859,
+        "result_identical_across_all_three": true,
+        "result_sha256": "e6dbf8c25b6e51a2db030027b960afd8f8c0c9137b95e35ae2a8ec84b156496e"
+      },
+      "570": {
+        "baseline_bytes": 69226960,
+        "prior_candidate_bytes": 8915760,
+        "fixed_candidate_bytes": 7088688,
+        "baseline_median_ms": 184.458232,
+        "prior_candidate_median_ms": 72.574085,
+        "fixed_candidate_median_ms": 72.422784,
+        "bytes_saved_vs_baseline": 62138272,
+        "bytes_saved_vs_prior": 1827072,
+        "steps": 1797,
+        "fixed_bytes_per_step": 3944.7345575959935,
+        "result_identical_across_all_three": true,
+        "result_sha256": "7cf81e52c20cc3834560dcdc8af98c024a22f0abb45f8529b351516ca60bb639"
+      }
+    },
+    "expected_vs_observed": {
+      "900": {
+        "predicted_bytes": 309472,
+        "observed_bytes": 309472,
+        "prediction_matched": true,
+        "saving_vs_prior_bytes": 1051776,
+        "saving_divided_by_1152": 913.0,
+        "mechanism_explanation": "per reset: scored 288 + ball_frame 288 + 2 pooled suppressed drops 2x288 = 1152 B; 1,051,776 / 1,152 = 913 resets, matching the pre-fix profile reset count"
+      },
+      "570": {
+        "predicted_min_saving_vs_prior": 1040000,
+        "observed_saving_vs_prior": 1827072,
+        "observed_saving_bytes": 1827072
+      }
+    }
+  },
+  "mechanism": {
+    "profile_trace_disabled_aim900": {
+      "total_alloc_bytes": 288611,
+      "total_alloc_count": 5248,
+      "steps_run": 922,
+      "bytes_per_step": 313.027114967462,
+      "focus_sites_all_absent": true,
+      "focus_sites": {
+        "physics.jl:193": null,
+        "engine.jl:205": null,
+        "engine.jl:64": null,
+        "style_shots.jl:437": null,
+        "engine.jl:66": null
+      },
+      "pre_fix_total_alloc_bytes": 1340387,
+      "pre_fix_reset_site_bytes": 1051776,
+      "report_sha256": "6ddc2b694f1081d410375b26840546bd5f7e91b9d522e56117b0d8c5426f9d19"
+    },
+    "micro_empty": {
+      "Dict{Peg,Bool}_empty_gc_bytes_samples": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "Dict{Peg,Bool}_empty_allocated_samples": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "Dict{BallState,BallFrameState}_empty_gc_bytes_samples": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "Dict{BallState,BallFrameState}_empty_allocated_samples": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "all_dict_empty_paths_zero": true,
+      "IdDict{Peg,Bool}_cycle_control_gc_bytes_samples": [
+        4008,
+        4008,
+        4008,
+        4008,
+        4008,
+        4008,
+        4008,
+        4008,
+        4008
+      ],
+      "IdDict{BallState,BallFrameState}_cycle_control_gc_bytes_samples": [
+        288,
+        288,
+        288,
+        288,
+        288,
+        288,
+        288,
+        288,
+        288
+      ],
+      "control_note": "The IdDict control cycles refill then empty!. empty!(::IdDict) discards capacity, so the refill regrows the table: 99 pegs = 4008 B, 10 balls = 288 B (fits the 32-slot table).",
+      "probe_sizes": {
+        "pegs": 99,
+        "balls": 10
+      }
+    },
+    "identity": {
+      "ball_lookup_after_empty_and_reinsert": true,
+      "deepcopy_same_fields_is_distinct_key": true,
+      "peg_lookup_after_mutation": true,
+      "peg_hash_stable_across_mutation": true,
+      "peg_lookup_after_empty_and_reinsert": true,
+      "ball_lookup_after_mutation": true
+    },
+    "conclusion": "empty! on both warmed non-empty Dict types is 0 B in gc_bytes and @allocated; identity-keyed lookups still hit after mutation, after empty!+reinsert, and a deepcopy with identical fields remains a distinct key; the trace-disabled profile no longer attributes any allocation to engine.jl:64/66 or physics.jl:193."
+  },
+  "commands": [
+    {
+      "argv": [
+        "rsync",
+        "-az",
+        "--exclude='.git/'",
+        "--exclude='tmp/'",
+        "--exclude='results/raw/'",
+        "--exclude='__pycache__'",
+        "./",
+        "deathstar:/home/picazio/projects/julia_clone_alloc_6d09319_20261011/idict-fix/"
+      ],
+      "cwd": "/home/kurapica/Projects/pevo/julia_clone"
+    },
+    {
+      "argv": [
+        "ssh",
+        "deathstar",
+        "bash /home/picazio/projects/julia_clone_alloc_6d09319_20261011/idict-fix/scripts/allocation_remote.sh /home/picazio/projects/julia_clone_alloc_6d09319_20261011/idict-fix prepare"
+      ],
+      "cwd": "local"
+    },
+    {
+      "argv": [
+        "nice",
+        "-n",
+        "10",
+        "timeout",
+        "1800",
+        "JULIA_BIN",
+        "--startup-file=no",
+        "--gcthreads=1",
+        "-t",
+        "1,0",
+        "--project=julia/PeggleSim",
+        "-e",
+        "using Pkg; Pkg.test(; julia_args=[\"--startup-file=no\", \"--threads=1,0\", \"--gcthreads=1\"])"
+      ],
+      "cwd": "/home/picazio/projects/julia_clone_alloc_6d09319_20261011/idict-fix",
+      "log": "tmp/idict-validation/logs/tests.log"
+    },
+    {
+      "argv": [
+        "bash",
+        "tmp/idict-validation/run_gates.sh",
+        "/home/picazio/projects/julia_clone_alloc_6d09319_20261011/idict-fix"
+      ],
+      "cwd": "/home/picazio/projects/julia_clone_alloc_6d09319_20261011/idict-fix",
+      "script_sha256": "3f8713e2d12827f1ca387abe38bac07a55bc582b6ce904734de1315b48b713e2"
+    },
+    {
+      "argv": [
+        "bash",
+        "/home/picazio/projects/julia_clone_alloc_6d09319_20261011/baseline/scripts/allocation_remote.sh",
+        "/home/picazio/projects/julia_clone_alloc_6d09319_20261011/baseline",
+        "measure",
+        "6d09319c33162d7fb9957cf096ef29c3478c471e"
+      ],
+      "cwd": "local"
+    },
+    {
+      "argv": [
+        "bash",
+        "/home/picazio/projects/julia_clone_alloc_6d09319_20261011/candidate/scripts/allocation_remote.sh",
+        "/home/picazio/projects/julia_clone_alloc_6d09319_20261011/candidate",
+        "measure",
+        "prior-candidate",
+        "/home/picazio/projects/julia_clone_alloc_6d09319_20261011/baseline/tmp/allocation/measurement.json"
+      ],
+      "cwd": "local"
+    },
+    {
+      "argv": [
+        "bash",
+        "/home/picazio/projects/julia_clone_alloc_6d09319_20261011/idict-fix/scripts/allocation_remote.sh",
+        "/home/picazio/projects/julia_clone_alloc_6d09319_20261011/idict-fix",
+        "measure",
+        "idict-fix",
+        "/home/picazio/projects/julia_clone_alloc_6d09319_20261011/baseline/tmp/allocation/measurement.json"
+      ],
+      "cwd": "local"
+    },
+    {
+      "argv": [
+        "taskset",
+        "-c",
+        "0",
+        "nice",
+        "-n",
+        "10",
+        "timeout",
+        "1800",
+        "JULIA_BIN",
+        "--startup-file=no",
+        "--gcthreads=1",
+        "-t",
+        "1,0",
+        "--project=julia/PeggleSim",
+        "tmp/allocation-hunt/verify/profile_trace_disabled.jl"
+      ],
+      "cwd": "/home/picazio/projects/julia_clone_alloc_6d09319_20261011/idict-fix",
+      "log": "tmp/idict-validation/logs/profile_trace_disabled.log"
+    },
+    {
+      "argv": [
+        "taskset",
+        "-c",
+        "0",
+        "nice",
+        "-n",
+        "10",
+        "timeout",
+        "900",
+        "JULIA_BIN",
+        "--startup-file=no",
+        "--gcthreads=1",
+        "-t",
+        "1,0",
+        "--project=julia/PeggleSim",
+        "tmp/idict-validation/micro_idict.jl"
+      ],
+      "cwd": "/home/picazio/projects/julia_clone_alloc_6d09319_20261011/idict-fix",
+      "log": "tmp/idict-validation/logs/micro_idict.log"
+    },
+    {
+      "argv": [
+        "make",
+        "verify"
+      ],
+      "cwd": "/home/picazio/projects/julia_clone_alloc_6d09319_20261011/idict-fix",
+      "log": "tmp/idict-validation/logs/verify-final.log"
+    }
+  ],
+  "artifact_sha256": {
+    "baseline-measurement.json": "e6ac799f10860b8a3495ae2c5c8460fa5f9a3ab4fe87f521d7b6975e7587d1e3",
+    "prior-candidate-measurement.json": "dd6fef88e9eea58d277b042cebb591e0fe0ae5e91eaa173a74c61c50da21a486",
+    "idict-fix-measurement.json": "18248a67cfbc43d9fa3d0cca366fca7e4b386ebb36ffbe909022f4306f294029",
+    "profile_trace_disabled.json": "6ddc2b694f1081d410375b26840546bd5f7e91b9d522e56117b0d8c5426f9d19",
+    "micro_idict.remote.log": "ce4f01541d481f69453aed2bd9ac3e09fc13d4daf209e0b91b8cc0687630ea88",
+    "trace-plain-vs-baseline.json": "b87661b48d9e824a0ea44a2de7b467437dc190434b677ec4c2ab3d3a1ef19d75",
+    "trace-snapshots-vs-baseline.json": "e1bb3e570e77dc22b2d7531bd1aa275dae61405ca28d9c04de69ce2979f4d115",
+    "trace-plain-vs-goldens.json": "52bf6000e97215d09de2b0373a46b7306fa1327e4ae2abfbe2d2be44788e6195",
+    "remote-hashes.txt": "42d74b53c08e230fac2358b4b9611aede8eab37fe21ea76215b87286cd7abce7",
+    "local-fix-hashes.txt": "7774aedd53f2d85cf7586517bfbff6bbc48ef21933a912ce45f7265e98cd02a5",
+    "local-src-manifest.txt": "3008d73de6544b8654afbf15d7fd50432573fa9ecad8bc30b319e6edcb464c98"
+  },
+  "blockers": [],
+  "limitations": [
+    "Fresh Lua execution is unavailable on deathstar (luajit/love/xvfb-run and the sibling Lua tree absent); the committed Lua goldens were compared byte-for-byte instead.",
+    "The fixed-candidate for aim 900 matches the predicted 309,472 B exactly (1,361,248 - 1,051,776); the profile total (288,611 B) is lower than the harness total (309,472 B) because Profile.Allocs instrumentation excludes some inlined allocations and the profile run is a single sample."
+  ],
+  "passed": true
+}

@@ -12,7 +12,7 @@
 #     det_sqrt, lua_mod); LuaJIT `x ^ 2` -> `x * x`, `x ^ 0.5` -> det_sqrt.
 #   * expression order and grouping are preserved verbatim.
 #   * the Lua file-level `physics_ctx` and `grazed_pool`/`grazed_n` become a
-#     per-call `PhysicsContext` so parallel workers share no state.
+#     engine-owned `PhysicsContext` so parallel workers share no state.
 #   * presentation-only systems (ImpactDebug, ContactEvents, Perf, and
 #     `ball.draw_path`) are not ported; the event sink is the gameplay
 #     journal (`emit_raw!`).
@@ -60,13 +60,7 @@ const PRIORITY = (
 function contact_line(peg::Peg)
     line = peg.line
     line === nothing && return nothing
-    return Dict{String,Any}(
-        "id" => line.id,
-        "index" => line.index,
-        "count" => line.count,
-        "closed" => line.closed,
-        "gap" => line.gap,
-    )
+    return ContactLine(line)
 end
 
 # Objective collision fact carried to `emit_contact!`. The Lua record is a
@@ -106,57 +100,40 @@ function emit_contact!(journal::GameplayJournal, event_type::AbstractString,
     ix = rec.isx + rec.move_x * rec.toi
     iy = rec.isy + rec.move_y * rec.toi
     frame_t = ((rec.total_dt - rec.window) + rec.toi * rec.window) / rec.total_dt
-    fields = Dict{String,Any}(
-        "ball_id" => ball.id,
-        "contact_kind" => contact_kind,
-        "did_bounce" => did_bounce,
-        "impact_x" => ix,
-        "impact_y" => iy,
-        "frame_t" => frame_t,
-        "toi" => rec.toi,
-        "iteration" => rec.iter,
-        "normal_x" => rec.nx,
-        "normal_y" => rec.ny,
-        "incoming_vx" => rec.vin_x,
-        "incoming_vy" => rec.vin_y,
-        "outgoing_vx" => rec.vout_x,
-        "outgoing_vy" => rec.vout_y,
-    )
-    if rec.other_ball !== nothing
-        fields["other_ball_id"] = rec.other_ball.id
-        # Lua assigns nil for a missing vout field, which removes the key.
-        rec.other_vout_x === nothing ||
-            (fields["other_outgoing_vx"] = rec.other_vout_x)
-        rec.other_vout_y === nothing ||
-            (fields["other_outgoing_vy"] = rec.other_vout_y)
-    end
+    px = py = pa = ptheta = nothing
+    local_wall = nothing
     if peg !== nothing
-        fields["peg_id"] = peg.id
-        fields["peg_type"] = String(peg.peg_type)
-        fields["peg_shape"] = peg_shape_name(peg.shape)
-        line = contact_line(peg)
-        line === nothing || (fields["line"] = line)
         px, py, pa, ptheta = peg_transform_at_toi(peg, rec.window, rec.toi)
-        fields["peg_x"] = px
-        fields["peg_y"] = py
-        fields["peg_angle"] = pa
-        # Lua `if ptheta then` is a nil check (0 is truthy), so mirror it with
-        # `!== nothing` rather than a truthiness test.
-        ptheta === nothing || (fields["peg_theta"] = ptheta)
     elseif event_type == "ball_contact_wall"
         # Derive wall identity deterministically from the contact normal.
         # left wall  -> normal (+1, 0)
         # right wall -> normal (-1, 0)
         # ceiling    -> normal (0, +1)
         local_wall = rec.nx > 0 ? "left" : (rec.nx < 0 ? "right" : "top")
-        fields["wall"] = local_wall
     end
+    fields = ContactPayload(
+        ball_id = ball.id, contact_kind = String(contact_kind),
+        did_bounce = did_bounce, impact_x = ix, impact_y = iy,
+        frame_t = frame_t, toi = rec.toi, iteration = rec.iter,
+        normal_x = rec.nx, normal_y = rec.ny,
+        incoming_vx = rec.vin_x, incoming_vy = rec.vin_y,
+        outgoing_vx = rec.vout_x, outgoing_vy = rec.vout_y,
+        other_ball_id = rec.other_ball === nothing ? nothing : rec.other_ball.id,
+        other_outgoing_vx = rec.other_ball === nothing ? nothing : rec.other_vout_x,
+        other_outgoing_vy = rec.other_ball === nothing ? nothing : rec.other_vout_y,
+        peg_id = peg === nothing ? nothing : peg.id,
+        peg_type = peg === nothing ? nothing : String(peg.peg_type),
+        peg_shape = peg === nothing ? nothing : peg_shape_name(peg.shape),
+        line = peg === nothing ? nothing : contact_line(peg),
+        peg_x = px, peg_y = py, peg_angle = pa, peg_theta = ptheta,
+        wall = local_wall,
+    )
     emit_raw!(journal, event_type, fields)
     return nothing
 end
 
 # ---------------------------------------------------------------------------
-# Per-call physics state (physics.lua lines 92-115)
+# Reusable physics state (physics.lua lines 92-115)
 # ---------------------------------------------------------------------------
 
 # One persistent-slot graze entry; `t` is the iteration-window toi.
@@ -172,11 +149,10 @@ mutable struct BallFrameState
     vend_y::Float64
 end
 
-# The Lua file-level `physics_ctx` plus the graze buffer. Created inside
-# `physics_update!` so no state is shared across calls or workers.
+# The Lua file-level `physics_ctx` plus engine-local frame and graze pools.
 mutable struct PhysicsContext
     balls::Vector{BallState}
-    ball_frame::IdDict{BallState,BallFrameState}
+    ball_frame::Dict{BallState,BallFrameState}
     journal::GameplayJournal
     config::SimConfig
     virtual_width::Float64
@@ -195,14 +171,37 @@ mutable struct PhysicsContext
     hit_peg_index::Union{Nothing,Int}
     hit_overlap::Float64
     grazed::Vector{GrazedPeg}
+    frame_pool::Vector{BallFrameState}
 end
 
 function PhysicsContext(balls::Vector{BallState}, config::SimConfig,
                         virtual_width::Float64, journal::GameplayJournal)::PhysicsContext
     return PhysicsContext(
-        balls, IdDict{BallState,BallFrameState}(), journal, config, virtual_width,
+        balls, Dict{BallState,BallFrameState}(), journal, config, virtual_width,
         nothing, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0,
-        nothing, nothing, nothing, nothing, nothing, 0.0, GrazedPeg[])
+        nothing, nothing, nothing, nothing, nothing, 0.0, GrazedPeg[], BallFrameState[])
+end
+
+# Release borrowed entity references without discarding reusable capacity.
+function reset_physics_context!(ctx::PhysicsContext, balls::Vector{BallState},
+                                config::SimConfig, virtual_width::Float64,
+                                journal::GameplayJournal)::Nothing
+    ctx.balls = balls
+    ctx.config = config
+    ctx.virtual_width = virtual_width
+    ctx.journal = journal
+    empty!(ctx.ball_frame)
+    empty!(ctx.grazed)
+    ctx.ball = nothing
+    ctx.total_dt = ctx.move_x = ctx.move_y = ctx.time_remaining = 0.0
+    ctx.min_t = 1.0
+    ctx.hit_nx = ctx.hit_ny = ctx.hit_overlap = 0.0
+    ctx.hit_type = nothing
+    ctx.hit_peg = nothing
+    ctx.hit_other_ball = nothing
+    ctx.hit_priority = nothing
+    ctx.hit_peg_index = nothing
+    return nothing
 end
 
 # Persistent graze buffer (physics.lua lines 92-108). The Lua pool is indexed
@@ -1332,8 +1331,9 @@ function physics_update!(
     config::SimConfig,
     virtual_width::Float64,
     journal::GameplayJournal,
+    ctx::PhysicsContext = PhysicsContext(balls, config, virtual_width, journal),
 )::Nothing
-    ctx = PhysicsContext(balls, config, virtual_width, journal)
+    reset_physics_context!(ctx, balls, config, virtual_width, journal)
 
     # Per-frame ball bookkeeping for ball-ball collision reconstruction. A
     # launched ball not yet processed this frame is treated as starting at its
@@ -1344,9 +1344,17 @@ function physics_update!(
     # with (post-bounce), so the reconstructed segment stays consistent with
     # its real motion instead of phantoming its pre-bounce direction.
     ball_frame = ctx.ball_frame
+    frame_count = 0
     for b in balls
         if b.launched
-            ball_frame[b] = BallFrameState(false, 0.0, 0.0)
+            frame_count += 1
+            if frame_count > length(ctx.frame_pool)
+                push!(ctx.frame_pool, BallFrameState(false, 0.0, 0.0))
+            end
+            frame = ctx.frame_pool[frame_count]
+            frame.done = false
+            frame.vend_x = frame.vend_y = 0.0
+            ball_frame[b] = frame
         end
     end
 
@@ -1357,11 +1365,7 @@ function physics_update!(
 
         ctx.ball = ball
 
-        bfs = get(ball_frame, ball, nothing)
-        if bfs === nothing
-            bfs = BallFrameState(false, 0.0, 0.0)
-            ball_frame[ball] = bfs
-        end
+        bfs = ball_frame[ball]
 
         time_remaining = dt
         total_dt = dt
@@ -1454,27 +1458,18 @@ function physics_update!(
                     ix = iter_sx + move_x * g.t
                     iy = iter_sy + move_y * g.t
                     frame_t = ((total_dt - iter_time) + g.t * iter_time) / total_dt
-                    fields = Dict{String,Any}(
-                        "ball_id" => ball.id,
-                        "peg_id" => g.peg.id,
-                        "peg_type" => String(g.peg.peg_type),
-                        "peg_shape" => peg_shape_name(g.peg.shape),
-                        "contact_kind" => "graze",
-                        "did_bounce" => false,
-                        "impact_x" => ix,
-                        "impact_y" => iy,
-                        "frame_t" => frame_t,
-                        "toi" => g.t,
-                        "iteration" => iterations,
-                        "normal_x" => 0.0,
-                        "normal_y" => 0.0,
-                        "incoming_vx" => ball.vx,
-                        "incoming_vy" => ball.vy,
-                        "outgoing_vx" => ball.vx,
-                        "outgoing_vy" => ball.vy,
+                    fields = ContactPayload(
+                        ball_id = ball.id, peg_id = g.peg.id,
+                        peg_type = String(g.peg.peg_type),
+                        peg_shape = peg_shape_name(g.peg.shape),
+                        contact_kind = "graze", did_bounce = false,
+                        impact_x = ix, impact_y = iy, frame_t = frame_t,
+                        toi = g.t, iteration = iterations,
+                        normal_x = 0.0, normal_y = 0.0,
+                        incoming_vx = ball.vx, incoming_vy = ball.vy,
+                        outgoing_vx = ball.vx, outgoing_vy = ball.vy,
+                        line = contact_line(g.peg),
                     )
-                    line = contact_line(g.peg)
-                    line === nothing || (fields["line"] = line)
                     emit_raw!(journal, "ball_contacted_peg", fields)
                 end
             end

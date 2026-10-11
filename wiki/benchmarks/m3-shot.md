@@ -6,6 +6,10 @@ cross-engine performance comparison for the port. It adds the thread scaling
 and allocation behavior of the Julia sweeps.
 
 - Results file: `results/m3/bench-report.json` (combined report)
+- Allocation optimization report (2026-10-11):
+  `results/allocation-deathstar-6d09319-candidate.json`
+- IdDict scratch fix report (2026-10-11):
+  `results/allocation-deathstar-6d09319-idict.json`
 - Producer: `scripts/bench_m3.sh` (`make m3-bench`)
 - Driver: `julia/PeggleSim/bin/shot_bench.jl`
 - Correctness anchor: full-grid agreement, 1,801/1,801 candidates
@@ -98,7 +102,60 @@ runs cannot attribute bytes to one candidate. The exact method string is the
 | Total | 1.025 GB |
 
 M3 does not require zero allocation (correctness first). This table is the M4
-baseline.
+baseline. The engine scratch optimization and the IdDict scratch fix in §5.1
+reduce the per-shot cost. They do not remove it.
+
+### 5.1 Engine allocation optimizations (2026-10-11)
+
+Reports: `results/allocation-deathstar-6d09319-candidate.json` (engine scratch
+optimization) and `results/allocation-deathstar-6d09319-idict.json` (scratch
+`IdDict` -> `Dict` fix). Candidate: an uncommitted worktree snapshot on
+baseline commit `6d09319`, deathstar, Julia 1.12.6, `system_libm`.
+
+Method: warmed single-thread `reset`+`launch`+`run`, tracing disabled,
+extraction excluded, 15 samples per aim, median. Timing is warmed single-shot
+on a shared host, not sustained throughput. The two aims are single shots, so
+these numbers are not comparable with the stride-20 sweep above.
+
+| Aim | Baseline bytes | Candidate bytes | Reduction | Baseline median | Candidate median | Speedup |
+| ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| 900 | 4,341,056 | 1,361,248 | 68.64% | 8.53 ms | 5.82 ms | 1.47× |
+| 570 | 69,226,960 | 8,915,760 | 87.12% | 187.40 ms | 72.74 ms | 2.58× |
+
+The candidate reuses engine-local scratch (physics context and frame maps,
+contact-reduction containers, style/slide lookup dictionaries, ball
+buffers). Physics contacts are immutable typed payloads in
+`julia/PeggleSim/src/contact_payloads.jl`. The serialized trace format does
+not change.
+
+A follow-up fix (2026-10-11) swaps the three scratch `IdDict`s to `Dict`:
+`suppressed_pool` and `scored` in `engine.jl`, and `ball_frame` in
+`physics.jl`. Root cause: `empty!(::IdDict)` on Julia 1.12.6 discards the
+capacity and reallocates 288 B. At aim 900 the reset sites
+(`engine.jl:64/66`, `physics.jl:193`) allocate 1,152 B per step.
+
+| Aim | Prior bytes | Fixed bytes | Removed | Prior median | Fixed median |
+| ---: | ---: | ---: | ---: | ---: | ---: |
+| 900 | 1,361,248 | 309,472 | 1,051,776 (77.3%) | 5.81 ms | 5.75 ms |
+| 570 | 8,915,760 | 7,088,688 | 1,827,072 (20.5%) | 72.57 ms | 72.42 ms |
+
+`empty!(::Dict)` allocates 0 B. The mutable-struct identity semantics are
+unchanged, and the iteration-order audit is clean. The trace-disabled
+`Profile.Allocs` total at aim 900 is 288,611 B, and the reset sites are
+absent. The known remaining sources are the checkpoint `restore!` path
+(~27.8 KB per reset) and the trace encoder. Both stay open for M4.
+
+Correctness evidence:
+
+- Package tests: 5,608/5,608 pass. The extended `test_shot_scratch.jl`
+  passes 98/98.
+- Traces: the five mustache fixtures are byte-identical to the baseline
+  (plain and snapshot-enabled) and to the committed Lua goldens.
+- Sweeps: stride-20 rows at 1, 2, and 4 threads are identical among the
+  baseline, prior candidate, and fixed candidate.
+- Reference: `make verify` reports 133/133 files OK before and after.
+- Results: all measured results are identical across the baseline, prior
+  candidate, and fixed candidate.
 
 ## 6. Caveats
 

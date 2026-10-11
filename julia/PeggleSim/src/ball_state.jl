@@ -52,14 +52,6 @@ function ball_state_process!(
     wake_mult = c.ball_wake_speed_multiplier
     wake_speed = still_speed * wake_mult
 
-    # Determine which balls are launched (only these are considered).
-    launched = BallState[]
-    for b in balls
-        if b.launched
-            push!(launched, b)
-        end
-    end
-
     # Did any peg score this step? (resets no-score timer)
     scored_this_step = false
     for ev in journal.derived
@@ -77,8 +69,11 @@ function ball_state_process!(
     end
 
     # Per-ball idle tracking with wake hysteresis.
-    all_idle = length(launched) > 0
-    for b in launched
+    all_idle = true
+    has_launched = false
+    for b in balls
+        b.launched || continue
+        has_launched = true
         bid = b.id
         speed = _bs_ball_speed(b)
         if _bs_truthy(get(t.idle, bid, nothing))
@@ -119,7 +114,7 @@ function ball_state_process!(
 
     # All-idle latch: emit the event and push the clearing command exactly
     # once per all-idle episode (not every step).
-    if length(launched) > 0 && all_idle
+    if has_launched && all_idle
         if !t.all_idle_latch
             t.all_idle_latch = true
             emit_derived!(journal, "all_balls_became_idle", nothing)

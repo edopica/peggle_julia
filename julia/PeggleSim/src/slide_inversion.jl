@@ -126,6 +126,22 @@ end
 
 # Run the inversion check for one completed fixed step. Only launched balls
 # are considered.
+struct SlideInversionScratch
+    contact_line::Dict{Int,String}
+    contact_normal::Dict{Int,NTuple{2,Float64}}
+    bounced::Dict{Int,Bool}
+end
+
+SlideInversionScratch() = SlideInversionScratch(
+    Dict{Int,String}(), Dict{Int,NTuple{2,Float64}}(), Dict{Int,Bool}())
+
+function reset!(s::SlideInversionScratch)::Nothing
+    empty!(s.contact_line)
+    empty!(s.contact_normal)
+    empty!(s.bounced)
+    return nothing
+end
+
 function slide_inversion_process!(
     t::SlideInversionTrackers,
     journal::GameplayJournal,
@@ -133,6 +149,7 @@ function slide_inversion_process!(
     balls::Vector{BallState},
     dt::Float64,
     c::SimConfig,
+    scratch::SlideInversionScratch = SlideInversionScratch(),
 )::Nothing
     timeout = c.slide_invert_contact_timeout
     epsilon = c.slide_invert_tangent_epsilon
@@ -142,9 +159,10 @@ function slide_inversion_process!(
 
     # This step's zero-gap contact line + surface normal and any genuine
     # bounce, per ball.
-    contact_line = Dict{Int,String}()
-    contact_normal = Dict{Int,NTuple{2,Float64}}()
-    bounced = Dict{Int,Bool}()
+    reset!(scratch)
+    contact_line = scratch.contact_line
+    contact_normal = scratch.contact_normal
+    bounced = scratch.bounced
     for ev in journal.raw
         bid = _si_ball_id(ev)
         bid === nothing && continue

@@ -38,6 +38,43 @@ function ShotCallbacks(;
         on_all_balls_depleted, on_bucket_catch, on_style_shot, on_turn_end)
 end
 
+# Pools are indexed in first-seen contact order; dictionary iteration never
+# determines scoring order. Group slots are reused across steps and candidates.
+const ContactGroupKey = Tuple{Int,String,Int}
+
+struct ContactReductionScratch
+    candidates::Vector{Tuple{GameEvent,Peg}}
+    groups::Dict{ContactGroupKey,Int}
+    group_pool::Vector{Vector{Tuple{GameEvent,Peg}}}
+    suppressed_pool::Vector{Dict{Peg,Bool}}
+    scored::Dict{Peg,Bool}
+end
+
+ContactReductionScratch() = ContactReductionScratch(
+    Tuple{GameEvent,Peg}[], Dict{ContactGroupKey,Int}(),
+    Vector{Tuple{GameEvent,Peg}}[], Dict{Peg,Bool}[], Dict{Peg,Bool}())
+
+function reset!(s::ContactReductionScratch)::Nothing
+    empty!(s.candidates)
+    empty!(s.groups)
+    for group in s.group_pool
+        empty!(group)
+    end
+    for drop in s.suppressed_pool
+        empty!(drop)
+    end
+    empty!(s.scored)
+    return nothing
+end
+
+struct ShotScratch
+    physics::PhysicsContext
+    contacts::ContactReductionScratch
+    scored_by_source::Dict{Int,GameEvent}
+    slide::SlideInversionScratch
+    remaining_balls::Vector{BallState}
+end
+
 mutable struct ShotEngine
     sim::SimState
     config::SimConfig
@@ -68,6 +105,7 @@ mutable struct ShotEngine
     turn_peg_refs::Vector{Peg}
     initial_balls::Int
     style_counts::Dict{String,Int}
+    scratch::ShotScratch
 end
 
 # ---------------------------------------------------------------------------
@@ -116,9 +154,14 @@ end
 function _fresh_shot_engine(sim::SimState, config::SimConfig, vw::Float64,
                             vh::Float64,
                             callbacks::ShotCallbacks)::ShotEngine
+    journal = GameplayJournal()
+    scratch = ShotScratch(
+        PhysicsContext(sim.engine.balls, config, vw, journal),
+        ContactReductionScratch(), Dict{Int,GameEvent}(),
+        SlideInversionScratch(), BallState[])
     eng = ShotEngine(
         sim, config, vw, vh,
-        GameplayJournal(), GameplayCommands(),
+        journal, GameplayCommands(),
         Peg[], Peg[], Peg[],
         callbacks,
         pi / 2,
@@ -127,6 +170,7 @@ function _fresh_shot_engine(sim::SimState, config::SimConfig, vw::Float64,
         false, false, nothing,
         0.0, 0,
         Peg[], length(sim.engine.balls), Dict{String,Int}(),
+        scratch,
     )
     _split_peg_lists!(eng)
     return eng
@@ -155,6 +199,12 @@ function reset_shot_engine!(eng::ShotEngine, ckpt::Checkpoint)::ShotEngine
     _split_peg_lists!(eng)
     reset!(eng.journal)
     reset!(eng.commands)
+    reset_physics_context!(eng.scratch.physics, eng.sim.engine.balls,
+                           eng.config, eng.virtual_width, eng.journal)
+    reset!(eng.scratch.contacts)
+    empty!(eng.scratch.scored_by_source)
+    reset!(eng.scratch.slide)
+    empty!(eng.scratch.remaining_balls)
     eng.accumulator = 0.0
     eng.steps_run = 0
     eng.shot_initial_step = 0
@@ -319,7 +369,9 @@ function reduce_peg_contacts!(eng::ShotEngine)::Nothing
     empty!(eng.pending_spawn_specs)
 
     # Phase 1: collect all eligible raw contacts in raw order.
-    candidates = Tuple{GameEvent,Peg}[]
+    scratch = eng.scratch.contacts
+    reset!(scratch)
+    candidates = scratch.candidates
     for ev in eng.journal.raw
         if ev.type == "ball_contacted_peg"
             peg = get(e.peg_by_id, Int(ev.fields["peg_id"]), nothing)
@@ -331,20 +383,24 @@ function reduce_peg_contacts!(eng::ShotEngine)::Nothing
 
     # Phase 2: group simultaneous (ball, line, iteration) zero-gap line
     # contacts, deduplicated per peg keeping the earliest TOI.
-    groups = Dict{String,Vector{Tuple{GameEvent,Peg}}}()
-    group_keys = String[]
+    groups = scratch.groups
     for (ev, peg) in candidates
         line = peg.line
         line === nothing && continue
         iteration = get(ev.fields, "iteration", nothing)
         iteration === nothing && continue
         line.gap == 0 || continue
-        key = string(ev.fields["ball_id"], "|", line.id, "|",
-                     string(Int(iteration)))
-        group = get!(groups, key) do
-            push!(group_keys, key)
-            Tuple{GameEvent,Peg}[]
+        key = (Int(ev.fields["ball_id"]), line.id, Int(iteration))
+        slot = get(groups, key, 0)
+        if slot == 0
+            slot = length(groups) + 1
+            groups[key] = slot
+            if slot > length(scratch.group_pool)
+                push!(scratch.group_pool, Tuple{GameEvent,Peg}[])
+                push!(scratch.suppressed_pool, Dict{Peg,Bool}())
+            end
         end
+        group = scratch.group_pool[slot]
         existing = findfirst(entry -> entry[2] === peg, group)
         if existing === nothing
             push!(group, (ev, peg))
@@ -355,12 +411,11 @@ function reduce_peg_contacts!(eng::ShotEngine)::Nothing
 
     # Collapse a contiguous adjacent-index run whose TOI spread is within the
     # seam epsilon to its lowest line index.
-    suppressed = Dict{String,IdDict{Peg,Bool}}()
-    for key in group_keys
-        group = groups[key]
+    for slot in 1:length(groups)
+        group = scratch.group_pool[slot]
         n = length(group)
         n >= 2 || continue
-        sort!(group; by = entry -> entry[2].line.index, alg = MergeSort)
+        sort!(group; by = entry -> entry[2].line.index, alg = Base.Sort.InsertionSort)
         toi_min = _event_toi(group[1][1])
         toi_max = toi_min
         for entry in group
@@ -381,9 +436,7 @@ function reduce_peg_contacts!(eng::ShotEngine)::Nothing
             links += 1
         end
         if links == n - 1 && (toi_max - toi_min) <= SEAM_TOI_EPSILON
-            drop = get!(suppressed, key) do
-                IdDict{Peg,Bool}()
-            end
+            drop = scratch.suppressed_pool[slot]
             for i in 2:n
                 drop[group[i][2]] = true
             end
@@ -392,7 +445,7 @@ function reduce_peg_contacts!(eng::ShotEngine)::Nothing
 
     # Phase 3: score each peg at most once, using its first candidate in raw
     # order that is not suppressed.
-    scored = IdDict{Peg,Bool}()
+    scored = scratch.scored
     for (ev, peg) in candidates
         haskey(scored, peg) && continue
         blocked = false
@@ -400,10 +453,9 @@ function reduce_peg_contacts!(eng::ShotEngine)::Nothing
         if line !== nothing
             iteration = get(ev.fields, "iteration", nothing)
             if iteration !== nothing
-                key = string(ev.fields["ball_id"], "|", line.id, "|",
-                             string(Int(iteration)))
-                drop = get(suppressed, key, nothing)
-                blocked = drop !== nothing && get(drop, peg, false)
+                key = (Int(ev.fields["ball_id"]), line.id, Int(iteration))
+                slot = get(groups, key, 0)
+                blocked = slot != 0 && get(scratch.suppressed_pool[slot], peg, false)
             end
         end
         if !blocked
@@ -772,7 +824,8 @@ function _step_body!(eng::ShotEngine, dt::Float64)::Nothing
     # (7) Physics -> raw collision events (observational).
     extras = e.is_fever ? e.fever_buckets.dividers : nothing
     physics_update!(e.balls, eng.circle_pegs, eng.rect_pegs, eng.annular_pegs,
-                    dt, extras, eng.config, eng.virtual_width, eng.journal)
+                    dt, extras, eng.config, eng.virtual_width, eng.journal,
+                    eng.scratch.physics)
 
     # (8) draw_path path_step stamping is presentation-only.
 
@@ -790,7 +843,8 @@ function _step_body!(eng::ShotEngine, dt::Float64)::Nothing
     reduce_peg_contacts!(eng)
 
     # (11) Bucket / fever resolution + raw events + mode callbacks.
-    remaining_balls = BallState[]
+    remaining_balls = eng.scratch.remaining_balls
+    empty!(remaining_balls)
     for b in e.balls
         remove_ball = false
         caught = false
@@ -857,7 +911,11 @@ function _step_body!(eng::ShotEngine, dt::Float64)::Nothing
             push!(remaining_balls, b)
         end
     end
-    e.balls = remaining_balls
+    # Keep the authoritative vector distinct from recycled scratch. Callbacks
+    # during bucket resolution see the original collection until this point.
+    resize!(e.balls, length(remaining_balls))
+    copyto!(e.balls, remaining_balls)
+    empty!(remaining_balls)
 
     # (14) Append power-spawned balls (created during reduction); they begin
     # physics on the following fixed step.
@@ -917,12 +975,12 @@ function finalize_step!(eng::ShotEngine, dt::Float64)::Nothing
 
     # (18) StyleShots -> award_style_points commands.
     style_shots_process!(eng.sim.trackers.style_shots, eng.journal, eng.commands,
-                         eng.virtual_width, eng.config)
+                         eng.virtual_width, eng.config, eng.scratch.scored_by_source)
 
     # (18b) SlideInversion -> remove_slide_pegs; paused during clearing.
     if e.clear_queue === nothing
         slide_inversion_process!(eng.sim.trackers.slide_inversion, eng.journal,
-                                 eng.commands, e.balls, dt, eng.config)
+                                 eng.commands, e.balls, dt, eng.config, eng.scratch.slide)
     end
 
     # (19) BallState -> derived events + start_midturn_clearing command;
