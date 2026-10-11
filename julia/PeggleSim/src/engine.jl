@@ -936,10 +936,15 @@ function finalize_step!(eng::ShotEngine, dt::Float64)::Nothing
     apply_commands!(eng)
 
     # (21) Shot-lifecycle derived events (after command application so the
-    # totals include this step's style awards).
+    # totals include this step's style awards). The engine owns shot
+    # completion: reaching this transition (all balls depleted with clearing
+    # skipped, or the end-of-turn clearing cascade drained) ends the shot
+    # regardless of whether a callback is installed. Phase (25) notifies
+    # on_turn_end afterwards.
     if eng.shot_end_pending
         eng.shot_end_pending = false
         emit_shot_completed!(eng)
+        eng.shot_done = true
     end
 
     # (22)+(23) Trace step record (no timeline retention).
@@ -1004,10 +1009,9 @@ function harness_callbacks(; clearing::Bool = false)::ShotCallbacks
             end
             return nothing
         end,
-        eng -> begin
-            eng.shot_done = true
-            return nothing
-        end,
+        # Notification only: finalize_step! already owns the shot_done
+        # transition before firing on_turn_end.
+        eng -> nothing,
     )
 end
 

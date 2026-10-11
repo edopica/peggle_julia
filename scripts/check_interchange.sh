@@ -7,7 +7,8 @@
 #   4. validate every artifact and fixture record against schemas/;
 #   5. run the negative/regression checkpoint contract cases;
 #   6. run the parity comparison contract cases;
-#   7. run the trace comparison contract cases.
+#   7. run the trace comparison contract cases;
+#   8. run the M3 sweep comparison contract cases.
 #
 # With --with-fixtures, also re-captures the reference fixtures under LÖVE
 # and requires byte-identical expected records, then runs the negative
@@ -29,10 +30,10 @@ done
 scratch="$(mktemp -d)"
 trap 'rm -rf "$scratch"' EXIT
 
-echo "== 1/7 canonical JSON codec tests =="
+echo "== 1/8 canonical JSON codec tests =="
 luajit tools/canonical_json_test.lua
 
-echo "== 2/7 export reproducibility =="
+echo "== 2/8 export reproducibility =="
 INTERCHANGE_DIR="$scratch/interchange" scripts/export_interchange.sh > "$scratch/export.log" 2>&1
 if diff -r "$scratch/interchange" "$repo_root/interchange" > "$scratch/diff.log" 2>&1; then
   echo "OK: scratch export matches interchange/"
@@ -42,20 +43,23 @@ else
   exit 1
 fi
 
-echo "== 3/7 manifest =="
+echo "== 3/8 manifest =="
 scripts/verify_interchange.sh
 
-echo "== 4/7 schema validation =="
+echo "== 4/8 schema validation =="
 scripts/validate_interchange.py
 
-echo "== 5/7 checkpoint contract cases =="
+echo "== 5/8 checkpoint contract cases =="
 scripts/test_checkpoint_contract.sh
 
-echo "== 6/7 parity comparison contract cases =="
+echo "== 6/8 parity comparison contract cases =="
 scripts/test_compare_parity.sh
 
-echo "== 7/7 trace comparison contract cases =="
+echo "== 7/8 trace comparison contract cases =="
 scripts/test_compare_traces.sh
+
+echo "== 8/8 M3 sweep comparison contract cases =="
+scripts/test_compare_m3_sweeps.sh
 
 if [[ $with_fixtures -eq 1 ]]; then
   echo "== fixtures: re-capture and compare =="

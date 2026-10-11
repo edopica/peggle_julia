@@ -19,6 +19,7 @@ const ENGINE_MUSTACHE_CONFIG =
 const ENGINE_CENTER_AIM = 900
 const ENGINE_LEFT_AIM = 0
 const ENGINE_CENTER_STEPS = 922
+const ENGINE_CENTER_CLEARING_STEPS = 975
 const ENGINE_LEFT_STEPS = 1507
 
 function _engine_level()
@@ -128,12 +129,37 @@ end
         @test summary.reason == "fell_out"
         @test eng.sim.engine.clear_queue === nothing
         # The cascade runs after the bench completion point.
-        @test summary.steps > ENGINE_CENTER_STEPS
+        @test summary.steps == ENGINE_CENTER_CLEARING_STEPS
         # Every hit peg was swept off the board; un-hit pegs remain.
         @test all(!p.hit for p in eng.sim.engine.pegs)
         @test !isempty(eng.sim.engine.pegs)
         @test length(eng.sim.engine.pegs) ==
               length(_engine_level().pegs) - summary.pegs_hit
+    end
+
+    @testset "default callbacks: the engine owns shot completion" begin
+        # Regression: shot completion must not depend on on_turn_end being
+        # installed. With the default ShotCallbacks the shot still runs the
+        # end-of-turn clearing cascade and then stops, emitting exactly one
+        # shot_completed event. Before the fix the engine re-entered the
+        # clearing cascade on an empty board and kept emitting
+        # shot_completed until max_steps.
+        level = _engine_level()
+        config = _engine_config()
+        ckpt = _engine_checkpoint(level, config)
+        eng = PeggleSim.shot_engine(ckpt; config = config, level = level)
+        PeggleSim.launch!(eng, ENGINE_CENTER_AIM)
+        PeggleSim.run_shot!(eng)
+
+        summary = PeggleSim.shot_summary(eng)
+        @test summary.completed
+        @test eng.shot_done
+        @test summary.reason == "fell_out"
+        @test summary.steps == ENGINE_CENTER_CLEARING_STEPS
+        @test eng.sim.engine.clear_queue === nothing
+        shot_completed =
+            [ev for ev in eng.journal.derived if ev.type == "shot_completed"]
+        @test length(shot_completed) == 1
     end
 
     @testset "parallel workers from one checkpoint are identical" begin

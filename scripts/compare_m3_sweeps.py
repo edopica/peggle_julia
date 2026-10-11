@@ -12,13 +12,15 @@ corpora on the aim index and checks every shared semantic field:
   object), pegs_hit, reds_hit, multiplier, is_fever, balls, spawned
 
 The report records the first divergent candidate with the left/right values,
-per-field mismatch counts, and the candidate coverage. A field the Lua raw
-does not carry is recorded under ``unavailable_fields`` and is not compared:
-the Lua harness ``serialize_row`` omits ``spawned`` (the harness feature
-exists, the raw JSONL row does not), so ``spawned`` is a coverage gap, not a
-divergence. Exit status is 0 iff the two corpora agree on every compared
-candidate and field (and cover the same indices); 1 on any mismatch; 2 on
-unreadable or malformed input.
+per-field mismatch counts, and the candidate coverage. Every shared result
+field is required on every row on both sides: a row that omits one is
+malformed input (exit 2), so a broken exporter cannot make the parity gate
+pass by dropping a field. The only exemption is ``spawned``: the Lua harness
+``serialize_row`` omits it in every row (the harness feature exists, the raw
+JSONL row does not), so it is recorded under ``unavailable_fields`` and
+skipped rather than treated as a per-candidate mismatch. Exit status is 0 iff
+the two corpora agree on every compared candidate and field (and cover the
+same indices); 1 on any mismatch; 2 on unreadable or malformed input.
 
 Usage:
   scripts/compare_m3_sweeps.py --lua-raw RAW.candidates.jsonl \
@@ -56,6 +58,11 @@ SHARED_FIELDS = (
     ("balls", "balls", "balls"),
     ("spawned", "spawned", "spawned"),
 )
+
+# Fields a side may legitimately not carry. Every other shared field is
+# required on every row; a missing key there is malformed input, not a
+# comparable-to-nothing skip.
+EXEMPT_FIELDS = frozenset({"spawned"})
 
 
 class InputError(Exception):
@@ -131,6 +138,15 @@ def julia_index(row, path, line_number):
     return value
 
 
+def require_field(rows, key, path):
+    missing = [position for position, row in enumerate(rows, 1) if key not in row]
+    if missing:
+        raise InputError(
+            "%s: %d of %d rows are missing required field %r (first row %d)"
+            % (path, len(missing), len(rows), key, missing[0]))
+    return None
+
+
 def detect_stride(indices):
     unique = sorted(set(indices))
     if len(unique) < 2:
@@ -188,24 +204,34 @@ def main(argv=None):
     missing_in_lua = sorted(julia_indices - lua_indices)
     shared = sorted(lua_indices & julia_indices)
 
-    # A field is comparable only when the key exists somewhere on both sides.
-    # The Lua harness serialize_row does not emit `spawned` (its `features`
-    # table has it, the JSONL row does not), so record it as unavailable
-    # rather than as a per-candidate mismatch.
+    # The Lua harness serialize_row never emits `spawned` (its `features`
+    # table has it, the JSONL row does not), so an exempt field missing on a
+    # side is recorded as unavailable. Every other shared field is required
+    # on every row on both sides: skipping a stray missing field would let a
+    # broken result exporter make the parity gate pass.
     lua_keys = set().union(*(row.keys() for row in lua_rows))
     julia_keys = set().union(*(row.keys() for row in julia_rows))
     unavailable_fields = {}
     compared_fields = []
-    for field, lua_key, julia_key in SHARED_FIELDS:
-        if lua_key in lua_keys and julia_key in julia_keys:
-            compared_fields.append(field)
-        else:
-            unavailable_fields[field] = {
-                "lua_key": lua_key,
-                "julia_key": julia_key,
-                "lua_present": lua_key in lua_keys,
-                "julia_present": julia_key in julia_keys,
-            }
+    try:
+        for field, lua_key, julia_key in SHARED_FIELDS:
+            if field in EXEMPT_FIELDS:
+                if lua_key in lua_keys and julia_key in julia_keys:
+                    compared_fields.append(field)
+                else:
+                    unavailable_fields[field] = {
+                        "lua_key": lua_key,
+                        "julia_key": julia_key,
+                        "lua_present": lua_key in lua_keys,
+                        "julia_present": julia_key in julia_keys,
+                    }
+            else:
+                require_field(lua_rows, lua_key, args.lua_raw)
+                require_field(julia_rows, julia_key, args.julia)
+                compared_fields.append(field)
+    except InputError as err:
+        print("compare_m3_sweeps: %s" % err, file=sys.stderr)
+        return 2
 
     per_field_mismatch = Counter()
     mismatch_records = []

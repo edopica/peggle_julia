@@ -126,6 +126,10 @@ comparison runs before the combined report is written.
 - `first_divergent_candidate` is `null` and `per_field_mismatch_count` is
   empty (`results/m3/sweeps-compare-full.json`).
 - Julia serial and parallel sweeps are bit-identical at every thread count.
+- The sweep comparator requires every shared result field on every row on both
+  sides (exit 2 on a missing key), so a broken exporter cannot pass the gate by
+  dropping a field; `spawned` is the only exempt field because the Lua harness
+  raw never carries it. The contract cases run as step 8/8 of `make check`.
 - The trace-level state comparison is in `wiki/context/m3-mustache.md`
   (`results/m3/mustache-compare.json`).
 
