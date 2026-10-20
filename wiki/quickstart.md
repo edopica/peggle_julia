@@ -18,12 +18,16 @@ in `../peggle_evolved/wiki/`.
 | M1 — interchange, fixtures, level previews | **Done** |
 | M2 — math and state foundations (first Julia code) | **Done** |
 | M3 — full-physics shot engine, mustache traces, first benchmark | **Done** |
+| M4 — full static-level shot behavior + main performance gate | **In progress** — correctness breadth validated; performance gate and cross-machine qualification open |
 
 The repository contains the frozen Lua reference, the baseline sweep harness,
 the versioned interchange artifacts and fixtures, the M2/M3 Julia package
 (`julia/PeggleSim`) with its pinned math/RNG/state foundation and full
 physics/engine port, the mustache trace corpus, and the documentation. The
-measured M3 results are in `wiki/benchmarks/m3-shot.md`.
+measured M3 results are in `wiki/benchmarks/m3-shot.md`. M4 correctness
+breadth is validated on the pinned corpus
+(`wiki/context/m4-validation.md`); the M4 performance gate and cross-machine
+qualification remain open.
 
 ## Requirements
 
@@ -76,6 +80,13 @@ make m3-trace            # Julia snapshot traces for the base mustache fixtures
 make m3-mustache         # 5-fixture Lua-vs-Julia trace control comparison
 make m3-sweep            # stride-200 serial/parallel identity sweep
 make m3-bench            # Lua-vs-Julia mustache benchmark + full-grid agreement
+```
+
+M4 Julia targets:
+
+```bash
+make m4-parity           # full M4 correctness-breadth run (replay, sweeps, threads, scenarios)
+make m4-replay           # fixture replay + trace parity into results/m4/
 ```
 
 The `wpd-*` targets are the experimental CORE-MATH comparison; their outputs
@@ -133,6 +144,7 @@ mirrors `../peggle_evolved/wiki/` so material can move between the projects.
 | `wiki/context/fixtures.md` | Reference fixture matrix, capture protocol, the 42-case assessment | current |
 | `wiki/context/julia.md` | M2/M3 Julia package: pinned env, DetMath backends, RNG, state, checkpoint contract, shot engine, traces | current |
 | `wiki/context/m3-mustache.md` | M3 mustache corpus: 5 trace fixtures, capture and comparison runbook, full-grid agreement | current |
+| `wiki/context/m4-validation.md` | M4 correctness-breadth validation: corpus, method, results, divider fix, scenario decision | current |
 | `wiki/benchmarks/` | Measured performance and parity results | current |
 | `wiki/benchmarks/baseline-metrics.md` | M0 Lua candidate-sweep baseline and continuing-metric protocol | current |
 | `wiki/benchmarks/m2-checkpoint.md` | M2 checkpoint/reset benchmark and M0 init comparison | current |
@@ -180,6 +192,7 @@ Conventions:
 | Which reference fixtures exist and why? | `wiki/context/fixtures.md` |
 | How is the Julia side built? | `wiki/context/julia.md` |
 | Which M3 fixtures exist, and how are they compared? | `wiki/context/m3-mustache.md` |
+| What M4 parity is validated, and what remains open? | `wiki/context/m4-validation.md` |
 | How do I collect the macOS/Windows qualification evidence? | `wiki/context/cross-platform-qualification.md` |
 | How fast is Lua today? | `wiki/benchmarks/baseline-metrics.md` |
 | How fast is the M2 checkpoint/reset? | `wiki/benchmarks/m2-checkpoint.md` |

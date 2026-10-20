@@ -349,8 +349,15 @@ _bits(t::Tuple) = map(_bitstr, t)
         @test ev["did_bounce"] === true
         @test ev["normal_x"] == -1.0 && ev["normal_y"] == 0.0
         @test ev["outgoing_vx"] == -c.restitution * ev["incoming_vx"]
-        # Extras are not pegs: no peg/wall/line keys.
-        @test !haskey(ev, "peg_id") && !haskey(ev, "wall") && !haskey(ev, "line")
+        # Lua's `is_extra and nil or circ` evaluates to the divider, so
+        # emit_contact reports the static divider transform: shape "circle",
+        # x/y, angle 0, and no id/type/line (the divider has none).
+        @test ev["peg_shape"] == "circle"
+        @test ev["peg_x"] == 200.0 && ev["peg_y"] == 100.0
+        @test ev["peg_angle"] == 0.0
+        @test !haskey(ev, "peg_id") && !haskey(ev, "peg_type")
+        @test !haskey(ev, "line") && !haskey(ev, "peg_theta")
+        @test !haskey(ev, "wall")
 
         # A miss inside the graze tolerance never grazes (dividers have no
         # `hit` field; the extra path is excluded from graze collection).
@@ -403,13 +410,19 @@ _bits(t::Tuple) = map(_bitstr, t)
         fields = _phys_fields(_phys_step!([a, b]; c = c0), "ball_contact_ball")[1]
         @test Set(keys(fields)) == union(PHYS_BASE_KEYS, PHYS_BALL_KEYS)
 
-        # Fever divider -> base keys only.
+        # Fever divider -> the static divider transform (Lua passes the
+        # divider table through `is_extra and nil or circ`), but no id/type/
+        # line/theta/wall because the divider carries none of those fields.
         divider = PeggleSim.FeverDivider(200.0, 100.0, 40.0, true)
         ball = _phys_ball(1, 148.0, 100.0; vx = 400.0)
         fields = only(_phys_fields(_phys_step!([ball]; c = c,
                                                extras = PeggleSim.FeverDivider[divider]),
                                    "ball_contact_fever_divider"))
-        @test Set(keys(fields)) == PHYS_BASE_KEYS
+        @test Set(keys(fields)) == union(
+            PHYS_BASE_KEYS, Set(["peg_shape", "peg_x", "peg_y", "peg_angle"]))
+        @test fields["peg_shape"] == "circle"
+        @test fields["peg_x"] == 200.0 && fields["peg_y"] == 100.0
+        @test fields["peg_angle"] == 0.0
     end
 
     @testset "peg depenetration fallback" begin

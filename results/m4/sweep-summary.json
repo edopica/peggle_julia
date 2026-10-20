@@ -1,0 +1,355 @@
+{
+  "exempt_fields": [
+    "spawned"
+  ],
+  "format": "peggle.m4_sweep_summary",
+  "full_grid": true,
+  "host_label": "omarchy",
+  "julia_config": "interchange/config.v1.json",
+  "julia_levels_dir": "interchange/levels",
+  "lua_reference_dir": "reference/peggle_evolved",
+  "lua_reference_note": "The Lua sweeps used the frozen pin reference/peggle_evolved, not the dev tree: the dev tree has deleted src/levels/circle_level.lua (required by circles_small) and its src/config.lua sets ball_ball_restitution=0.7, while interchange/config.v1.json and the pinned tree use 0.8. All seven workloads are pinned levels; for the five levels present in both trees the sources are byte-identical (git status is clean apart from circle_level's deletion and the untracked mustache level).",
+  "schema_version": 1,
+  "stride": 1,
+  "thread_identity": [
+    {
+      "all_serial_parallel_identical": true,
+      "balls": 1,
+      "candidates": 1801,
+      "compare_report": "results/m4/sweeps-compare-lines_rect_annular.json",
+      "id": "lines_rect_annular",
+      "level": "slide",
+      "matches_lua_t1_compare": true,
+      "rows_identical_across_threads": true,
+      "serial_parallel_identical": {
+        "1": true,
+        "2": true,
+        "4": true
+      },
+      "sha256": {
+        "1": "68aa2154854ae5496f19dd956308beaf117766f54833aff6402ccf76c1f9914c",
+        "2": "68aa2154854ae5496f19dd956308beaf117766f54833aff6402ccf76c1f9914c",
+        "4": "68aa2154854ae5496f19dd956308beaf117766f54833aff6402ccf76c1f9914c"
+      },
+      "threads": {
+        "1": {
+          "rows": "results/raw/m4-julia-lines_rect_annular-t1.jsonl",
+          "serial_parallel_identical": true,
+          "sha256": "68aa2154854ae5496f19dd956308beaf117766f54833aff6402ccf76c1f9914c",
+          "summary": "results/m4/julia-lines_rect_annular-t1.json",
+          "wall_seconds": 3.57308447
+        },
+        "2": {
+          "rows": "results/raw/m4-julia-lines_rect_annular-t2.jsonl",
+          "serial_parallel_identical": true,
+          "sha256": "68aa2154854ae5496f19dd956308beaf117766f54833aff6402ccf76c1f9914c",
+          "summary": "results/m4/julia-lines_rect_annular-t2.json",
+          "wall_seconds": 3.772093833
+        },
+        "4": {
+          "rows": "results/raw/m4-julia-lines_rect_annular-t4.jsonl",
+          "serial_parallel_identical": true,
+          "sha256": "68aa2154854ae5496f19dd956308beaf117766f54833aff6402ccf76c1f9914c",
+          "summary": "results/m4/julia-lines_rect_annular-t4.json",
+          "wall_seconds": 3.54577456
+        }
+      },
+      "threads_tested": [
+        1,
+        2,
+        4
+      ],
+      "wall_seconds": {
+        "1": 3.57308447,
+        "2": 3.772093833,
+        "4": 3.54577456
+      }
+    },
+    {
+      "all_serial_parallel_identical": true,
+      "balls": 1,
+      "candidates": 1801,
+      "compare_report": "results/m4/sweeps-compare-annular_dense.json",
+      "id": "annular_dense",
+      "level": "squiggly_circle",
+      "matches_lua_t1_compare": true,
+      "rows_identical_across_threads": true,
+      "serial_parallel_identical": {
+        "1": true,
+        "2": true,
+        "4": true
+      },
+      "sha256": {
+        "1": "47ddb6b7e7cba6493ff435f0844ee4284960553f707018f0fb2778a19932de6b",
+        "2": "47ddb6b7e7cba6493ff435f0844ee4284960553f707018f0fb2778a19932de6b",
+        "4": "47ddb6b7e7cba6493ff435f0844ee4284960553f707018f0fb2778a19932de6b"
+      },
+      "threads": {
+        "1": {
+          "rows": "results/raw/m4-julia-annular_dense-t1.jsonl",
+          "serial_parallel_identical": true,
+          "sha256": "47ddb6b7e7cba6493ff435f0844ee4284960553f707018f0fb2778a19932de6b",
+          "summary": "results/m4/julia-annular_dense-t1.json",
+          "wall_seconds": 4.887227424
+        },
+        "2": {
+          "rows": "results/raw/m4-julia-annular_dense-t2.jsonl",
+          "serial_parallel_identical": true,
+          "sha256": "47ddb6b7e7cba6493ff435f0844ee4284960553f707018f0fb2778a19932de6b",
+          "summary": "results/m4/julia-annular_dense-t2.json",
+          "wall_seconds": 4.634925308
+        },
+        "4": {
+          "rows": "results/raw/m4-julia-annular_dense-t4.jsonl",
+          "serial_parallel_identical": true,
+          "sha256": "47ddb6b7e7cba6493ff435f0844ee4284960553f707018f0fb2778a19932de6b",
+          "summary": "results/m4/julia-annular_dense-t4.json",
+          "wall_seconds": 4.722295146
+        }
+      },
+      "threads_tested": [
+        1,
+        2,
+        4
+      ],
+      "wall_seconds": {
+        "1": 4.887227424,
+        "2": 4.634925308,
+        "4": 4.722295146
+      }
+    }
+  ],
+  "workloads": [
+    {
+      "balls": 1,
+      "candidates": 1801,
+      "clean": true,
+      "compare_report": "results/m4/sweeps-compare-overhead_static_2p.json",
+      "coverage": {
+        "first_index": 0,
+        "julia_candidates": 1801,
+        "julia_indices": 1801,
+        "last_index": 1800,
+        "lua_candidates": 1801,
+        "lua_indices": 1801,
+        "missing_in_julia": [],
+        "missing_in_lua": [],
+        "shared_indices": 1801
+      },
+      "first_divergent_candidate": null,
+      "id": "overhead_static_2p",
+      "julia_rows": "results/raw/m4-julia-overhead_static_2p-t1.jsonl",
+      "julia_rows_sha256": "7d104655915c7e1258ee6f6f557f1761ce8efb59858924358b3843825f58b62c",
+      "julia_serial_parallel_identical": true,
+      "julia_summary": "results/m4/julia-overhead_static_2p-t1.json",
+      "level": "long_shot",
+      "lua_repeats": [
+        1
+      ],
+      "lua_summary": "results/m4/lua-overhead_static_2p.summary.json",
+      "mismatch_candidates": 0,
+      "wall_seconds": {
+        "julia_t1": 0.2787149,
+        "lua": 3.049807727
+      }
+    },
+    {
+      "balls": 1,
+      "candidates": 1801,
+      "clean": true,
+      "compare_report": "results/m4/sweeps-compare-circles_small.json",
+      "coverage": {
+        "first_index": 0,
+        "julia_candidates": 1801,
+        "julia_indices": 1801,
+        "last_index": 1800,
+        "lua_candidates": 1801,
+        "lua_indices": 1801,
+        "missing_in_julia": [],
+        "missing_in_lua": [],
+        "shared_indices": 1801
+      },
+      "first_divergent_candidate": null,
+      "id": "circles_small",
+      "julia_rows": "results/raw/m4-julia-circles_small-t1.jsonl",
+      "julia_rows_sha256": "9acfb833f9b639b72ee75f07b6f8414f4621863005b15cb35c3cae112e693312",
+      "julia_serial_parallel_identical": true,
+      "julia_summary": "results/m4/julia-circles_small-t1.json",
+      "level": "circle_level",
+      "lua_repeats": [
+        1
+      ],
+      "lua_summary": "results/m4/lua-circles_small.summary.json",
+      "mismatch_candidates": 0,
+      "wall_seconds": {
+        "julia_t1": 0.426816967,
+        "lua": 3.84989007
+      }
+    },
+    {
+      "balls": 1,
+      "candidates": 1801,
+      "clean": true,
+      "compare_report": "results/m4/sweeps-compare-circles_mixed.json",
+      "coverage": {
+        "first_index": 0,
+        "julia_candidates": 1801,
+        "julia_indices": 1801,
+        "last_index": 1800,
+        "lua_candidates": 1801,
+        "lua_indices": 1801,
+        "missing_in_julia": [],
+        "missing_in_lua": [],
+        "shared_indices": 1801
+      },
+      "first_divergent_candidate": null,
+      "id": "circles_mixed",
+      "julia_rows": "results/raw/m4-julia-circles_mixed-t1.jsonl",
+      "julia_rows_sha256": "62f521a61c815bd88a867b771ef7d04fb41f39a11db7e5af21c5028383a87a97",
+      "julia_serial_parallel_identical": true,
+      "julia_summary": "results/m4/julia-circles_mixed-t1.json",
+      "level": "off_the_wall",
+      "lua_repeats": [
+        1
+      ],
+      "lua_summary": "results/m4/lua-circles_mixed.summary.json",
+      "mismatch_candidates": 0,
+      "wall_seconds": {
+        "julia_t1": 0.259751653,
+        "lua": 1.174816003
+      }
+    },
+    {
+      "balls": 1,
+      "candidates": 1801,
+      "clean": true,
+      "compare_report": "results/m4/sweeps-compare-lines_rect_annular.json",
+      "coverage": {
+        "first_index": 0,
+        "julia_candidates": 1801,
+        "julia_indices": 1801,
+        "last_index": 1800,
+        "lua_candidates": 1801,
+        "lua_indices": 1801,
+        "missing_in_julia": [],
+        "missing_in_lua": [],
+        "shared_indices": 1801
+      },
+      "first_divergent_candidate": null,
+      "id": "lines_rect_annular",
+      "julia_rows": "results/raw/m4-julia-lines_rect_annular-t1.jsonl",
+      "julia_rows_sha256": "68aa2154854ae5496f19dd956308beaf117766f54833aff6402ccf76c1f9914c",
+      "julia_serial_parallel_identical": true,
+      "julia_summary": "results/m4/julia-lines_rect_annular-t1.json",
+      "level": "slide",
+      "lua_repeats": [
+        1
+      ],
+      "lua_summary": "results/m4/lua-lines_rect_annular.summary.json",
+      "mismatch_candidates": 0,
+      "wall_seconds": {
+        "julia_t1": 3.57308447,
+        "lua": 12.94661123
+      }
+    },
+    {
+      "balls": 1,
+      "candidates": 1801,
+      "clean": true,
+      "compare_report": "results/m4/sweeps-compare-annular_dense.json",
+      "coverage": {
+        "first_index": 0,
+        "julia_candidates": 1801,
+        "julia_indices": 1801,
+        "last_index": 1800,
+        "lua_candidates": 1801,
+        "lua_indices": 1801,
+        "missing_in_julia": [],
+        "missing_in_lua": [],
+        "shared_indices": 1801
+      },
+      "first_divergent_candidate": null,
+      "id": "annular_dense",
+      "julia_rows": "results/raw/m4-julia-annular_dense-t1.jsonl",
+      "julia_rows_sha256": "47ddb6b7e7cba6493ff435f0844ee4284960553f707018f0fb2778a19932de6b",
+      "julia_serial_parallel_identical": true,
+      "julia_summary": "results/m4/julia-annular_dense-t1.json",
+      "level": "squiggly_circle",
+      "lua_repeats": [
+        1
+      ],
+      "lua_summary": "results/m4/lua-annular_dense.summary.json",
+      "mismatch_candidates": 0,
+      "wall_seconds": {
+        "julia_t1": 4.887227424,
+        "lua": 115.557358045
+      }
+    },
+    {
+      "balls": 3,
+      "candidates": 1801,
+      "clean": true,
+      "compare_report": "results/m4/sweeps-compare-annular_dense_multi3.json",
+      "coverage": {
+        "first_index": 0,
+        "julia_candidates": 1801,
+        "julia_indices": 1801,
+        "last_index": 1800,
+        "lua_candidates": 1801,
+        "lua_indices": 1801,
+        "missing_in_julia": [],
+        "missing_in_lua": [],
+        "shared_indices": 1801
+      },
+      "first_divergent_candidate": null,
+      "id": "annular_dense_multi3",
+      "julia_rows": "results/raw/m4-julia-annular_dense_multi3-t1.jsonl",
+      "julia_rows_sha256": "10193bb276048a5cb3af67ff9dc4070d3acd22f8759cf1ec3aa1cd505afdf46b",
+      "julia_serial_parallel_identical": true,
+      "julia_summary": "results/m4/julia-annular_dense_multi3-t1.json",
+      "level": "squiggly_circle",
+      "lua_repeats": [
+        1
+      ],
+      "lua_summary": "results/m4/lua-annular_dense_multi3.summary.json",
+      "mismatch_candidates": 0,
+      "wall_seconds": {
+        "julia_t1": 13.177979248,
+        "lua": 132.172369029
+      }
+    },
+    {
+      "balls": 3,
+      "candidates": 1801,
+      "clean": true,
+      "compare_report": "results/m4/sweeps-compare-lines_rect_annular_multi3.json",
+      "coverage": {
+        "first_index": 0,
+        "julia_candidates": 1801,
+        "julia_indices": 1801,
+        "last_index": 1800,
+        "lua_candidates": 1801,
+        "lua_indices": 1801,
+        "missing_in_julia": [],
+        "missing_in_lua": [],
+        "shared_indices": 1801
+      },
+      "first_divergent_candidate": null,
+      "id": "lines_rect_annular_multi3",
+      "julia_rows": "results/raw/m4-julia-lines_rect_annular_multi3-t1.jsonl",
+      "julia_rows_sha256": "649c0b450caf6a7f56a3ae584082de6eb76d2c6b57149778ff7d6a3052515b58",
+      "julia_serial_parallel_identical": true,
+      "julia_summary": "results/m4/julia-lines_rect_annular_multi3-t1.json",
+      "level": "slide",
+      "lua_repeats": [
+        1
+      ],
+      "lua_summary": "results/m4/lua-lines_rect_annular_multi3.summary.json",
+      "mismatch_candidates": 0,
+      "wall_seconds": {
+        "julia_t1": 9.747853415,
+        "lua": 39.128193313
+      }
+    }
+  ]
+}

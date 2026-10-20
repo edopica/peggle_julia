@@ -96,14 +96,29 @@ end
 # M3 signature always supplies the journal.
 function emit_contact!(journal::GameplayJournal, event_type::AbstractString,
                        ball::BallState, rec::ContactRecord, did_bounce::Bool,
-                       peg::Union{Nothing,Peg}, contact_kind::AbstractString)::Nothing
+                       peg::Union{Nothing,Peg,FeverDivider},
+                       contact_kind::AbstractString)::Nothing
     ix = rec.isx + rec.move_x * rec.toi
     iy = rec.isy + rec.move_y * rec.toi
     frame_t = ((rec.total_dt - rec.window) + rec.toi * rec.window) / rec.total_dt
     px = py = pa = ptheta = nothing
+    peg_id = nothing
+    peg_type = nothing
+    peg_shape = nothing
+    peg_line = nothing
     local_wall = nothing
-    if peg !== nothing
+    if peg isa Peg
         px, py, pa, ptheta = peg_transform_at_toi(peg, rec.window, rec.toi)
+        peg_id = peg.id
+        peg_type = String(peg.peg_type)
+        peg_shape = peg_shape_name(peg.shape)
+        peg_line = contact_line(peg)
+    elseif peg isa FeverDivider
+        # Lua's emit_contact receives the divider table through its `if peg`
+        # branch: `peg.shape or "circle"` -> "circle", the transform is the raw
+        # static x/y with angle 0, and there is no id/type/line to emit.
+        px, py, pa = peg.x, peg.y, 0.0
+        peg_shape = "circle"
     elseif event_type == "ball_contact_wall"
         # Derive wall identity deterministically from the contact normal.
         # left wall  -> normal (+1, 0)
@@ -121,10 +136,10 @@ function emit_contact!(journal::GameplayJournal, event_type::AbstractString,
         other_ball_id = rec.other_ball === nothing ? nothing : rec.other_ball.id,
         other_outgoing_vx = rec.other_ball === nothing ? nothing : rec.other_vout_x,
         other_outgoing_vy = rec.other_ball === nothing ? nothing : rec.other_vout_y,
-        peg_id = peg === nothing ? nothing : peg.id,
-        peg_type = peg === nothing ? nothing : String(peg.peg_type),
-        peg_shape = peg === nothing ? nothing : peg_shape_name(peg.shape),
-        line = peg === nothing ? nothing : contact_line(peg),
+        peg_id = peg_id,
+        peg_type = peg_type,
+        peg_shape = peg_shape,
+        line = peg_line,
         peg_x = px, peg_y = py, peg_angle = pa, peg_theta = ptheta,
         wall = local_wall,
     )
@@ -165,7 +180,10 @@ mutable struct PhysicsContext
     hit_nx::Float64
     hit_ny::Float64
     hit_type::Union{Nothing,String}
-    hit_peg::Union{Nothing,Peg}
+    # Lua's hit_peg holds the divider table for extra-circle contacts too:
+    # `is_extra and nil or circ` evaluates to `circ` in Lua (the and/or idiom
+    # cannot yield nil). See check_circles.
+    hit_peg::Union{Nothing,Peg,FeverDivider}
     hit_other_ball::Union{Nothing,BallState}
     hit_priority::Union{Nothing,Int}
     hit_peg_index::Union{Nothing,Int}
@@ -214,8 +232,9 @@ end
 
 # physics.lua lines 117-144.
 function register_hit!(ctx::PhysicsContext, t::Float64, nx::Float64, ny::Float64,
-                       htype::String, peg::Union{Nothing,Peg}, priority::Int,
-                       peg_index::Union{Nothing,Int}, overlap::Float64,
+                       htype::String, peg::Union{Nothing,Peg,FeverDivider},
+                       priority::Int, peg_index::Union{Nothing,Int},
+                       overlap::Float64,
                        other_ball::Union{Nothing,BallState} = nothing)::Bool
     if t < ctx.min_t - ctx.config.toi_epsilon
         ctx.min_t = t
@@ -436,6 +455,12 @@ function broad_phase_pass(ctx::PhysicsContext, div::FeverDivider)
 end
 
 # 2. Check Pegs and Extra Circles (Swept Circle-Circle)
+#
+# Lua passes `is_extra and nil or circ` as the hit peg. That and/or idiom
+# yields `circ` even when is_extra is true, so extra-circle (fever divider)
+# contacts carry the divider into emit_contact: shape defaults to "circle",
+# the transform is static, and there is no id/type/line. The port must use the
+# value Lua actually passes, not the apparent intent of the expression.
 function check_circles(ctx::PhysicsContext,
                        circles::Union{Nothing,Vector{Peg},Vector{FeverDivider}},
                        is_extra::Bool)::Nothing
@@ -463,7 +488,7 @@ function check_circles(ctx::PhysicsContext,
                 end
                 register_hit!(ctx, 0.0, dx / dist, dy / dist,
                               is_extra ? "extra" : "peg",
-                              is_extra ? nothing : circ,
+                              circ,
                               is_extra ? PRIORITY.extra_circle : PRIORITY.circle_peg,
                               i, radius_sum - dist)
             elseif a > 0.0001
@@ -500,7 +525,7 @@ function check_circles(ctx::PhysicsContext,
                             t1 = max(0.0, t1)
                             register_hit!(ctx, t1, cx_rel / dist, cy_rel / dist,
                                           is_extra ? "extra" : "peg",
-                                          is_extra ? nothing : circ,
+                                          circ,
                                           is_extra ? PRIORITY.extra_circle : PRIORITY.circle_peg,
                                           i, 0.0)
                         end
@@ -1500,7 +1525,9 @@ function physics_update!(
                 if hit_type == "ball" && hit_other_ball !== nothing
                     pvx = hit_other_ball.vx
                     pvy = hit_other_ball.vy
-                elseif hit_peg !== nothing
+                elseif hit_peg isa Peg
+                    # A FeverDivider has no velocity fields; Lua's `peg.vx or 0`
+                    # contributes (0, 0), the same as when hit_peg was nothing.
                     pvx = hit_peg.vx
                     pvy = hit_peg.vy
                 end

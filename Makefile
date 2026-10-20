@@ -1,4 +1,4 @@
-.PHONY: help verify export fixtures fixture-list check check-all list self-check quick baseline test julia-test julia-parity julia-bench capture-m2 capture-m2-check math-census math-census-check core-math-build core-math-verify wpd-math wpd-state-capture wpd-state-compare wpd-state wpd-trace wpd-compare-hosts wpd-perf wpd-parity m3-trace m3-mustache m3-sweep m3-bench
+.PHONY: help verify export fixtures fixture-list check check-all list self-check quick baseline test julia-test julia-parity julia-bench capture-m2 capture-m2-check math-census math-census-check core-math-build core-math-verify wpd-math wpd-state-capture wpd-state-compare wpd-state wpd-trace wpd-compare-hosts wpd-perf wpd-parity m3-trace m3-mustache m3-sweep m3-bench m4-parity m4-replay
 
 JULIA = julia --project=julia/PeggleSim
 
@@ -25,6 +25,8 @@ help:
 	@echo "  core-math-build build the pinned native math component (linux-x86_64)"
 	@echo "  core-math-verify verify the native pin, artifact, and ABI/symbol audit"
 	@echo "  wpd-parity   experimental CORE-MATH-era parity capture + local comparison"
+	@echo "  m4-parity    M4 correctness-breadth parity (replay, sweeps, threads, scenarios)"
+	@echo "  m4-replay    M4 fixture replay + trace parity into results/m4/"
 
 verify:
 	scripts/verify_reference.sh
@@ -136,6 +138,18 @@ m3-sweep:
 
 m3-bench:
 	scripts/bench_m3.sh
+
+# M4 correctness-breadth parity: fixture/trace replay, candidate sweeps for the
+# M4 workloads, thread identity, the scenario probe, and a combined report
+# under results/m4/. The Lua sweeps run the frozen pinned tree
+# (reference/peggle_evolved), which stays read-only.
+M4_REPLAY = julia/PeggleSim/bin/replay_fixtures.jl
+
+m4-parity:
+	scripts/m4_parity.sh
+
+m4-replay:
+	$(JULIA) $(M4_REPLAY)
 
 # WP-D open item: experimental CORE-MATH-era parity inputs and local manifests.
 # Captures the census through the dev tree + core_math, emits one manifest from

@@ -5,6 +5,10 @@ results/raw/
 # The durable snapshot-free corpus lives in fixtures/mustache/traces/.
 results/m3/traces/
 
+# Regenerated M4 comparison traces (byte-compared against fixtures/traces/;
+# the durable evidence is results/m4/trace-parity.json).
+results/m4/traces/
+
 # Local scratch
 tmp/
 *.log
