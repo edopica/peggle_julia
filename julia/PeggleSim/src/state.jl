@@ -103,24 +103,68 @@ function BallState(id::Int, x::Float64, y::Float64, radius::Float64)::BallState
     return BallState(id, x, y, x, y, 0.0, 0.0, radius, false, false)
 end
 
+# StyleShots chain base: the last scoring impact of a ball's chain.
+struct StyleLastImpact
+    x::Float64
+    y::Float64
+    seq::Int
+end
+
+# StyleShots per-(ball, line) slide run: `{ len, last, dir, seqs }`.
+mutable struct StyleSlideRun
+    len::Int
+    last::Union{Nothing,Int}
+    dir::Int
+    seqs::Vector{Int}
+end
+
+StyleSlideRun() = StyleSlideRun(0, nothing, 0, Int[])
+
+# SlideInversion per-(ball, line) contact track.
+mutable struct SlideTrack
+    line_id::String
+    no_contact_time::Float64
+    tangent_sign::Union{Nothing,Int}
+end
+
+# SlideInversion first-hit impact record for a zero-gap line (score order).
+struct SlideHitRecord
+    peg_id::Int
+    impact_y::Float64
+end
+
+# Tracker maps are typed rather than `Dict{...,Any}`: an `Any` slot boxes every
+# stored Float64/Int, which showed up as one 16-byte allocation per stepped
+# ball per step. The inner maps and run objects are kept across `reset_shot!`
+# (cleared, not dropped) and the run objects come from a reuse pool, so a
+# warmed repeat of a shot performs no allocation in these paths.
 mutable struct StyleShotTrackers
-    last_impact::Dict{Int,Any}
-    qualifying_streak::Dict{Int,Any}
-    last_qualifying_seq::Dict{Int,Any}
-    bucket_bounced::Dict{Int,Any}
-    bounced_after_bucket::Dict{Int,Any}
-    side_wall_hit::Dict{Int,Any}
-    hit_any_peg::Dict{Int,Any}
-    awarded::Dict{Int,Any}
-    slide_runs::Dict{String,Any}
-    slide_awarded::Dict{String,Any}
+    last_impact::Dict{Int,StyleLastImpact}
+    qualifying_streak::Dict{Int,Int}
+    last_qualifying_seq::Dict{Int,Int}
+    bucket_bounced::Dict{Int,Int}
+    bounced_after_bucket::Dict{Int,Bool}
+    side_wall_hit::Dict{Int,Int}
+    hit_any_peg::Dict{Int,Bool}
+    awarded::Dict{Int,Dict{String,Bool}}
+    slide_runs::Dict{Int,Dict{String,StyleSlideRun}}
+    slide_awarded::Dict{Int,Dict{String,Bool}}
+    # Reuse pools. A shot only allocates here up to the high-water mark: the
+    # next shot of the same aim takes the objects back from the pool, so the
+    # warmed steady-state step path does not allocate.
+    run_pool::Vector{StyleSlideRun}
+    run_pool_n::Int
+    award_pool::Vector{Dict{String,Bool}}
+    award_pool_n::Int
 end
 
 function StyleShotTrackers()
     return StyleShotTrackers(
-        Dict{Int,Any}(), Dict{Int,Any}(), Dict{Int,Any}(), Dict{Int,Any}(),
-        Dict{Int,Any}(), Dict{Int,Any}(), Dict{Int,Any}(), Dict{Int,Any}(),
-        Dict{String,Any}(), Dict{String,Any}(),
+        Dict{Int,StyleLastImpact}(), Dict{Int,Int}(), Dict{Int,Int}(),
+        Dict{Int,Int}(), Dict{Int,Bool}(), Dict{Int,Int}(), Dict{Int,Bool}(),
+        Dict{Int,Dict{String,Bool}}(), Dict{Int,Dict{String,StyleSlideRun}}(),
+        Dict{Int,Dict{String,Bool}}(),
+        StyleSlideRun[], 0, Dict{String,Bool}[], 0,
     )
 end
 
@@ -135,13 +179,15 @@ function reset_shot!(t::StyleShotTrackers)
     empty!(t.awarded)
     empty!(t.slide_runs)
     empty!(t.slide_awarded)
+    t.run_pool_n = 0
+    t.award_pool_n = 0
     return t
 end
 
 mutable struct BallStateTrackers
-    idle::Dict{Int,Any}
-    idle_timer::Dict{Int,Any}
-    reacted::Dict{Int,Any}
+    idle::Dict{Int,Bool}
+    idle_timer::Dict{Int,Float64}
+    reacted::Dict{Int,Bool}
     all_idle_latch::Bool
     no_score_timer::Float64
     no_score_timeout_fired::Bool
@@ -149,7 +195,7 @@ end
 
 function BallStateTrackers()
     return BallStateTrackers(
-        Dict{Int,Any}(), Dict{Int,Any}(), Dict{Int,Any}(), false, 0.0, false)
+        Dict{Int,Bool}(), Dict{Int,Float64}(), Dict{Int,Bool}(), false, 0.0, false)
 end
 
 function reset_shot!(t::BallStateTrackers)
@@ -163,15 +209,20 @@ function reset_shot!(t::BallStateTrackers)
 end
 
 mutable struct SlideInversionTrackers
-    line_hits::Dict{String,Any}
-    hit_seen::Dict{Int,Any}
-    removed::Dict{Int,Any}
-    track::Dict{Int,Any}
+    line_hits::Dict{String,Vector{SlideHitRecord}}
+    hit_seen::Dict{Int,Bool}
+    removed::Dict{Int,Bool}
+    track::Dict{Int,SlideTrack}
+    track_pool::Vector{SlideTrack}
+    track_pool_n::Int
+    hits_pool::Vector{Vector{SlideHitRecord}}
+    hits_pool_n::Int
 end
 
 function SlideInversionTrackers()
-    return SlideInversionTrackers(
-        Dict{String,Any}(), Dict{Int,Any}(), Dict{Int,Any}(), Dict{Int,Any}())
+    return SlideInversionTrackers(Dict{String,Vector{SlideHitRecord}}(),
+        Dict{Int,Bool}(), Dict{Int,Bool}(), Dict{Int,SlideTrack}(),
+        SlideTrack[], 0, Vector{SlideHitRecord}[], 0)
 end
 
 function reset_shot!(t::SlideInversionTrackers)
@@ -179,6 +230,8 @@ function reset_shot!(t::SlideInversionTrackers)
     empty!(t.hit_seen)
     empty!(t.removed)
     empty!(t.track)
+    t.track_pool_n = 0
+    t.hits_pool_n = 0
     return t
 end
 

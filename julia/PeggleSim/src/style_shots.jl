@@ -60,12 +60,12 @@ _style_truthy(v) = v !== nothing && v !== false
 # `bid = ev.ball_id`; nil ball ids skip every branch (each Lua branch also
 # checks `bid ~= nil`).
 function _style_ball_id(ev::GameEvent)
-    v = get(ev.fields, "ball_id", nothing)
+    v = ev.fields.ball_id
     return v === nothing ? nothing : Int(v)
 end
 
 # Lua `ev.did_bounce` read as truthiness.
-_style_did_bounce(ev::GameEvent) = _style_truthy(get(ev.fields, "did_bounce", nothing))
+_style_did_bounce(ev::GameEvent) = _style_truthy(ev.fields.did_bounce)
 
 # Local dist(x1, y1, x2, y2): dx = x1 - x2; dy = y1 - y2; sqrt(dx*dx + dy*dy).
 function _style_dist(x1, y1, x2, y2)::Float64
@@ -75,37 +75,62 @@ function _style_dist(x1, y1, x2, y2)::Float64
 end
 
 # ensure_award_tab: returns the ball's award table, creating it if absent.
+# Tables are recycled through `award_pool` so a warmed repeat does not
+# allocate a fresh table (and its bucket array) per ball per shot.
 function _style_ensure_award_tab!(t::StyleShotTrackers, ball_id::Int)
     tab = get(t.awarded, ball_id, nothing)
     if tab === nothing
-        tab = Dict{String,Any}()
+        if t.award_pool_n < length(t.award_pool)
+            t.award_pool_n += 1
+            tab = t.award_pool[t.award_pool_n]
+            empty!(tab)
+        else
+            tab = Dict{String,Bool}()
+            push!(t.award_pool, tab)
+            t.award_pool_n = length(t.award_pool)
+        end
         t.awarded[ball_id] = tab
     end
     return tab
 end
 
-# A ball's slide runs are stored under string(ball_id) (see file header).
-# clear_ball_slide sets slide_runs[bid] = nil; the per-(ball, line) award
-# markers in slide_awarded survive.
+# A ball's slide runs are keyed by its integer id; checkpoint serialization
+# stringifies the key exactly as the Lua `string(ball_id)` table does.
+# clear_ball_slide empties the ball's run map (keeping its capacity); the
+# per-(ball, line) award markers in slide_awarded survive.
 function _style_clear_ball_slide!(t::StyleShotTrackers, ball_id::Int)
-    delete!(t.slide_runs, string(ball_id))
+    # Drop the ball's run map outright. Handing it back to a shared pool is
+    # unsound: a cleared map can be taken again while another ball still holds
+    # it, which silently merges two balls' slide runs.
+    delete!(t.slide_runs, ball_id)
     return nothing
 end
 
 # run_tab: returns (creating if needed) the run for one (ball, line):
-# { len, last, dir, seqs }.
+# { len, last, dir, seqs }. Run objects come from a reuse pool so a warmed
+# repeat of the same shot does not allocate here.
 function _style_run_tab!(t::StyleShotTrackers, ball_id::Int, line_id::AbstractString)
-    key = string(ball_id)
-    by_line = get(t.slide_runs, key, nothing)
+    by_line = get(t.slide_runs, ball_id, nothing)
     if by_line === nothing
-        by_line = Dict{String,Any}()
-        t.slide_runs[key] = by_line
+        by_line = Dict{String,StyleSlideRun}()
+        t.slide_runs[ball_id] = by_line
     end
-    run = get(by_line, String(line_id), nothing)
+    key = String(line_id)
+    run = get(by_line, key, nothing)
     if run === nothing
-        run = Dict{String,Any}(
-            "len" => 0, "last" => nothing, "dir" => 0, "seqs" => Any[])
-        by_line[String(line_id)] = run
+        if t.run_pool_n < length(t.run_pool)
+            t.run_pool_n += 1
+            run = t.run_pool[t.run_pool_n]
+            run.len = 0
+            run.last = nothing
+            run.dir = 0
+            empty!(run.seqs)
+        else
+            run = StyleSlideRun()
+            push!(t.run_pool, run)
+            t.run_pool_n = length(t.run_pool)
+        end
+        by_line[key] = run
     end
     return run
 end
@@ -120,36 +145,36 @@ function _style_note_slide_score!(
     min::Int,
     points::Float64,
 )
-    bid = Int(ev.fields["ball_id"])
-    line = ev.fields["line"]::AbstractDict
-    line_id = String(line["id"])
-    scored_line = scored.fields["line"]::AbstractDict
-    index = Int(scored_line["index"])
+    bid = Int(ev.fields.ball_id)
+    line_id = ev.fields.line_meta_id::String
+    index = scored.fields.line_meta_index::Int
     run = _style_run_tab!(t, bid, line_id)
 
     if _style_did_bounce(ev)
         # A landing bounce may start a slide: any existing run was already
         # cleared by the bounce handling in process_step; seed length one.
-        run["len"] = 1
-        run["last"] = index
-        run["dir"] = 0
-        run["seqs"] = Any[ev.sequence]
+        run.len = 1
+        run.last = index
+        run.dir = 0
+        empty!(run.seqs)
+        push!(run.seqs, ev.sequence)
         return nothing
     end
 
-    if run["len"] == 0
-        run["len"] = 1
-        run["last"] = index
-        run["dir"] = 0
-        run["seqs"] = Any[ev.sequence]
+    if run.len == 0
+        run.len = 1
+        run.last = index
+        run.dir = 0
+        empty!(run.seqs)
+        push!(run.seqs, ev.sequence)
         return nothing
     end
 
     # Extend: adjacent in the run's direction. Closed lines wrap.
-    delta = index - (run["last"]::Int)
+    delta = index - (run.last::Int)
     if abs(delta) != 1
-        closed = _style_truthy(get(line, "closed", nothing))
-        count = Int(line["count"])
+        closed = ev.fields.line_meta_closed === true
+        count = ev.fields.line_meta_count::Int
         if closed && delta == 1 - count
             delta = 1
         elseif closed && delta == count - 1
@@ -159,34 +184,34 @@ function _style_note_slide_score!(
     # A qualifying zero-gap contact that cannot extend the current run
     # invalidates it and seeds a fresh length-one run at this index. This
     # covers both a non-adjacent delta and a direction mismatch.
-    run_dir = run["dir"]::Int
+    run_dir = run.dir
     if (delta != 1 && delta != -1) || (run_dir != 0 && run_dir != delta)
-        run["len"] = 1
-        run["last"] = index
-        run["dir"] = 0
-        run["seqs"] = Any[ev.sequence]
+        run.len = 1
+        run.last = index
+        run.dir = 0
+        empty!(run.seqs)
+        push!(run.seqs, ev.sequence)
         return nothing
     end
     if run_dir == 0
-        run["dir"] = delta
+        run.dir = delta
     end
 
-    run["len"] = (run["len"]::Int) + 1
-    run["last"] = index
-    seqs = run["seqs"]::Vector{Any}
+    run.len += 1
+    run.last = index
+    seqs = run.seqs
     if length(seqs) < min
         push!(seqs, ev.sequence)
     end
 
-    if run["len"] == min
-        key = string(bid)
-        awarded = get(t.slide_awarded, key, nothing)
+    if run.len == min
+        awarded = get(t.slide_awarded, bid, nothing)
         if awarded !== nothing && _style_truthy(get(awarded, line_id, nothing))
             return nothing
         end
         if awarded === nothing
-            awarded = Dict{String,Any}()
-            t.slide_awarded[key] = awarded
+            awarded = Dict{String,Bool}()
+            t.slide_awarded[bid] = awarded
         end
         awarded[line_id] = true
         push_command!(commands, "award_style_points", Dict{String,Any}(
@@ -194,7 +219,7 @@ function _style_note_slide_score!(
             "style" => "slide",
             "points" => points,
             "line_id" => line_id,
-            "source_sequences" => run["seqs"],
+            "source_sequences" => seqs,
         ))
     end
     return nothing
@@ -224,7 +249,7 @@ function _style_process_event!(
         if _style_truthy(get(t.bucket_bounced, bid, nothing))
             t.bounced_after_bucket[bid] = true
         end
-        wall = get(ev.fields, "wall", nothing)
+        wall = ev.fields.wall
         if (wall == "left" || wall == "right") &&
            !_style_truthy(get(t.hit_any_peg, bid, nothing))
             t.side_wall_hit[bid] = ev.sequence
@@ -261,7 +286,7 @@ function _style_process_event!(
         if _style_truthy(get(t.bucket_bounced, bid, nothing))
             t.bounced_after_bucket[bid] = true
         end
-        other = get(ev.fields, "other_ball_id", nothing)
+        other = ev.fields.other_ball_id
         other_bid = other === nothing ? nothing : Int(other)
         if other_bid !== nothing &&
            _style_truthy(get(t.bucket_bounced, other_bid, nothing))
@@ -298,15 +323,14 @@ function _style_process_event!(
         # contact clears the ball's runs; a scoring contact may seed a new
         # run (even from the bounce itself) or extend an adjacent
         # consistent-direction run.
-        line = get(ev.fields, "line", nothing)
-        if line isa AbstractDict && get(line, "gap", nothing) == 0
+        if ev.fields.line_meta_id !== nothing && ev.fields.line_meta_gap == 0
             scored = get(scored_by_source, ev.sequence, nothing)
             if _style_did_bounce(ev)
                 _style_clear_ball_slide!(t, bid)
-                if scored !== nothing && get(scored.fields, "line", nothing) isa AbstractDict
+                if scored !== nothing && scored.fields.line_meta_id !== nothing
                     _style_note_slide_score!(t, ev, scored, commands, slide_min, pt_slide)
                 end
-            elseif scored !== nothing && get(scored.fields, "line", nothing) isa AbstractDict
+            elseif scored !== nothing && scored.fields.line_meta_id !== nothing
                 _style_note_slide_score!(t, ev, scored, commands, slide_min, pt_slide)
             end
         elseif _style_did_bounce(ev)
@@ -314,14 +338,14 @@ function _style_process_event!(
             _style_clear_ball_slide!(t, bid)
         end
 
-        kind = get(ev.fields, "contact_kind", nothing)
+        kind = ev.fields.contact_kind
         if kind == "sweep" || kind == "graze"
             scored = get(scored_by_source, ev.sequence, nothing)
             tab = _style_ensure_award_tab!(t, bid)
-            ix = get(ev.fields, "impact_x", nothing)
-            iy = get(ev.fields, "impact_y", nothing)
+            ix = ev.fields.impact_x
+            iy = ev.fields.impact_y
 
-            if scored !== nothing && get(scored.fields, "peg_type", nothing) != "blue"
+            if scored !== nothing && scored.fields.peg_type != "blue"
                 # Chain-eligible scoring impact.
                 # Off the Wall: non-blue peg scored after a side wall.
                 wall_seq = get(t.side_wall_hit, bid, nothing)
@@ -331,7 +355,7 @@ function _style_process_event!(
                         "ball_id" => bid,
                         "style" => "off_the_wall",
                         "points" => pt_off_wall,
-                        "peg_id" => scored.fields["peg_id"],
+                        "peg_id" => scored.fields.peg_id,
                         "source_sequences" => Any[wall_seq, ev.sequence],
                     ))
                     delete!(t.side_wall_hit, bid)   # consumed (awarded)
@@ -339,7 +363,7 @@ function _style_process_event!(
 
                 last = get(t.last_impact, bid, nothing)
                 if last !== nothing
-                    d = _style_dist(last["x"], last["y"], ix, iy)
+                    d = _style_dist(last.x, last.y, ix, iy)
                     segment_qualified = false
                     if d >= super_d
                         if !_style_truthy(get(tab, "super", nothing))
@@ -349,7 +373,7 @@ function _style_process_event!(
                                 "style" => "super_long_shot",
                                 "points" => pt_super,
                                 "distance" => d,
-                                "source_sequences" => Any[last["seq"], ev.sequence],
+                                "source_sequences" => Any[last.seq, ev.sequence],
                             ))
                         end
                         segment_qualified = true
@@ -361,7 +385,7 @@ function _style_process_event!(
                                 "style" => "long_shot",
                                 "points" => pt_long,
                                 "distance" => d,
-                                "source_sequences" => Any[last["seq"], ev.sequence],
+                                "source_sequences" => Any[last.seq, ev.sequence],
                             ))
                         end
                         segment_qualified = true
@@ -392,7 +416,7 @@ function _style_process_event!(
                     end
                 end
                 # First chain impact sets the base; no streak increment yet.
-                t.last_impact[bid] = Dict{String,Any}("x" => ix, "y" => iy, "seq" => ev.sequence)
+                t.last_impact[bid] = StyleLastImpact(ix, iy, ev.sequence)
             else
                 # Breaks the chain: a blue peg (scored but blue) or an
                 # already-hit peg (no peg_scored for this contact).
@@ -437,7 +461,7 @@ function style_shots_process!(
     empty!(scored_by_source)
     for ev in journal.derived
         if ev.type == "peg_scored"
-            src = get(ev.fields, "source_sequence", nothing)
+            src = ev.fields.source_sequence
             src !== nothing && (scored_by_source[Int(src)] = ev)
         end
     end

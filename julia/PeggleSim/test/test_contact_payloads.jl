@@ -71,8 +71,8 @@ end
             PeggleSim.emit_contact!(j, event_type, ball, rec, bounced, peg, kind)
             PeggleSim.emit_raw!(legacy, event_type, expected)
             ev = only(j.raw)
-            @test ev.fields isa PeggleSim.ContactPayload
-            @test only(legacy.raw).fields isa Dict{String,Any}
+            @test ev.fields isa PeggleSim.EventFields
+            @test only(legacy.raw).fields isa PeggleSim.EventFields
             @test Set(keys(ev.fields)) == Set(keys(expected))
             @test length(ev.fields) == length(expected)
             @test get(ev.fields, "absent", nothing) === nothing
@@ -147,7 +147,7 @@ end
     PeggleSim.physics_update!([ball], [peg], PeggleSim.Peg[], PeggleSim.Peg[],
         config.fixed_dt, nothing, config, 1200.0, journal)
     ev = only(filter(e -> e.type == "ball_contacted_peg", journal.raw))
-    @test ev.fields isa PeggleSim.ContactPayload
+    @test ev.fields isa PeggleSim.EventFields
     @test ev.fields["contact_kind"] == "graze"
     @test ev.fields["did_bounce"] === false
     @test Set(keys(ev.fields)) == Set([
@@ -185,7 +185,7 @@ end
     data["line"]["id"] = "producer mutation"
     data["items"][1]["value"] = 9
     PeggleSim.begin_step!(j, 1, 1)
-    @test only(j.raw).fields isa Dict{String,Any}
+    @test only(j.raw).fields isa PeggleSim.EventFields
     exported = PeggleSim.event_dict(only(j.raw))
     @test exported["line"]["id"] == "original"
     @test exported["items"][1]["value"] == 1

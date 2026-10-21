@@ -24,7 +24,15 @@
 #       --sweep --level PATH --config PATH \
 #       (--indices 0,900,1800 | --stride N) \
 #       [--balls N] [--clearing] [--max-steps N] [--threads N] \
-#       [--verify-serial] [--alloc] --out PATH.jsonl --summary PATH.json
+#       [--verify-serial] [--alloc] [--trace-dir DIR] \
+#       --out PATH.jsonl --summary PATH.json
+#
+# --trace-dir enables eng.trace for every measured candidate and writes one
+# snapshot-free gameplay trace per candidate into DIR (serial-candidate-NNNN
+# and parallel-candidate-NNNN for the two passes of --verify-serial). The
+# returned rows are byte-identical to an untraced run; the diagnostic cost is
+# the trace writer I/O only. Without --trace-dir no tracing is attached and
+# the summary/rows are unchanged.
 #
 # --alloc measures bytes allocated per candidate after warmup with a
 # Base.gc_bytes() delta around reset+launch+run+extract on the serial path
@@ -47,7 +55,7 @@ const FLAG_ARGS = Set(["--clearing", "--snapshots", "--sweep", "--verify-serial"
 const VALUE_ARGS = Set([
     "--fixture", "--level", "--config", "--aim", "--balls", "--max-steps",
     "--indices", "--stride", "--threads", "--out", "--summary",
-    "--trace-out", "--expected-out", "--category",
+    "--trace-out", "--expected-out", "--category", "--trace-dir",
 ])
 
 function usage()
@@ -58,7 +66,7 @@ function usage()
     println("  shot_bench.jl --sweep --level PATH --config PATH " *
             "(--indices 0,900,1800 | --stride N) [--balls N] [--clearing] " *
             "[--max-steps N] [--threads N] [--verify-serial] [--alloc] " *
-            "--out PATH.jsonl --summary PATH.json")
+            "[--trace-dir DIR] --out PATH.jsonl --summary PATH.json")
 end
 
 function parse_args(argv)
@@ -311,16 +319,31 @@ function _result_row(eng, index::Int, config)
     )
 end
 
-function _evaluate!(eng, ckpt, index::Int, config, max_steps::Int)
+function _evaluate!(eng, ckpt, index::Int, config, max_steps::Int;
+                    trace_path::Union{Nothing,AbstractString} = nothing)
     t0 = time_ns()
     PeggleSim.reset_shot_engine!(eng, ckpt)
     t1 = time_ns()
+    writer = nothing
+    if trace_path !== nothing
+        writer = PeggleSim.trace_open(trace_path; include_snapshot = false)
+        eng.trace = writer
+    end
     PeggleSim.launch!(eng, index)
     PeggleSim.run_shot!(eng; max_steps = max_steps)
     t2 = time_ns()
+    if writer !== nothing
+        PeggleSim.trace_close!(writer)
+        eng.trace = nothing
+    end
     row = _result_row(eng, index, config)
     t3 = time_ns()
     return row, (Int(t1 - t0), Int(t2 - t1), Int(t3 - t2))
+end
+
+function _trace_candidate_path(trace_dir::AbstractString, pass::AbstractString,
+                               index::Int)
+    return joinpath(trace_dir, pass * "-candidate-" * lpad(index, 4, '0') * ".jsonl")
 end
 
 function _new_engine(ckpt, level, config, clearing::Bool)
@@ -331,19 +354,24 @@ function _new_engine(ckpt, level, config, clearing::Bool)
 end
 
 function _sweep_serial!(ckpt, level, config, clearing::Bool, max_steps::Int, indices;
-                        measure_alloc::Bool = false)
+                        measure_alloc::Bool = false,
+                        trace_dir::Union{Nothing,AbstractString} = nothing)
     eng = _new_engine(ckpt, level, config, clearing)
     rows = Vector{Any}(undef, length(indices))
     timings = Matrix{Int}(undef, 3, length(indices))
     alloc_bytes = measure_alloc ? Vector{Int}(undef, length(indices)) : Int[]
     start = time_ns()
     for (pos, index) in enumerate(indices)
+        trace_path = trace_dir === nothing ? nothing :
+            _trace_candidate_path(trace_dir, "serial", index)
         if measure_alloc
             gb0 = Base.gc_bytes()
-            row, timing = _evaluate!(eng, ckpt, index, config, max_steps)
+            row, timing = _evaluate!(eng, ckpt, index, config, max_steps;
+                                     trace_path = trace_path)
             alloc_bytes[pos] = Int(Base.gc_bytes() - gb0)
         else
-            row, timing = _evaluate!(eng, ckpt, index, config, max_steps)
+            row, timing = _evaluate!(eng, ckpt, index, config, max_steps;
+                                     trace_path = trace_path)
         end
         rows[pos] = row
         timings[1, pos] = timing[1]
@@ -354,7 +382,8 @@ function _sweep_serial!(ckpt, level, config, clearing::Bool, max_steps::Int, ind
     return rows, timings, wall_ns, alloc_bytes
 end
 
-function _sweep_parallel!(ckpt, level, config, clearing::Bool, max_steps::Int, indices)
+function _sweep_parallel!(ckpt, level, config, clearing::Bool, max_steps::Int, indices;
+                          trace_dir::Union{Nothing,AbstractString} = nothing)
     n = length(indices)
     engines = Vector{Any}(nothing, Threads.maxthreadid())
     rows = Vector{Any}(undef, n)
@@ -368,7 +397,11 @@ function _sweep_parallel!(ckpt, level, config, clearing::Bool, max_steps::Int, i
             eng = _new_engine(ckpt, level, config, clearing)
             engines[tid] = eng
         end
-        row, timing = _evaluate!(eng, ckpt, indices[pos], config, max_steps)
+        index = indices[pos]
+        trace_path = trace_dir === nothing ? nothing :
+            _trace_candidate_path(trace_dir, "parallel", index)
+        row, timing = _evaluate!(eng, ckpt, index, config, max_steps;
+                                 trace_path = trace_path)
         rows[pos] = row
         timings[1, pos] = timing[1]
         timings[2, pos] = timing[2]
@@ -457,6 +490,11 @@ function run_sweep(opts, flags)
     clearing = "--clearing" in flags
     verify_serial = "--verify-serial" in flags
     alloc = "--alloc" in flags
+    trace_dir = get(opts, "--trace-dir", nothing)
+    if trace_dir !== nothing
+        isempty(strip(trace_dir)) && error("--trace-dir must not be empty")
+        mkpath(trace_dir)
+    end
     requested_threads = parse(Int, get(opts, "--threads", string(DEFAULT_THREADS)))
     requested_threads >= 1 || error("--threads must be >= 1, got $(requested_threads)")
     if requested_threads > Threads.nthreads()
@@ -478,6 +516,20 @@ function run_sweep(opts, flags)
     warm = _new_engine(ckpt, level, config, clearing)
     _evaluate!(warm, ckpt, indices[1], config, max_steps)
 
+    # Trace mode has its own code path (writer open/encode/close); compile it
+    # outside the timed passes so traced-vs-untraced diagnostics measure I/O,
+    # not first-call compilation. The warmup trace file is discarded.
+    if trace_dir !== nothing
+        warm_trace = joinpath(
+            trace_dir, "warmup-candidate-" * lpad(indices[1], 4, '0') * ".jsonl")
+        try
+            _evaluate!(warm, ckpt, indices[1], config, max_steps;
+                       trace_path = warm_trace)
+        finally
+            rm(warm_trace; force = true)
+        end
+    end
+
     # Allocation measurement needs a fully compiled sweep: an extra untimed
     # serial pass keeps JIT/library allocations out of the per-candidate
     # counts (they would otherwise dominate the first candidate).
@@ -496,21 +548,23 @@ function run_sweep(opts, flags)
     if verify_serial
         serial_rows, serial_timings, serial_wall_ns, alloc_bytes =
             _sweep_serial!(ckpt, level, config, clearing, max_steps, indices;
-                           measure_alloc = alloc)
+                           measure_alloc = alloc, trace_dir = trace_dir)
         parallel_rows, parallel_timings, parallel_wall_ns =
-            _sweep_parallel!(ckpt, level, config, clearing, max_steps, indices)
+            _sweep_parallel!(ckpt, level, config, clearing, max_steps, indices;
+                             trace_dir = trace_dir)
     elseif use_parallel
         parallel_rows, parallel_timings, parallel_wall_ns =
-            _sweep_parallel!(ckpt, level, config, clearing, max_steps, indices)
+            _sweep_parallel!(ckpt, level, config, clearing, max_steps, indices;
+                             trace_dir = trace_dir)
         if alloc
             _, _, _, alloc_bytes =
                 _sweep_serial!(ckpt, level, config, clearing, max_steps, indices;
-                               measure_alloc = true)
+                               measure_alloc = true, trace_dir = trace_dir)
         end
     else
         serial_rows, serial_timings, serial_wall_ns, alloc_bytes =
             _sweep_serial!(ckpt, level, config, clearing, max_steps, indices;
-                           measure_alloc = alloc)
+                           measure_alloc = alloc, trace_dir = trace_dir)
     end
 
     rows = serial_rows === nothing ? parallel_rows : serial_rows
@@ -570,6 +624,15 @@ function run_sweep(opts, flags)
     if alloc && alloc_bytes !== nothing
         summary["alloc"] = _alloc_block(alloc_bytes)
     end
+    if trace_dir !== nothing
+        summary["trace"] = Dict{String,Any}(
+            "dir" => abspath(trace_dir),
+            "include_snapshot" => false,
+            "note" => ("diagnostic mode: one snapshot-free trace per candidate " *
+                       "per measured pass (serial-/parallel- prefix); result " *
+                       "rows are unaffected"),
+        )
+    end
 
     _ensure_parent(summary_path)
     open(summary_path, "w") do io
@@ -599,6 +662,10 @@ function run_sweep(opts, flags)
         println("shot_bench: alloc   mean=", round(Int, ab["mean_bytes"]),
                 " bytes/candidate (p50=", ab["p50_bytes"],
                 ", p99=", ab["p99_bytes"], ", max=", ab["max_bytes"], ")")
+    end
+    if trace_dir !== nothing
+        println("shot_bench: trace   ", abspath(trace_dir),
+                " (one trace per candidate per measured pass)")
     end
 
     if verify_serial && !identical

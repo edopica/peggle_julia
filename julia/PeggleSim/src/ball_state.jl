@@ -85,7 +85,7 @@ function ball_state_process!(
                 if !_bs_truthy(get(t.reacted, bid, nothing))
                     t.reacted[bid] = true
                     emit_derived!(journal, "ball_reactivated",
-                                  Dict{String,Any}("ball_id" => bid))
+                                  EventFields(ball_id = bid))
                 end
             end
             # In the hysteresis band the ball stays idle (no timer change).
@@ -103,7 +103,7 @@ function ball_state_process!(
                     # A new idle->moving transition may reactivate again later.
                     t.reacted[bid] = false
                     emit_derived!(journal, "ball_became_idle",
-                                  Dict{String,Any}("ball_id" => bid))
+                                  EventFields(ball_id = bid))
                 else
                     # Slow but not yet idle: prevents all-idle.
                     all_idle = false
@@ -130,7 +130,7 @@ function ball_state_process!(
     if t.no_score_timer >= clear_no_score && !t.no_score_timeout_fired
         t.no_score_timeout_fired = true
         emit_derived!(journal, "no_score_timeout_reached",
-                      Dict{String,Any}("elapsed" => t.no_score_timer))
+                      EventFields(elapsed = t.no_score_timer))
         push_command!(commands, "start_midturn_clearing",
                       Dict{String,Any}("reason" => "no_score_timeout_reached"))
     end

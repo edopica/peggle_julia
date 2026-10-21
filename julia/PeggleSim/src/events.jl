@@ -36,8 +36,11 @@
 const GAMEPLAY_EVENT_SCHEMA_VERSION = 1
 
 include("contact_payloads.jl")
+include("event_fields.jl")
 
-const EventPayload = Union{Dict{String,Any},ContactPayload}
+# Journal payloads are the concrete EventFields superset. Commands keep their
+# own Dict payloads; they are not part of the steady-state stepping gate.
+const EventPayload = EventFields
 
 struct GameEvent
     type::String
@@ -92,11 +95,14 @@ end
 
 # fields === nothing produces an empty payload, exactly like a Lua event with
 # no payload table (the serialized form has no extra keys either way).
-_owned_payload(::Nothing) = Dict{String,Any}()
-_owned_payload(fields::AbstractDict) = _copy_payload(fields)
-_owned_payload(fields::NamedTuple) = _copy_payload(fields)
-# Safe to retain: every field, including line metadata, is immutable. Export
-# still goes through _copy_payload, which materializes detached dictionaries.
+_owned_payload(::Nothing) = EventFields()
+_owned_payload(fields::AbstractDict) = EventFields(fields)
+_owned_payload(fields::NamedTuple) = EventFields(_copy_payload(fields))
+# Safe to retain: EventFields is immutable; its line view is immutable and
+# its vector fields reference producer-owned vectors that are not mutated
+# after emission. Export still goes through _copy_payload, which materializes
+# detached dictionaries.
+_owned_payload(fields::EventFields) = fields
 _owned_payload(fields::ContactPayload) = fields
 
 # ---------------------------------------------------------------------------
@@ -111,14 +117,14 @@ mutable struct GameplayJournal
     open::Bool
     raw::Vector{GameEvent}
     derived::Vector{GameEvent}
-    staged::Vector{Tuple{String,Union{Nothing,EventPayload}}}
+    staged::Vector{Tuple{String,EventPayload}}
 end
 
 function GameplayJournal()
     j = GameplayJournal(
         0, 0, 0, false, false,
         GameEvent[], GameEvent[],
-        Vector{Tuple{String,Union{Nothing,EventPayload}}}())
+        Tuple{String,EventPayload}[])
     return reset!(j)
 end
 
@@ -140,7 +146,7 @@ end
 # API accepts any dict literal (the copy normalizes the key type). Immutable
 # contact payloads are retained directly, as with immediate emission.
 function stage!(j::GameplayJournal, event_type::AbstractString, fields = nothing)
-    owned = fields === nothing ? nothing : _owned_payload(fields)
+    owned = fields === nothing ? EventFields() : _owned_payload(fields)
     push!(j.staged, (String(event_type), owned))
     return j
 end
@@ -259,7 +265,9 @@ end
 # GameplayCommands:push (lines 60-80). The payload is deep-copied at push
 # time, so caller-owned arrays (e.g. source_sequences) are never retained.
 function push_command!(c::GameplayCommands, command_type::AbstractString, fields = nothing)
-    owned = fields isa ContactPayload ? _copy_payload(fields) : _owned_payload(fields)
+    # Command payloads stay plain detached dictionaries: they are exported to
+    # Lua and are not part of the steady-state stepping gate.
+    owned = fields === nothing ? EventFields() : _copy_payload(fields)
     c.sequence += 1
     cmd = Dict{String,Any}(
         "step" => c.step_id,

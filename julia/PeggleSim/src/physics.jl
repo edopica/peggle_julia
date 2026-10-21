@@ -63,6 +63,20 @@ function contact_line(peg::Peg)
     return ContactLine(line)
 end
 
+# Line metadata projections. These avoid constructing a `ContactLine` (a
+# non-isbits object) merely to copy it into an EventFields union slot; each
+# returns a scalar or an existing string reference.
+@inline _line_id(::Nothing) = nothing
+@inline _line_id(l::LineMetadata) = l.id
+@inline _line_index(::Nothing) = nothing
+@inline _line_index(l::LineMetadata) = l.index
+@inline _line_count(::Nothing) = nothing
+@inline _line_count(l::LineMetadata) = l.count
+@inline _line_closed(::Nothing) = nothing
+@inline _line_closed(l::LineMetadata) = l.closed
+@inline _line_gap(::Nothing) = nothing
+@inline _line_gap(l::LineMetadata) = l.gap
+
 # Objective collision fact carried to `emit_contact!`. The Lua record is a
 # plain table with these fields; `other_ball` is nil for non-ball contacts and
 # `other_vout_x`/`other_vout_y` are nil only for the end-of-step ball
@@ -105,14 +119,14 @@ function emit_contact!(journal::GameplayJournal, event_type::AbstractString,
     peg_id = nothing
     peg_type = nothing
     peg_shape = nothing
-    peg_line = nothing
     local_wall = nothing
+    pline = nothing
     if peg isa Peg
         px, py, pa, ptheta = peg_transform_at_toi(peg, rec.window, rec.toi)
         peg_id = peg.id
-        peg_type = String(peg.peg_type)
+        peg_type = peg_type_name(peg.peg_type)
         peg_shape = peg_shape_name(peg.shape)
-        peg_line = contact_line(peg)
+        pline = peg.line
     elseif peg isa FeverDivider
         # Lua's emit_contact receives the divider table through its `if peg`
         # branch: `peg.shape or "circle"` -> "circle", the transform is the raw
@@ -126,7 +140,7 @@ function emit_contact!(journal::GameplayJournal, event_type::AbstractString,
         # ceiling    -> normal (0, +1)
         local_wall = rec.nx > 0 ? "left" : (rec.nx < 0 ? "right" : "top")
     end
-    fields = ContactPayload(
+    fields = EventFields(
         ball_id = ball.id, contact_kind = String(contact_kind),
         did_bounce = did_bounce, impact_x = ix, impact_y = iy,
         frame_t = frame_t, toi = rec.toi, iteration = rec.iter,
@@ -139,7 +153,9 @@ function emit_contact!(journal::GameplayJournal, event_type::AbstractString,
         peg_id = peg_id,
         peg_type = peg_type,
         peg_shape = peg_shape,
-        line = peg_line,
+        line_meta_id = _line_id(pline), line_meta_index = _line_index(pline),
+        line_meta_count = _line_count(pline), line_meta_closed = _line_closed(pline),
+        line_meta_gap = _line_gap(pline),
         peg_x = px, peg_y = py, peg_angle = pa, peg_theta = ptheta,
         wall = local_wall,
     )
@@ -1483,9 +1499,9 @@ function physics_update!(
                     ix = iter_sx + move_x * g.t
                     iy = iter_sy + move_y * g.t
                     frame_t = ((total_dt - iter_time) + g.t * iter_time) / total_dt
-                    fields = ContactPayload(
+                    fields = EventFields(
                         ball_id = ball.id, peg_id = g.peg.id,
-                        peg_type = String(g.peg.peg_type),
+                        peg_type = peg_type_name(g.peg.peg_type),
                         peg_shape = peg_shape_name(g.peg.shape),
                         contact_kind = "graze", did_bounce = false,
                         impact_x = ix, impact_y = iy, frame_t = frame_t,
@@ -1493,7 +1509,11 @@ function physics_update!(
                         normal_x = 0.0, normal_y = 0.0,
                         incoming_vx = ball.vx, incoming_vy = ball.vy,
                         outgoing_vx = ball.vx, outgoing_vy = ball.vy,
-                        line = contact_line(g.peg),
+                        line_meta_id = _line_id(g.peg.line),
+                        line_meta_index = _line_index(g.peg.line),
+                        line_meta_count = _line_count(g.peg.line),
+                        line_meta_closed = _line_closed(g.peg.line),
+                        line_meta_gap = _line_gap(g.peg.line),
                     )
                     emit_raw!(journal, "ball_contacted_peg", fields)
                 end

@@ -18,7 +18,7 @@ in `../peggle_evolved/wiki/`.
 | M1 — interchange, fixtures, level previews | **Done** |
 | M2 — math and state foundations (first Julia code) | **Done** |
 | M3 — full-physics shot engine, mustache traces, first benchmark | **Done** |
-| M4 — full static-level shot behavior + main performance gate | **In progress** — correctness breadth validated; performance gate and cross-machine qualification open |
+| M4 — full static-level shot behavior + main performance gate | **In progress** — correctness breadth and the performance gate validated; a small command-path allocation residue and cross-machine qualification remain |
 
 The repository contains the frozen Lua reference, the baseline sweep harness,
 the versioned interchange artifacts and fixtures, the M2/M3 Julia package
@@ -26,8 +26,10 @@ the versioned interchange artifacts and fixtures, the M2/M3 Julia package
 physics/engine port, the mustache trace corpus, and the documentation. The
 measured M3 results are in `wiki/benchmarks/m3-shot.md`. M4 correctness
 breadth is validated on the pinned corpus
-(`wiki/context/m4-validation.md`); the M4 performance gate and cross-machine
-qualification remain open.
+(`wiki/context/m4-validation.md`), and the M4 performance gate — the
+zero-allocation criterion plus the seven-workload benchmark against Lua — is in
+`wiki/benchmarks/m4-perf.md`. A small command-path allocation residue and
+cross-machine qualification remain open; M4 is not done.
 
 ## Requirements
 
@@ -87,6 +89,7 @@ M4 Julia targets:
 ```bash
 make m4-parity           # full M4 correctness-breadth run (replay, sweeps, threads, scenarios)
 make m4-replay           # fixture replay + trace parity into results/m4/
+make m4-bench            # M4 seven-workload benchmark (Lua + Julia, latency/throughput/alloc/RSS)
 ```
 
 The `wpd-*` targets are the experimental CORE-MATH comparison; their outputs

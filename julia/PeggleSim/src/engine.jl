@@ -95,7 +95,7 @@ mutable struct ShotEngine
     shot_end_pending::Bool
     scored_this_step::Bool
     midturn_clear_started::Bool
-    buffered_peg_scored::Vector{Dict{String,Any}}
+    buffered_peg_scored::Vector{EventFields}
     pending_spawn_specs::Vector{PowerSpawnSpec}
     skip_clearing::Bool
     shot_done::Bool
@@ -166,7 +166,7 @@ function _fresh_shot_engine(sim::SimState, config::SimConfig, vw::Float64,
         callbacks,
         pi / 2,
         0, 0, nothing, nothing, false, false, false,
-        Dict{String,Any}[], PowerSpawnSpec[],
+        EventFields[], PowerSpawnSpec[],
         false, false, nothing,
         0.0, 0,
         Peg[], length(sim.engine.balls), Dict{String,Int}(),
@@ -292,17 +292,26 @@ const SCORING_CONTACT_KINDS = ("sweep", "graze", "overlap", "depenetrate")
 # Engine:contactCanScore predicate: a raw ball_contacted_peg event may score
 # iff its contact kind is scoring-eligible, the peg exists, and it is a
 # first hit.
-function _contact_can_score(ev::GameEvent, peg::Union{Nothing,Peg})::Bool
+# `kind in SCORING_CONTACT_KINDS` allocates: `in(::String, ::Tuple)` builds
+# argument tuples through `argtail`/`tail`, which heap-allocates for a
+# non-isbits element type (~40 B per test). The explicit disjunction is the
+# same predicate and is allocation-free.
+function _is_scoring_contact_kind(kind::AbstractString)::Bool
+    return kind == "sweep" || kind == "graze" || kind == "overlap" ||
+           kind == "depenetrate"
+end
+
+function _contact_can_score(ev::GameEvent, peg::Peg)::Bool
     ev.type == "ball_contacted_peg" || return false
-    kind = get(ev.fields, "contact_kind", nothing)
-    (kind isa AbstractString && kind in SCORING_CONTACT_KINDS) || return false
-    peg === nothing && return false
+    kind = ev.fields.contact_kind
+    kind === nothing && return false
+    _is_scoring_contact_kind(kind::String) || return false
     peg.hit && return false
     return true
 end
 
 function _event_toi(ev::GameEvent)::Float64
-    toi = get(ev.fields, "toi", nothing)
+    toi = ev.fields.toi
     return toi === nothing ? 0.0 : Float64(toi)
 end
 
@@ -333,24 +342,24 @@ function score_peg!(eng::ShotEngine, peg::Peg, ev::GameEvent)::Nothing
     push!(eng.turn_peg_refs, peg)
     eng.scored_this_step = true
 
-    ps = Dict{String,Any}(
-        "source_sequence" => ev.sequence,
-        "ball_id" => ev.fields["ball_id"],
-        "peg_id" => peg.id,
-        "peg_type" => String(peg.peg_type),
-        "peg_shape" => peg_shape_name(peg.shape),
-        "contact_kind" => ev.fields["contact_kind"],
-        "did_bounce" => ev.fields["did_bounce"],
-        "iteration" => ev.fields["iteration"],
-        "impact_x" => ev.fields["impact_x"],
-        "impact_y" => ev.fields["impact_y"],
-        "hit_order" => peg.hit_order,
-        "multiplier_at_hit" => peg.multiplier_at_hit,
-        "peg_value" => peg_value(peg, eng.config),
+    ps = EventFields(
+        source_sequence = ev.sequence,
+        ball_id = ev.fields.ball_id,
+        peg_id = peg.id,
+        peg_type = peg_type_name(peg.peg_type),
+        peg_shape = peg_shape_name(peg.shape),
+        contact_kind = ev.fields.contact_kind,
+        did_bounce = ev.fields.did_bounce,
+        iteration = ev.fields.iteration,
+        impact_x = ev.fields.impact_x,
+        impact_y = ev.fields.impact_y,
+        hit_order = peg.hit_order,
+        multiplier_at_hit = peg.multiplier_at_hit,
+        peg_value = peg_value(peg, eng.config),
+        line_meta_id = _line_id(peg.line), line_meta_index = _line_index(peg.line),
+        line_meta_count = _line_count(peg.line), line_meta_closed = _line_closed(peg.line),
+        line_meta_gap = _line_gap(peg.line),
     )
-    if peg.line !== nothing
-        ps["line"] = _peg_line_dict(peg.line)
-    end
     push!(eng.buffered_peg_scored, ps)
 
     if peg.peg_type === :green
@@ -374,7 +383,8 @@ function reduce_peg_contacts!(eng::ShotEngine)::Nothing
     candidates = scratch.candidates
     for ev in eng.journal.raw
         if ev.type == "ball_contacted_peg"
-            peg = get(e.peg_by_id, Int(ev.fields["peg_id"]), nothing)
+            peg = get(e.peg_by_id, ev.fields.peg_id::Int, nothing)
+            peg === nothing && continue
             if _contact_can_score(ev, peg)
                 push!(candidates, (ev, peg))
             end
@@ -387,10 +397,10 @@ function reduce_peg_contacts!(eng::ShotEngine)::Nothing
     for (ev, peg) in candidates
         line = peg.line
         line === nothing && continue
-        iteration = get(ev.fields, "iteration", nothing)
+        iteration = ev.fields.iteration
         iteration === nothing && continue
         line.gap == 0 || continue
-        key = (Int(ev.fields["ball_id"]), line.id, Int(iteration))
+        key = (Int(ev.fields.ball_id), line.id, Int(iteration))
         slot = get(groups, key, 0)
         if slot == 0
             slot = length(groups) + 1
@@ -451,9 +461,9 @@ function reduce_peg_contacts!(eng::ShotEngine)::Nothing
         blocked = false
         line = peg.line
         if line !== nothing
-            iteration = get(ev.fields, "iteration", nothing)
+            iteration = ev.fields.iteration
             if iteration !== nothing
-                key = (Int(ev.fields["ball_id"]), line.id, Int(iteration))
+                key = (Int(ev.fields.ball_id), line.id, Int(iteration))
                 slot = get(groups, key, 0)
                 blocked = slot != 0 && get(scratch.suppressed_pool[slot], peg, false)
             end
@@ -556,14 +566,14 @@ function apply_commands!(eng::ShotEngine)::Nothing
             points = get(cmd, "points", nothing)
             e.style_score = e.style_score +
                 (points === nothing ? 0.0 : Float64(points))
-            emit_derived!(eng.journal, "style_awarded", _present_payload(
-                "ball_id" => get(cmd, "ball_id", nothing),
-                "style" => get(cmd, "style", nothing),
-                "points" => points,
-                "distance" => get(cmd, "distance", nothing),
-                "peg_id" => get(cmd, "peg_id", nothing),
-                "line_id" => get(cmd, "line_id", nothing),
-                "source_sequences" => get(cmd, "source_sequences", nothing),
+            emit_derived!(eng.journal, "style_awarded", EventFields(
+                ball_id = get(cmd, "ball_id", nothing),
+                style = get(cmd, "style", nothing),
+                points = points === nothing ? nothing : Float64(points),
+                distance = get(cmd, "distance", nothing),
+                peg_id = get(cmd, "peg_id", nothing),
+                line_id = get(cmd, "line_id", nothing),
+                source_sequences = get(cmd, "source_sequences", nothing),
             ))
             cb = eng.callbacks.on_style_shot
             if cb !== nothing
@@ -601,11 +611,11 @@ function apply_commands!(eng::ShotEngine)::Nothing
                     remove_peg!(eng, peg)
                     removed += 1
                     emit_derived!(eng.journal, "slide_peg_removed",
-                                  _present_payload(
-                        "ball_id" => get(cmd, "ball_id", nothing),
-                        "line_id" => get(cmd, "line_id", nothing),
-                        "peg_id" => Int(peg_id),
-                        "reason" => get(cmd, "reason", nothing),
+                                  EventFields(
+                        ball_id = get(cmd, "ball_id", nothing),
+                        line_id = get(cmd, "line_id", nothing),
+                        peg_id = Int(peg_id),
+                        reason = get(cmd, "reason", nothing),
                     ))
                 end
             end
@@ -663,15 +673,15 @@ function emit_shot_completed!(eng::ShotEngine)::Nothing
         eng.shot_end_reason = reason
     end
 
-    emit_derived!(eng.journal, "shot_completed", Dict{String,Any}(
-        "completion_reason" => reason,
-        "initial_step" => eng.shot_initial_step,
-        "final_step" => e.step_id,
-        "shot_id" => e.shot_id,
-        "peg_score" => peg_score,
-        "bonus_score" => bonus_score,
-        "style_score" => style_score,
-        "total_score" => total_score,
+    emit_derived!(eng.journal, "shot_completed", EventFields(
+        completion_reason = reason,
+        initial_step = eng.shot_initial_step,
+        final_step = e.step_id,
+        shot_id = e.shot_id,
+        peg_score = peg_score,
+        bonus_score = bonus_score,
+        style_score = style_score,
+        total_score = total_score,
     ))
     return nothing
 end
@@ -709,12 +719,12 @@ function _launch_balls!(eng::ShotEngine)::Nothing
             b.launched = true
             b.vx = DetMath.det_cos(effective_angle) * eng.config.launch_speed
             b.vy = DetMath.det_sin(effective_angle) * eng.config.launch_speed
-            stage!(eng.journal, "ball_launched", Dict{String,Any}(
-                "ball_id" => b.id,
-                "x" => b.x,
-                "y" => b.y,
-                "vx" => b.vx,
-                "vy" => b.vy,
+            stage!(eng.journal, "ball_launched", EventFields(
+                ball_id = b.id,
+                x = b.x,
+                y = b.y,
+                vx = b.vx,
+                vy = b.vy,
             ))
         end
     end
@@ -855,12 +865,12 @@ function _step_body!(eng::ShotEngine, dt::Float64)::Nothing
                 e.bonus_score = e.bonus_score + res.value
                 b.scored_fever = true
                 emit_raw!(eng.journal, "fever_bucket_caught_ball",
-                          Dict{String,Any}(
-                    "ball_id" => b.id,
-                    "x" => b.x, "y" => b.y,
-                    "incoming_vx" => b.vx, "incoming_vy" => b.vy,
-                    "outgoing_vx" => b.vx, "outgoing_vy" => b.vy,
-                    "value" => res.value,
+                          EventFields(
+                    ball_id = b.id,
+                    x = b.x, y = b.y,
+                    incoming_vx = b.vx, incoming_vy = b.vy,
+                    outgoing_vx = b.vx, outgoing_vy = b.vy,
+                    value = res.value,
                 ))
             end
         else
@@ -870,22 +880,22 @@ function _step_body!(eng::ShotEngine, dt::Float64)::Nothing
             if result === :caught
                 caught = true
                 remove_ball = true
-                emit_raw!(eng.journal, "bucket_caught_ball", Dict{String,Any}(
-                    "ball_id" => b.id,
-                    "x" => b.x, "y" => b.y,
-                    "incoming_vx" => in_vx, "incoming_vy" => in_vy,
-                    "outgoing_vx" => out_vx, "outgoing_vy" => out_vy,
-                    "bucket_x" => e.bucket.x,
+                emit_raw!(eng.journal, "bucket_caught_ball", EventFields(
+                    ball_id = b.id,
+                    x = b.x, y = b.y,
+                    incoming_vx = in_vx, incoming_vy = in_vy,
+                    outgoing_vx = out_vx, outgoing_vy = out_vy,
+                    bucket_x = e.bucket.x,
                 ))
                 cb = eng.callbacks.on_bucket_catch
                 cb === nothing || cb(eng)
             elseif result === :bounced
-                emit_raw!(eng.journal, "bucket_bounced_ball", Dict{String,Any}(
-                    "ball_id" => b.id,
-                    "x" => b.x, "y" => b.y,
-                    "incoming_vx" => in_vx, "incoming_vy" => in_vy,
-                    "outgoing_vx" => out_vx, "outgoing_vy" => out_vy,
-                    "bucket_x" => e.bucket.x,
+                emit_raw!(eng.journal, "bucket_bounced_ball", EventFields(
+                    ball_id = b.id,
+                    x = b.x, y = b.y,
+                    incoming_vx = in_vx, incoming_vy = in_vy,
+                    outgoing_vx = out_vx, outgoing_vy = out_vy,
+                    bucket_x = e.bucket.x,
                 ))
             end
         end
@@ -894,10 +904,10 @@ function _step_body!(eng::ShotEngine, dt::Float64)::Nothing
         if !caught &&
            b.y - b.radius > eng.virtual_height + eng.config.fall_out_margin
             remove_ball = true
-            emit_raw!(eng.journal, "ball_fell_out", Dict{String,Any}(
-                "ball_id" => b.id,
-                "x" => b.x, "y" => b.y,
-                "reason" => "open_floor",
+            emit_raw!(eng.journal, "ball_fell_out", EventFields(
+                ball_id = b.id,
+                x = b.x, y = b.y,
+                reason = "open_floor",
             ))
         end
 
@@ -928,11 +938,11 @@ function _step_body!(eng::ShotEngine, dt::Float64)::Nothing
             register_ball!(e, nb)
             push!(e.balls, nb)
             ball_state_on_ball_spawned!(eng.sim.trackers.ball_state)
-            emit_raw!(eng.journal, "ball_spawned", Dict{String,Any}(
-                "ball_id" => nb.id,
-                "source" => "green_power",
-                "x" => nb.x, "y" => nb.y,
-                "vx" => nb.vx, "vy" => nb.vy,
+            emit_raw!(eng.journal, "ball_spawned", EventFields(
+                ball_id = nb.id,
+                source = "green_power",
+                x = nb.x, y = nb.y,
+                vx = nb.vx, vy = nb.vy,
             ))
         end
         empty!(eng.pending_spawn_specs)

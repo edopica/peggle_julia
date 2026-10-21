@@ -129,7 +129,7 @@ end
     push!(sim.engine.turn_pegs_hit, 42)
     sim.colors.queue[1] = -1
     push!(sim.colors.active, 43)
-    sim.trackers.style_shots.awarded[1] = true
+    sim.trackers.style_shots.awarded[1] = Dict{String,Bool}("x" => true)
     sim.trackers.ball_state.idle[1] = true
     sim.trackers.ball_state.no_score_timer = 9.0
     @test PeggleSim.checkpoint_sha256(checkpoint) == hash_checkpoint

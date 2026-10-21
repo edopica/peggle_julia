@@ -1,4 +1,4 @@
-.PHONY: help verify export fixtures fixture-list check check-all list self-check quick baseline test julia-test julia-parity julia-bench capture-m2 capture-m2-check math-census math-census-check core-math-build core-math-verify wpd-math wpd-state-capture wpd-state-compare wpd-state wpd-trace wpd-compare-hosts wpd-perf wpd-parity m3-trace m3-mustache m3-sweep m3-bench m4-parity m4-replay
+.PHONY: help verify export fixtures fixture-list check check-all list self-check quick baseline test julia-test julia-parity julia-bench capture-m2 capture-m2-check math-census math-census-check core-math-build core-math-verify wpd-math wpd-state-capture wpd-state-compare wpd-state wpd-trace wpd-compare-hosts wpd-perf wpd-parity m3-trace m3-mustache m3-sweep m3-bench m4-parity m4-replay m4-bench
 
 JULIA = julia --project=julia/PeggleSim
 
@@ -27,6 +27,7 @@ help:
 	@echo "  wpd-parity   experimental CORE-MATH-era parity capture + local comparison"
 	@echo "  m4-parity    M4 correctness-breadth parity (replay, sweeps, threads, scenarios)"
 	@echo "  m4-replay    M4 fixture replay + trace parity into results/m4/"
+	@echo "  m4-bench     M4 representative performance benchmark (throughput, latency, alloc, RSS)"
 
 verify:
 	scripts/verify_reference.sh
@@ -150,6 +151,15 @@ m4-parity:
 
 m4-replay:
 	$(JULIA) $(M4_REPLAY)
+
+# M4 representative performance gate: seven workloads x Lua/Julia, thread
+# scaling, allocation, peak process RSS, and a tracing on/off diagnostic. The
+# full-grid stride-1 reference is reused read-only from results/m4/. Raw
+# artifacts land under results/raw/ (gitignored); the report is
+# results/m4/bench-report.json. Pass options with ARGS=..., e.g.
+#   make m4-bench ARGS="--threads '1 2 4'"
+m4-bench:
+	scripts/bench_m4.sh $(ARGS)
 
 # WP-D open item: experimental CORE-MATH-era parity inputs and local manifests.
 # Captures the census through the dev tree + core_math, emits one manifest from

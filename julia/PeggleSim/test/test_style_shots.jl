@@ -242,7 +242,7 @@ end
         @test t.qualifying_streak[1] == 0
         @test !haskey(t.last_qualifying_seq, 1)
         # The breaking purple peg becomes the base of the next chain.
-        @test t.last_impact[1]["seq"] == s3
+        @test t.last_impact[1].seq == s3
 
         # An already-hit peg (raw contact without peg_scored) breaks too.
         t = _style_trackers()
@@ -256,7 +256,7 @@ end
         PeggleSim.style_shots_process!(t, j, cmds, c.virtual_width, c)
         @test isempty(cmds.commands)
         @test t.qualifying_streak[1] == 0
-        @test t.last_impact[1]["seq"] == s3
+        @test t.last_impact[1].seq == s3
 
         # A wall bounce breaks the distance chain.
         t = _style_trackers()
@@ -274,7 +274,7 @@ end
         @test isempty(cmds.commands)
         @test t.qualifying_streak[1] == 0
         @test !haskey(t.last_qualifying_seq, 1)
-        @test t.last_impact[1]["seq"] == s3
+        @test t.last_impact[1].seq == s3
     end
 
     @testset "graze completes / blue graze breaks" begin
@@ -480,7 +480,7 @@ end
         @test cmd["line_id"] == "rail"
         @test cmd["ball_id"] == 1
         @test cmd["source_sequences"] == srcs
-        @test t.slide_awarded["1"]["rail"] === true
+        @test t.slide_awarded[1]["rail"] === true
 
         # Descending direction awards as well.
         t = _style_trackers()
@@ -535,7 +535,7 @@ end
         end
         PeggleSim.style_shots_process!(t, j, cmds, c.virtual_width, c)
         @test isempty(cmds.commands)
-        @test t.slide_runs["1"]["rail"]["len"] == 4
+        @test t.slide_runs[1]["rail"].len == 4
     end
 
     @testset "slide run invalidation and reseeding" begin
@@ -818,7 +818,7 @@ end
         end
         PeggleSim.style_shots_process!(t, j, cmds, c.virtual_width, c)
         @test isempty(cmds.commands)
-        @test t.slide_runs["1"]["rail"]["len"] == 3
+        @test t.slide_runs[1]["rail"].len == 3
 
         j, cmds = _style_begin(2)
         srcs = Int[]

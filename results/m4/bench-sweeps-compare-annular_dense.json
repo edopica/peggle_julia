@@ -1,0 +1,60 @@
+{
+  "candidates_compared": 91,
+  "clean": true,
+  "coverage": {
+    "first_index": 0,
+    "julia_candidates": 91,
+    "julia_indices": 91,
+    "last_index": 1800,
+    "lua_candidates": 182,
+    "lua_indices": 91,
+    "missing_in_julia": [],
+    "missing_in_lua": [],
+    "shared_indices": 91
+  },
+  "detected_stride": 20,
+  "fields_compared": [
+    "index",
+    "angle",
+    "steps",
+    "completed",
+    "reason",
+    "score",
+    "peg_score",
+    "bonus",
+    "style_points",
+    "style_total",
+    "styles",
+    "pegs_hit",
+    "reds_hit",
+    "multiplier",
+    "is_fever",
+    "balls"
+  ],
+  "first_divergent_candidate": null,
+  "format": "peggle.m3_sweep_compare",
+  "julia_jsonl": "/home/kurapica/Projects/pevo/julia_clone/results/raw/m4-bench-julia-annular_dense-t1.jsonl",
+  "julia_label": "t1",
+  "lua_raw": "/home/kurapica/Projects/pevo/julia_clone/results/raw/m4-bench-lua-annular_dense.candidates.jsonl",
+  "lua_repeats": [
+    1,
+    2
+  ],
+  "lua_workloads": [
+    "annular_dense"
+  ],
+  "mismatch_candidates": 0,
+  "mismatch_records": [],
+  "mismatch_records_truncated": false,
+  "per_field_mismatch_count": {},
+  "requested_stride": 20,
+  "schema_version": 1,
+  "unavailable_fields": {
+    "spawned": {
+      "julia_key": "spawned",
+      "julia_present": true,
+      "lua_key": "spawned",
+      "lua_present": false
+    }
+  }
+}

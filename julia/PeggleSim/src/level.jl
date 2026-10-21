@@ -103,6 +103,16 @@ const LEVEL_CIRCUIT_KEYS = ("circuits", "level_circuits", "motion_circuits")
 
 const VALID_PEG_TYPES = (:blue, :green, :purple, :red)
 
+# Interned peg-type strings. `String(::Symbol)` allocates on the contact hot
+# path; these literals are the same values the journal always carried.
+@inline function peg_type_name(t::Symbol)
+    t === :blue && return "blue"
+    t === :green && return "green"
+    t === :purple && return "purple"
+    t === :red && return "red"
+    return String(t)
+end
+
 function _parse_peg_type(x, what::AbstractString)::Symbol
     t = Symbol(as_string(x, what))
     t in VALID_PEG_TYPES || throw(ArgumentError("$(what): unknown peg type '$(t)'"))

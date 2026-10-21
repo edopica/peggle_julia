@@ -73,14 +73,14 @@ _si_hits(y1, y2, y3) = [_si_scored(11, y1), _si_scored(12, y2), _si_scored(13, y
         t = _si_trackers()
         b = _si_ball(1; vy = 300.0)
         _si_step!(t, b, SI_CONTACTS, _si_hits(100.0, 200.0, 150.0), c)
-        @test t.track[1]["line_id"] == "arc"
-        @test t.track[1]["tangent_sign"] == 1
+        @test t.track[1].line_id == "arc"
+        @test t.track[1].tangent_sign == 1
         @test length(t.line_hits["arc"]) == 3
 
         b.vy = 50.0
         cmds = _si_step!(t, b, SI_CONTACTS, [], c)
         @test isempty(cmds.commands)
-        @test t.track[1]["tangent_sign"] == 1
+        @test t.track[1].tangent_sign == 1
 
         b.vy = -300.0
         cmds = _si_step!(t, b, SI_CONTACTS, [], c)
@@ -93,7 +93,7 @@ _si_hits(y1, y2, y3) = [_si_scored(11, y1), _si_scored(12, y2), _si_scored(13, y
         @test cmd["peg_ids"] == [12]
         @test t.removed[12] === true
         @test !haskey(t.removed, 11) && !haskey(t.removed, 13)
-        @test t.track[1]["tangent_sign"] == -1
+        @test t.track[1].tangent_sign == -1
     end
 
     @testset "ties within lowest_tie are all removed" begin
@@ -116,7 +116,7 @@ _si_hits(y1, y2, y3) = [_si_scored(11, y1), _si_scored(12, y2), _si_scored(13, y
         b.vy = 300.0
         cmds = _si_step!(t, b, SI_CONTACTS, [], c)
         @test isempty(cmds.commands)
-        @test t.track[1]["tangent_sign"] == 1
+        @test t.track[1].tangent_sign == 1
     end
 
     @testset "a genuine bounce resyncs instead of triggering" begin
@@ -129,7 +129,7 @@ _si_hits(y1, y2, y3) = [_si_scored(11, y1), _si_scored(12, y2), _si_scored(13, y
                    _si_contact(13; did_bounce = true)]
         cmds = _si_step!(t, b, bounced, [], c)
         @test isempty(cmds.commands)
-        @test t.track[1]["tangent_sign"] == -1
+        @test t.track[1].tangent_sign == -1
         @test isempty(t.removed)
     end
 
@@ -141,7 +141,7 @@ _si_hits(y1, y2, y3) = [_si_scored(11, y1), _si_scored(12, y2), _si_scored(13, y
         b.vy = 1.0
         cmds = _si_step!(t, b, SI_CONTACTS, [], c)
         @test isempty(cmds.commands)
-        @test t.track[1]["tangent_sign"] == 1
+        @test t.track[1].tangent_sign == 1
         # The opposite sign after the held apex is a reversal.
         b.vy = -300.0
         cmds = _si_step!(t, b, SI_CONTACTS, [], c)
@@ -155,8 +155,8 @@ _si_hits(y1, y2, y3) = [_si_scored(11, y1), _si_scored(12, y2), _si_scored(13, y
         @test haskey(t.track, 1)
         b.vy = 100.0
         _si_step!(t, b, [], [], c)
-        @test t.track[1]["no_contact_time"] == c.fixed_dt
-        @test t.track[1]["no_contact_time"] <= c.slide_invert_contact_timeout
+        @test t.track[1].no_contact_time == c.fixed_dt
+        @test t.track[1].no_contact_time <= c.slide_invert_contact_timeout
 
         steps = ceil(Int, c.slide_invert_contact_timeout / c.fixed_dt) + 2
         for _ in 1:steps
@@ -168,7 +168,7 @@ _si_hits(y1, y2, y3) = [_si_scored(11, y1), _si_scored(12, y2), _si_scored(13, y
         b.vy = -300.0
         cmds = _si_step!(t, b, SI_CONTACTS, [], c)
         @test isempty(cmds.commands)
-        @test t.track[1]["tangent_sign"] == -1
+        @test t.track[1].tangent_sign == -1
     end
 
     @testset "switching lines restarts tracking" begin
@@ -180,8 +180,8 @@ _si_hits(y1, y2, y3) = [_si_scored(11, y1), _si_scored(12, y2), _si_scored(13, y
                  _si_contact(12; line = _si_line("rail"))]
         cmds = _si_step!(t, b, other, [], c)
         @test isempty(cmds.commands)
-        @test t.track[1]["line_id"] == "rail"
-        @test t.track[1]["tangent_sign"] == -1
+        @test t.track[1].line_id == "rail"
+        @test t.track[1].tangent_sign == -1
     end
 
     @testset "already-removed pegs are skipped" begin
@@ -211,7 +211,7 @@ _si_hits(y1, y2, y3) = [_si_scored(11, y1), _si_scored(12, y2), _si_scored(13, y
         @test isempty(cmds.commands)
         @test isempty(t.removed)
         # The direction was still updated by the reversal.
-        @test t.track[1]["tangent_sign"] == -1
+        @test t.track[1].tangent_sign == -1
     end
 
     @testset "first-hit scoring records each peg once" begin
@@ -221,8 +221,8 @@ _si_hits(y1, y2, y3) = [_si_scored(11, y1), _si_scored(12, y2), _si_scored(13, y
                _si_scored(12, 200.0)]
         _si_step!(t, b, SI_CONTACTS, dup, c)
         @test length(t.line_hits["arc"]) == 2
-        @test t.line_hits["arc"][1]["peg_id"] == 11
-        @test t.line_hits["arc"][1]["impact_y"] == 100.0
+        @test t.line_hits["arc"][1].peg_id == 11
+        @test t.line_hits["arc"][1].impact_y == 100.0
         @test t.hit_seen[11] === true
 
         # A later step cannot re-record the same peg.
@@ -234,7 +234,7 @@ _si_hits(y1, y2, y3) = [_si_scored(11, y1), _si_scored(12, y2), _si_scored(13, y
         t = _si_trackers()
         b = _si_ball(1; vy = 300.0)
         _si_step!(t, b, SI_CONTACTS, [_si_scored(11, nothing)], c)
-        @test t.line_hits["arc"][1]["impact_y"] == 0.0
+        @test t.line_hits["arc"][1].impact_y == 0.0
     end
 
     @testset "non-zero-gap lines are not tracked" begin
@@ -275,7 +275,7 @@ _si_hits(y1, y2, y3) = [_si_scored(11, y1), _si_scored(12, y2), _si_scored(13, y
         b2 = _si_ball(2; vy = -300.0)
         _si_step!(t, b1, [_si_contact(11)], [_si_scored(11, 100.0)], c)
         _si_step!(t, b2, [_si_contact(11)], [], c)
-        @test t.track[1]["tangent_sign"] == 1
-        @test t.track[2]["tangent_sign"] == -1
+        @test t.track[1].tangent_sign == 1
+        @test t.track[2].tangent_sign == -1
     end
 end

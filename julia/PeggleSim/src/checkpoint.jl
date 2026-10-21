@@ -348,6 +348,21 @@ end
 _tracker_map_to_dict(m::AbstractDict) =
     Dict{String,Any}(string(k) => _tracker_value_to_json(v) for (k, v) in m)
 
+# Typed tracker payloads: only reachable from a mid-shot checkpoint, which the
+# engine never takes; they define the shape rather than dropping fields.
+_tracker_value_to_json(v::StyleLastImpact) =
+    Dict{String,Any}("x" => v.x, "y" => v.y, "seq" => v.seq)
+
+_tracker_value_to_json(v::StyleSlideRun) = Dict{String,Any}(
+    "len" => v.len, "last" => v.last, "dir" => v.dir, "seqs" => v.seqs)
+
+_tracker_value_to_json(v::SlideTrack) = Dict{String,Any}(
+    "line_id" => v.line_id, "no_contact_time" => v.no_contact_time,
+    "tangent_sign" => v.tangent_sign)
+
+_tracker_value_to_json(v::SlideHitRecord) =
+    Dict{String,Any}("peg_id" => v.peg_id, "impact_y" => v.impact_y)
+
 function _trackers_to_dict(t::Trackers)::Dict{String,Any}
     ss = t.style_shots
     bs = t.ball_state
@@ -581,6 +596,45 @@ _parse_int_tracker_map(x) =
     Dict{Int,Any}(parse(Int, string(k)) => _tracker_value_from_json(v)
                   for (k, v) in as_object(x, "tracker map"))
 
+_parse_int_tracker_map(::Type{V}, x) where {V} =
+    Dict{Int,V}(parse(Int, string(k)) => V(_tracker_value_from_json(v))
+                for (k, v) in as_object(x, "tracker map"))
+
+# Typed tracker payloads. A checkpoint is only taken at the ready-to-aim
+# boundary, where every tracker map is empty, so these constructors are
+# defensive: they define what a mid-shot round trip would mean rather than
+# letting serialization silently drop fields.
+StyleLastImpact(d::AbstractDict) =
+    StyleLastImpact(Float64(d["x"]), Float64(d["y"]), Int(d["seq"]))
+
+StyleSlideRun(d::AbstractDict) = StyleSlideRun(
+    Int(d["len"]),
+    d["last"] === nothing ? nothing : Int(d["last"]),
+    Int(d["dir"]),
+    Int[Int(x) for x in d["seqs"]],
+)
+
+SlideTrack(d::AbstractDict) = SlideTrack(
+    string(d["line_id"]),
+    Float64(d["no_contact_time"]),
+    d["tangent_sign"] === nothing ? nothing : Int(d["tangent_sign"]),
+)
+
+SlideHitRecord(d::AbstractDict) = SlideHitRecord(Int(d["peg_id"]), Float64(d["impact_y"]))
+
+_parse_int_nested_map(::Type{V}, x) where {V} =
+    Dict{Int,Dict{String,V}}(
+        parse(Int, string(k)) => Dict{String,V}(
+            string(k2) => V(_tracker_value_from_json(v2))
+            for (k2, v2) in as_object(v, "nested tracker map"))
+        for (k, v) in as_object(x, "tracker map"))
+
+_parse_string_record_map(::Type{V}, x) where {V} =
+    Dict{String,Vector{V}}(
+        string(k) => V[V(_tracker_value_from_json(x2))
+                       for x2 in as_array(v, "tracker record list")]
+        for (k, v) in as_object(x, "tracker map"))
+
 _parse_string_tracker_map(x) =
     Dict{String,Any}(string(k) => _tracker_value_from_json(v)
                      for (k, v) in as_object(x, "tracker map"))
@@ -590,30 +644,32 @@ function _parse_trackers(d::AbstractDict)::Trackers
     bs = as_object(d["ball_state"], "trackers.ball_state")
     si = as_object(d["slide_inversion"], "trackers.slide_inversion")
     style = StyleShotTrackers(
-        _parse_int_tracker_map(ss["last_impact"]),
-        _parse_int_tracker_map(ss["qualifying_streak"]),
-        _parse_int_tracker_map(ss["last_qualifying_seq"]),
-        _parse_int_tracker_map(ss["bucket_bounced"]),
-        _parse_int_tracker_map(ss["bounced_after_bucket"]),
-        _parse_int_tracker_map(ss["side_wall_hit"]),
-        _parse_int_tracker_map(ss["hit_any_peg"]),
-        _parse_int_tracker_map(ss["awarded"]),
-        _parse_string_tracker_map(ss["slide_runs"]),
-        _parse_string_tracker_map(ss["slide_awarded"]),
+        _parse_int_tracker_map(StyleLastImpact, ss["last_impact"]),
+        _parse_int_tracker_map(Int, ss["qualifying_streak"]),
+        _parse_int_tracker_map(Int, ss["last_qualifying_seq"]),
+        _parse_int_tracker_map(Int, ss["bucket_bounced"]),
+        _parse_int_tracker_map(Bool, ss["bounced_after_bucket"]),
+        _parse_int_tracker_map(Int, ss["side_wall_hit"]),
+        _parse_int_tracker_map(Bool, ss["hit_any_peg"]),
+        _parse_int_nested_map(Bool, ss["awarded"]),
+        _parse_int_nested_map(StyleSlideRun, ss["slide_runs"]),
+        _parse_int_nested_map(Bool, ss["slide_awarded"]),
+        StyleSlideRun[], 0, Dict{String,Bool}[], 0,
     )
     ball = BallStateTrackers(
-        _parse_int_tracker_map(bs["idle"]),
-        _parse_int_tracker_map(bs["idle_timer"]),
-        _parse_int_tracker_map(bs["reacted"]),
+        _parse_int_tracker_map(Bool, bs["idle"]),
+        _parse_int_tracker_map(Float64, bs["idle_timer"]),
+        _parse_int_tracker_map(Bool, bs["reacted"]),
         as_bool(bs["all_idle_latch"], "ball_state.all_idle_latch"),
         as_f64(bs["no_score_timer"], "ball_state.no_score_timer"),
         as_bool(bs["no_score_timeout_fired"], "ball_state.no_score_timeout_fired"),
     )
     slide = SlideInversionTrackers(
-        _parse_string_tracker_map(si["line_hits"]),
-        _parse_int_tracker_map(si["hit_seen"]),
-        _parse_int_tracker_map(si["removed"]),
-        _parse_int_tracker_map(si["track"]),
+        _parse_string_record_map(SlideHitRecord, si["line_hits"]),
+        _parse_int_tracker_map(Bool, si["hit_seen"]),
+        _parse_int_tracker_map(Bool, si["removed"]),
+        _parse_int_tracker_map(SlideTrack, si["track"]),
+        SlideTrack[], 0, Vector{SlideHitRecord}[], 0,
     )
     return Trackers(style, ball, slide)
 end
@@ -739,6 +795,74 @@ function sim_from_checkpoint(ckpt::Checkpoint)::SimState
     return SimState(engine, rng, colors, trackers, match)
 end
 
+
+# Restore tracker state into the live containers instead of replacing them.
+# The reuse pools and dict capacities inside StyleShotTrackers and
+# SlideInversionTrackers are what keep the warmed step path allocation-free;
+# `deepcopy` here would discard them (and re-grow them every shot).
+function _restore_trackers!(dst::Trackers, src::Trackers)::Nothing
+    ds = dst.style_shots
+    ss = src.style_shots
+    reset_shot!(ds)
+    copy!(ds.last_impact, ss.last_impact)
+    copy!(ds.qualifying_streak, ss.qualifying_streak)
+    copy!(ds.last_qualifying_seq, ss.last_qualifying_seq)
+    copy!(ds.bucket_bounced, ss.bucket_bounced)
+    copy!(ds.bounced_after_bucket, ss.bounced_after_bucket)
+    copy!(ds.side_wall_hit, ss.side_wall_hit)
+    copy!(ds.hit_any_peg, ss.hit_any_peg)
+    _copy_nested_trackers!(ds.awarded, ss.awarded)
+    _copy_nested_trackers!(ds.slide_runs, ss.slide_runs)
+    _copy_nested_trackers!(ds.slide_awarded, ss.slide_awarded)
+
+    db = dst.ball_state
+    sb = src.ball_state
+    reset_shot!(db)
+    copy!(db.idle, sb.idle)
+    copy!(db.idle_timer, sb.idle_timer)
+    copy!(db.reacted, sb.reacted)
+    db.all_idle_latch = sb.all_idle_latch
+    db.no_score_timer = sb.no_score_timer
+    db.no_score_timeout_fired = sb.no_score_timeout_fired
+
+    di = dst.slide_inversion
+    si = src.slide_inversion
+    reset_shot!(di)
+    copy!(di.hit_seen, si.hit_seen)
+    copy!(di.removed, si.removed)
+    for (k, v) in si.line_hits
+        dst_vec = get(di.line_hits, k, nothing)
+        if dst_vec === nothing
+            di.line_hits[k] = copy(v)
+        else
+            empty!(dst_vec)
+            append!(dst_vec, v)
+        end
+    end
+    for (k, v) in si.track
+        tr = _si_track!(di, String(v.line_id), k)
+        tr.no_contact_time = v.no_contact_time
+        tr.tangent_sign = v.tangent_sign
+    end
+    return nothing
+end
+
+function _copy_nested_trackers!(dst::Dict{Int,Dict{String,V}}, src) where {V}
+    for (k, inner) in src
+        d = get(dst, k, nothing)
+        if d === nothing
+            d = Dict{String,V}()
+            dst[k] = d
+        else
+            empty!(d)
+        end
+        for (k2, v2) in inner
+            d[k2] = v2
+        end
+    end
+    return nothing
+end
+
 function restore!(sim::SimState, ckpt::Checkpoint)
     ce = ckpt.engine
 
@@ -821,7 +945,7 @@ function restore!(sim::SimState, ckpt::Checkpoint)
     append!(sim.colors.active, ckpt.purple_queue.active)
     sim.colors.rng = sim.rng
 
-    sim.trackers = deepcopy(ckpt.trackers)
+    _restore_trackers!(sim.trackers, ckpt.trackers)
     sim.match = _match_from_checkpoint(ckpt)
 
     return sim

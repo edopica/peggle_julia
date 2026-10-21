@@ -1,8 +1,11 @@
 # M4 correctness-breadth validation
 
 M4 is the full static-level shot-behavior milestone. It is **open**. This page
-records **session 1 of 3** (corpus parity) only; the performance gate and
-cross-machine qualification are still to come (§9). Session 1 validates the
+records **sessions 1 and 2 of 3**. Session 1 is corpus parity (this page);
+session 2 is the performance gate, recorded in
+[`wiki/benchmarks/m4-perf.md`](../benchmarks/m4-perf.md) and
+[`wiki/devlog/2026-10-21.md`](../devlog/2026-10-21.md). Cross-machine
+qualification is still to come (§9). Session 1 validates the
 pinned corpus end to end: 14 shot fixtures, 11 boundary scenarios, 6 gameplay
 traces, and 7 full-grid candidate workloads all match the frozen Lua reference
 exactly, with one real parity bug found and fixed along the way (§6.1).
@@ -13,7 +16,7 @@ exactly, with one real parity bug found and fixed along the way (§6.1).
 | --- | --- |
 | M4 milestone | **In progress / open** |
 | Session 1 — correctness breadth | Complete (this page) |
-| Session 2 — performance gate | Not started |
+| Session 2 — performance gate | Complete; see [`m4-perf.md`](../benchmarks/m4-perf.md) |
 | Session 3 — cross-machine qualification + closeout | Not started |
 
 Session 1 covers:
@@ -318,11 +321,14 @@ All gates were run on the final tree in this session, after the divider fix.
 
 M4 remains **open**. The two remaining sessions are:
 
-1. **Performance gate (session 2).** Zero-allocation warm stepping and a
-   representative benchmark, reported with median and tail latency, allocation
-   counts/bytes, and thread-scaling metrics. The M3 allocation baseline is in
-   `wiki/benchmarks/m3-shot.md`; the M4 target is zero heap allocation in warm
-   fixed-capacity stepping.
+1. ~~**Performance gate (session 2).**~~ Done. The criterion, the per-site
+   allocation accounting, the seven-workload benchmark and the same-host Lua
+   comparison are in [`wiki/benchmarks/m4-perf.md`](../benchmarks/m4-perf.md).
+   Steady-state stepping is 0 B/step on `circles_small` and `annular_dense`;
+   `mustache` (both aims) and `lines_rect_annular` retain a small command-path
+   residue (2–13 allocating steps out of 768–1,797) that is itemised with a
+   concrete fix plan in §4.3 of that page. Session 3 should close that residue
+   and then qualify cross-machine.
 2. **Qualification and closeout (session 3).** Cross-machine bit-identical
    qualification of the validated corpus, then M4 closeout. The cross-platform
    capture procedure is in `wiki/context/cross-platform-qualification.md`.

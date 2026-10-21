@@ -41,7 +41,7 @@ _si_truthy(v) = v !== nothing && v !== false
 
 # `bid = ev.ball_id`; nil ball ids skip the event.
 function _si_ball_id(ev::GameEvent)
-    v = get(ev.fields, "ball_id", nothing)
+    v = ev.fields.ball_id
     return v === nothing ? nothing : Int(v)
 end
 
@@ -75,23 +75,28 @@ end
 function _si_note_scores!(t::SlideInversionTrackers, journal::GameplayJournal)
     for ev in journal.derived
         if ev.type == "peg_scored"
-            line = get(ev.fields, "line", nothing)
-            line isa AbstractDict || continue
-            get(line, "gap", nothing) == 0 || continue
-            peg_id = Int(ev.fields["peg_id"])
+            ev.fields.line_meta_id === nothing && continue
+            ev.fields.line_meta_gap == 0 || continue
+            peg_id = Int(ev.fields.peg_id)
             _si_truthy(get(t.hit_seen, peg_id, nothing)) && continue
             t.hit_seen[peg_id] = true
-            line_id = String(line["id"])
+            line_id = ev.fields.line_meta_id::String
             arr = get(t.line_hits, line_id, nothing)
             if arr === nothing
-                arr = Any[]
+                if t.hits_pool_n < length(t.hits_pool)
+                    t.hits_pool_n += 1
+                    arr = t.hits_pool[t.hits_pool_n]
+                    empty!(arr)
+                else
+                    arr = SlideHitRecord[]
+                    push!(t.hits_pool, arr)
+                    t.hits_pool_n = length(t.hits_pool)
+                end
                 t.line_hits[line_id] = arr
             end
-            iy = get(ev.fields, "impact_y", nothing)
-            push!(arr, Dict{String,Any}(
-                "peg_id" => peg_id,
-                "impact_y" => (iy === nothing ? 0.0 : Float64(iy)),
-            ))
+            iy = ev.fields.impact_y
+            push!(arr, SlideHitRecord(peg_id,
+                iy === nothing ? 0.0 : Float64(iy)))
         end
     end
     return nothing
@@ -103,11 +108,11 @@ end
 function _si_lowest_hit_pegs(t::SlideInversionTrackers, line_id::AbstractString,
                              tie::Float64)::Vector{Int}
     arr = get(t.line_hits, line_id, nothing)
-    arr === nothing && return Int[]
+    (arr === nothing || isempty(arr)) && return Int[]
     max_y = nothing
     for rec in arr
-        if !_si_truthy(get(t.removed, rec["peg_id"], nothing))
-            y = rec["impact_y"]
+        if !_si_truthy(get(t.removed, rec.peg_id, nothing))
+            y = rec.impact_y
             if max_y === nothing || y > max_y
                 max_y = y
             end
@@ -116,9 +121,9 @@ function _si_lowest_hit_pegs(t::SlideInversionTrackers, line_id::AbstractString,
     max_y === nothing && return Int[]
     out = Int[]
     for rec in arr
-        if !_si_truthy(get(t.removed, rec["peg_id"], nothing)) &&
-           rec["impact_y"] >= max_y - tie
-            push!(out, rec["peg_id"])
+        if !_si_truthy(get(t.removed, rec.peg_id, nothing)) &&
+           rec.impact_y >= max_y - tie
+            push!(out, rec.peg_id)
         end
     end
     return out
@@ -167,18 +172,17 @@ function slide_inversion_process!(
         bid = _si_ball_id(ev)
         bid === nothing && continue
         if ev.type == "ball_contacted_peg"
-            line = get(ev.fields, "line", nothing)
-            if line isa AbstractDict && get(line, "gap", nothing) == 0
-                contact_line[bid] = String(line["id"])
-                nx = get(ev.fields, "normal_x", nothing)
-                ny = get(ev.fields, "normal_y", nothing)
+            if ev.fields.line_meta_id !== nothing && ev.fields.line_meta_gap == 0
+                contact_line[bid] = ev.fields.line_meta_id::String
+                nx = ev.fields.normal_x
+                ny = ev.fields.normal_y
                 contact_normal[bid] = (
                     nx === nothing ? 0.0 : Float64(nx),
                     ny === nothing ? 0.0 : Float64(ny),
                 )
             end
         end
-        if _si_truthy(get(ev.fields, "did_bounce", nothing))
+        if _si_truthy(ev.fields.did_bounce)
             bounced[bid] = true
         end
     end
@@ -190,24 +194,18 @@ function slide_inversion_process!(
         track = get(t.track, bid, nothing)
 
         if line_id !== nothing
-            if track !== nothing && track["line_id"] != line_id
+            if track !== nothing && track.line_id != line_id
                 # A different line ends the previous slide.
                 track = nothing
                 delete!(t.track, bid)
             end
             if track === nothing
-                track = Dict{String,Any}(
-                    "line_id" => line_id,
-                    "no_contact_time" => 0.0,
-                    "tangent_sign" => nothing,
-                )
-                t.track[bid] = track
+                track = _si_track!(t, line_id::String, bid)
             end
-            track["no_contact_time"] = 0.0
+            track.no_contact_time = 0.0
         elseif track !== nothing
-            track["no_contact_time"] =
-                Float64(track["no_contact_time"]) + dt
-            if track["no_contact_time"] > timeout
+            track.no_contact_time += dt
+            if track.no_contact_time > timeout
                 track = nothing
                 delete!(t.track, bid)
             end
@@ -220,30 +218,48 @@ function slide_inversion_process!(
             if _si_truthy(get(bounced, bid, nothing))
                 # A real bounce is not a pendulum inversion: resync the
                 # direction to the post-bounce motion.
-                track["tangent_sign"] = sign
+                track.tangent_sign = sign
             elseif sign !== nothing
-                prev_sign = track["tangent_sign"]
+                prev_sign = track.tangent_sign
                 if _si_truthy(prev_sign) && sign != prev_sign
                     # The ball stopped rolling and went back: drop the lowest
                     # already-hit peg(s) of the line to open the valley.
-                    peg_ids = _si_lowest_hit_pegs(t, track["line_id"], tie)
+                    peg_ids = _si_lowest_hit_pegs(t, track.line_id, tie)
                     if !isempty(peg_ids)
                         for pid in peg_ids
                             t.removed[pid] = true
                         end
                         push_command!(commands, "remove_slide_pegs", Dict{String,Any}(
                             "ball_id" => bid,
-                            "line_id" => track["line_id"],
+                            "line_id" => track.line_id,
                             "reason" => "slide_direction_inversion",
                             "peg_ids" => peg_ids,
                         ))
                     end
                 end
-                track["tangent_sign"] = sign
+                track.tangent_sign = sign
             end
         end
     end
     return nothing
+end
+
+# Track a ball's zero-gap contact line, reusing a pooled track object so a
+# repeated shot does not allocate here.
+function _si_track!(t::SlideInversionTrackers, line_id::String, ball_id::Int)
+    if t.track_pool_n < length(t.track_pool)
+        t.track_pool_n += 1
+        tr = t.track_pool[t.track_pool_n]
+        tr.line_id = line_id
+        tr.no_contact_time = 0.0
+        tr.tangent_sign = nothing
+    else
+        tr = SlideTrack(line_id, 0.0, nothing)
+        push!(t.track_pool, tr)
+        t.track_pool_n = length(t.track_pool)
+    end
+    t.track[ball_id] = tr
+    return tr
 end
 
 # Notify that a ball was removed.
