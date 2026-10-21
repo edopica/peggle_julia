@@ -149,6 +149,13 @@ mutable struct StyleShotTrackers
     awarded::Dict{Int,Dict{String,Bool}}
     slide_runs::Dict{Int,Dict{String,StyleSlideRun}}
     slide_awarded::Dict{Int,Dict{String,Bool}}
+    # Per-ball cache of slide-run maps whose ball ended its slide (a bounce on
+    # a non-line peg, or a move to another line). Keyed by ball id, so a map is
+    # only ever handed back to the ball that owned it; every run in a cached
+    # map is zeroed. `slide_runs` therefore keeps exactly the live
+    # `{ball_id => {line_id => run}}` shape the checkpoint serializer expects,
+    # while the maps and runs are not re-created on every bounce.
+    slide_cache::Dict{Int,Dict{String,StyleSlideRun}}
     # Reuse pools. A shot only allocates here up to the high-water mark: the
     # next shot of the same aim takes the objects back from the pool, so the
     # warmed steady-state step path does not allocate.
@@ -156,6 +163,10 @@ mutable struct StyleShotTrackers
     run_pool_n::Int
     award_pool::Vector{Dict{String,Bool}}
     award_pool_n::Int
+    # Per-ball `slide_awarded` marker maps, reused across shots (emptied when
+    # taken) so the first slide award of a shot does not allocate a table.
+    slide_award_pool::Vector{Dict{String,Bool}}
+    slide_award_pool_n::Int
 end
 
 function StyleShotTrackers()
@@ -163,8 +174,8 @@ function StyleShotTrackers()
         Dict{Int,StyleLastImpact}(), Dict{Int,Int}(), Dict{Int,Int}(),
         Dict{Int,Int}(), Dict{Int,Bool}(), Dict{Int,Int}(), Dict{Int,Bool}(),
         Dict{Int,Dict{String,Bool}}(), Dict{Int,Dict{String,StyleSlideRun}}(),
-        Dict{Int,Dict{String,Bool}}(),
-        StyleSlideRun[], 0, Dict{String,Bool}[], 0,
+        Dict{Int,Dict{String,Bool}}(), Dict{Int,Dict{String,StyleSlideRun}}(),
+        StyleSlideRun[], 0, Dict{String,Bool}[], 0, Dict{String,Bool}[], 0,
     )
 end
 
@@ -177,10 +188,32 @@ function reset_shot!(t::StyleShotTrackers)
     empty!(t.side_wall_hit)
     empty!(t.hit_any_peg)
     empty!(t.awarded)
+    # Reclaim the live slide-run maps into the per-ball cache (zeroing every
+    # run) instead of dropping them, so the next shot reuses the same maps and
+    # run objects. A ball holds either a live map or a cached one, never both:
+    # `_style_clear_ball_slide!` deletes the live map before parking it and
+    # `_style_run_tab!` removes a map from the cache before it goes live, so
+    # the cache slot for a ball is always free here.
+    for (bid, by_line) in t.slide_runs
+        for run in values(by_line)
+            run.len = 0
+            run.last = nothing
+            run.dir = 0
+            empty!(run.seqs)
+        end
+        t.slide_cache[bid] = by_line
+    end
     empty!(t.slide_runs)
     empty!(t.slide_awarded)
-    t.run_pool_n = 0
+    # `slide_cache` is allocator capacity, not authoritative state: its maps
+    # hold only zeroed runs and are keyed by ball id, so they survive a reset
+    # (and a checkpoint restore) without changing any observable value.
+    # `run_pool_n` is not rewound either: a pooled run object is handed out at
+    # most once and is then owned by its (ball, line) map, so rewinding could
+    # alias two lines onto one object. The pool therefore only grows with the
+    # number of distinct (ball, line) pairs ever played, which is bounded.
     t.award_pool_n = 0
+    t.slide_award_pool_n = 0
     return t
 end
 

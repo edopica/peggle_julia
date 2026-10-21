@@ -105,10 +105,12 @@ end
 # Lowest already-hit, not-yet-removed pegs of a line, in deterministic score
 # order. Empty when the line has no eligible hit pegs. Ties within `tie`
 # (Config.slide_invert_lowest_tie) are all selected.
-function _si_lowest_hit_pegs(t::SlideInversionTrackers, line_id::AbstractString,
-                             tie::Float64)::Vector{Int}
+function _si_lowest_hit_pegs!(out::Vector{Int}, t::SlideInversionTrackers,
+                              line_id::AbstractString,
+                              tie::Float64)::Vector{Int}
+    empty!(out)
     arr = get(t.line_hits, line_id, nothing)
-    (arr === nothing || isempty(arr)) && return Int[]
+    (arr === nothing || isempty(arr)) && return out
     max_y = nothing
     for rec in arr
         if !_si_truthy(get(t.removed, rec.peg_id, nothing))
@@ -118,8 +120,7 @@ function _si_lowest_hit_pegs(t::SlideInversionTrackers, line_id::AbstractString,
             end
         end
     end
-    max_y === nothing && return Int[]
-    out = Int[]
+    max_y === nothing && return out
     for rec in arr
         if !_si_truthy(get(t.removed, rec.peg_id, nothing)) &&
            rec.impact_y >= max_y - tie
@@ -128,6 +129,11 @@ function _si_lowest_hit_pegs(t::SlideInversionTrackers, line_id::AbstractString,
     end
     return out
 end
+
+# Fresh-vector form (cold paths/tests only).
+_si_lowest_hit_pegs(t::SlideInversionTrackers, line_id::AbstractString,
+                    tie::Float64)::Vector{Int} =
+    _si_lowest_hit_pegs!(Int[], t, line_id, tie)
 
 # Run the inversion check for one completed fixed step. Only launched balls
 # are considered.
@@ -224,17 +230,15 @@ function slide_inversion_process!(
                 if _si_truthy(prev_sign) && sign != prev_sign
                     # The ball stopped rolling and went back: drop the lowest
                     # already-hit peg(s) of the line to open the valley.
-                    peg_ids = _si_lowest_hit_pegs(t, track.line_id, tie)
+                    peg_ids = take_peg_ids!(commands)
+                    _si_lowest_hit_pegs!(peg_ids, t, track.line_id, tie)
                     if !isempty(peg_ids)
                         for pid in peg_ids
                             t.removed[pid] = true
                         end
-                        push_command!(commands, "remove_slide_pegs", Dict{String,Any}(
-                            "ball_id" => bid,
-                            "line_id" => track.line_id,
-                            "reason" => "slide_direction_inversion",
-                            "peg_ids" => peg_ids,
-                        ))
+                        push_remove_slide_pegs!(
+                            commands, bid, track.line_id,
+                            "slide_direction_inversion", peg_ids)
                     end
                 end
                 track.tangent_sign = sign

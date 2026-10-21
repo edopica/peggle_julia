@@ -67,6 +67,75 @@ function reset!(s::ContactReductionScratch)::Nothing
     return nothing
 end
 
+# Read-only payload handed to the `on_style_shot` callback. The callback field
+# is dynamically typed, so a fresh Dict would box every scalar and an immutable
+# struct would be boxed per call; this mutable view is filled in place and
+# passed by reference. It exposes exactly the keys the old detached dictionary
+# carried (absent values are skipped, like Lua's nil omission).
+mutable struct StyleInfo <: AbstractDict{String,Any}
+    ball_id::Union{Nothing,Int}
+    style::Union{Nothing,String}
+    points::Union{Nothing,Float64}
+    distance::Union{Nothing,Float64}
+    peg_id::Union{Nothing,Int}
+    line_id::Union{Nothing,String}
+    source_sequences::Union{Nothing,Vector{Int}}
+end
+
+StyleInfo() = StyleInfo(nothing, nothing, nothing, nothing, nothing, nothing,
+                        nothing)
+
+const _STYLE_INFO_KEYS = ("ball_id", "style", "points", "distance", "peg_id",
+                          "line_id", "source_sequences")
+
+@inline function _style_info_value(info::StyleInfo, key::AbstractString)
+    key == "ball_id" && return info.ball_id
+    key == "style" && return info.style
+    key == "points" && return info.points
+    key == "distance" && return info.distance
+    key == "peg_id" && return info.peg_id
+    key == "line_id" && return info.line_id
+    key == "source_sequences" && return info.source_sequences
+    return nothing
+end
+
+@inline function Base.get(info::StyleInfo, key::AbstractString, default)
+    value = _style_info_value(info, key)
+    return value === nothing ? default : value
+end
+@inline Base.haskey(info::StyleInfo, key::AbstractString) =
+    _style_info_value(info, key) !== nothing
+function Base.getindex(info::StyleInfo, key::AbstractString)
+    value = _style_info_value(info, key)
+    value === nothing && throw(KeyError(key))
+    return value
+end
+
+function Base.iterate(info::StyleInfo, i::Int = 1)
+    while i <= length(_STYLE_INFO_KEYS)
+        key = _STYLE_INFO_KEYS[i]
+        value = _style_info_value(info, key)
+        i += 1
+        value === nothing || return (Pair{String,Any}(key, value), i)
+    end
+    return nothing
+end
+Base.length(info::StyleInfo) =
+    count(i -> _style_info_value(info, _STYLE_INFO_KEYS[i]) !== nothing,
+          1:length(_STYLE_INFO_KEYS))
+Base.keys(info::StyleInfo) = [k for (k, _) in info]
+
+@inline function _fill_style_info!(info::StyleInfo, cmd::GameplayCommand)
+    info.ball_id = cmd.ball_id
+    info.style = cmd.style
+    info.points = cmd.points
+    info.distance = cmd.distance
+    info.peg_id = cmd.peg_id
+    info.line_id = cmd.line_id
+    info.source_sequences = cmd.source_sequences
+    return info
+end
+
 struct ShotScratch
     physics::PhysicsContext
     contacts::ContactReductionScratch
@@ -105,6 +174,14 @@ mutable struct ShotEngine
     turn_peg_refs::Vector{Peg}
     initial_balls::Int
     style_counts::Dict{String,Int}
+    style_info::StyleInfo
+    # Clearing + spawn reuse. `clear_lit` is the peg list handed to
+    # `e.clear_queue` (filled, sorted in place); `spawn_pool` recycles the
+    # BallState objects created by power spawns so a warmed shot does not
+    # allocate one per spawn.
+    clear_lit::Vector{Peg}
+    spawn_pool::Vector{BallState}
+    spawn_pool_n::Int
     scratch::ShotScratch
 end
 
@@ -169,7 +246,8 @@ function _fresh_shot_engine(sim::SimState, config::SimConfig, vw::Float64,
         EventFields[], PowerSpawnSpec[],
         false, false, nothing,
         0.0, 0,
-        Peg[], length(sim.engine.balls), Dict{String,Int}(),
+        Peg[], length(sim.engine.balls), Dict{String,Int}(), StyleInfo(),
+        Peg[], BallState[], 0,
         scratch,
     )
     _split_peg_lists!(eng)
@@ -226,6 +304,8 @@ function reset_shot_engine!(eng::ShotEngine, ckpt::Checkpoint)::ShotEngine
         peg === nothing || push!(eng.turn_peg_refs, peg)
     end
     empty!(eng.style_counts)
+    empty!(eng.clear_lit)
+    eng.spawn_pool_n = 0
     return eng
 end
 
@@ -482,8 +562,16 @@ end
 
 function start_clearing!(eng::ShotEngine, is_end_of_turn::Bool)::Nothing
     e = eng.sim.engine
-    lit = Peg[p for p in e.pegs if p.hit]
-    sort!(lit; by = p -> p.hit_order)
+    # Fill the engine-owned list instead of building a comprehension: the
+    # queue is drained by `update_clearing!` (which leaves the vector empty)
+    # and reused by the next cascade. Insertion sort is stable, like the
+    # default algorithm, and needs no scratch allocation.
+    lit = eng.clear_lit
+    empty!(lit)
+    for p in e.pegs
+        p.hit && push!(lit, p)
+    end
+    sort!(lit; by = p -> p.hit_order, alg = Base.Sort.InsertionSort)
     e.clear_queue = lit
     e.clear_timer = 0.0
     e.clearing_is_end_of_turn = is_end_of_turn
@@ -546,54 +634,47 @@ end
 # Gameplay command application
 # ---------------------------------------------------------------------------
 
-# Lua `{k = v}` drops nil-valued keys; build the same shape for events whose
-# payload fields come from optional command keys.
-function _present_payload(entries::Pair...)::Dict{String,Any}
-    d = Dict{String,Any}()
-    for (key, value) in entries
-        value === nothing || (d[key] = value)
-    end
-    return d
-end
-
+# Apply the step's game commands in deterministic push order. The command
+# buffer holds concrete GameplayCommand records, so every read below is a typed
+# field access and the derived `EventFields` stays unboxed. The `on_style_shot`
+# callback receives a filled, read-only `StyleInfo` view exposing exactly the
+# payload keys the old detached dictionary carried; it is reused per award, so
+# the dynamic callback call neither allocates nor boxes.
 function apply_commands!(eng::ShotEngine)::Nothing
     e = eng.sim.engine
-    for cmd in eng.commands.commands
+    commands = eng.commands
+    for cmd in commands.commands
         status = "applied"
-        ctype = cmd["type"]
+        ctype = cmd.type
 
         if ctype == "award_style_points"
-            points = get(cmd, "points", nothing)
+            points = cmd.points
             e.style_score = e.style_score +
-                (points === nothing ? 0.0 : Float64(points))
+                (points === nothing ? 0.0 : points)
             emit_derived!(eng.journal, "style_awarded", EventFields(
-                ball_id = get(cmd, "ball_id", nothing),
-                style = get(cmd, "style", nothing),
-                points = points === nothing ? nothing : Float64(points),
-                distance = get(cmd, "distance", nothing),
-                peg_id = get(cmd, "peg_id", nothing),
-                line_id = get(cmd, "line_id", nothing),
-                source_sequences = get(cmd, "source_sequences", nothing),
+                ball_id = cmd.ball_id,
+                style = cmd.style,
+                points = points,
+                distance = cmd.distance,
+                peg_id = cmd.peg_id,
+                line_id = cmd.line_id,
+                source_sequences = cmd.source_sequences,
             ))
             cb = eng.callbacks.on_style_shot
             if cb !== nothing
-                seqs = get(cmd, "source_sequences", nothing)
-                info = _present_payload(
-                    "ball_id" => get(cmd, "ball_id", nothing),
-                    "style" => get(cmd, "style", nothing),
-                    "points" => points,
-                    "distance" => get(cmd, "distance", nothing),
-                    "peg_id" => get(cmd, "peg_id", nothing),
-                    "line_id" => get(cmd, "line_id", nothing),
-                    "source_sequences" => seqs === nothing ? nothing : copy(seqs),
-                )
-                cb(eng, info)
+                cb(eng, _fill_style_info!(eng.style_info, cmd))
             end
         elseif ctype == "start_midturn_clearing"
             # Idempotent: clearing initializes at most once per step.
             if e.clear_queue === nothing && !eng.midturn_clear_started
                 eng.midturn_clear_started = true
-                has_hit_pegs = any(p -> p.hit, e.pegs)
+                has_hit_pegs = false
+                for p in e.pegs
+                    if p.hit
+                        has_hit_pegs = true
+                        break
+                    end
+                end
                 if has_hit_pegs
                     start_clearing!(eng, false)
                 else
@@ -604,25 +685,27 @@ function apply_commands!(eng::ShotEngine)::Nothing
             end
         elseif ctype == "remove_slide_pegs"
             removed = 0
-            peg_ids = get(cmd, "peg_ids", nothing)
-            for peg_id in (peg_ids === nothing ? Int[] : peg_ids)
-                peg = get(e.peg_by_id, Int(peg_id), nothing)
-                if peg !== nothing
-                    remove_peg!(eng, peg)
-                    removed += 1
-                    emit_derived!(eng.journal, "slide_peg_removed",
-                                  EventFields(
-                        ball_id = get(cmd, "ball_id", nothing),
-                        line_id = get(cmd, "line_id", nothing),
-                        peg_id = Int(peg_id),
-                        reason = get(cmd, "reason", nothing),
-                    ))
+            peg_ids = cmd.peg_ids
+            if peg_ids !== nothing
+                for peg_id in peg_ids
+                    peg = get(e.peg_by_id, Int(peg_id), nothing)
+                    if peg !== nothing
+                        remove_peg!(eng, peg)
+                        removed += 1
+                        emit_derived!(eng.journal, "slide_peg_removed",
+                                      EventFields(
+                            ball_id = cmd.ball_id,
+                            line_id = cmd.line_id,
+                            peg_id = Int(peg_id),
+                            reason = cmd.reason,
+                        ))
+                    end
                 end
             end
             removed == 0 && (status = "ignored_duplicate")
         end
 
-        record_applied!(eng.commands, cmd, status)
+        record_applied!(commands, cmd, status)
     end
     eng.midturn_clear_started = false
     return nothing
@@ -729,6 +812,35 @@ function _launch_balls!(eng::ShotEngine)::Nothing
         end
     end
     return nothing
+end
+
+
+# Recycle the BallState object of a previous power spawn instead of allocating
+# a fresh one every spawn. A pooled object is detached from the board (it was
+# removed and unregistered before the shot ended) and `restore!` replaces the
+# checkpoint's ball collection wholesale, so a reused object cannot alias a
+# live ball.
+function _take_spawn_ball!(eng::ShotEngine, spec::PowerSpawnSpec)::BallState
+    radius = eng.config.ball_radius
+    if eng.spawn_pool_n < length(eng.spawn_pool)
+        eng.spawn_pool_n += 1
+        nb = eng.spawn_pool[eng.spawn_pool_n]
+        nb.id = 0
+        nb.x = spec.x
+        nb.y = spec.y
+        nb.prev_x = spec.x
+        nb.prev_y = spec.y
+        nb.vx = 0.0
+        nb.vy = 0.0
+        nb.radius = radius
+        nb.launched = false
+        nb.scored_fever = false
+        return nb
+    end
+    nb = BallState(0, spec.x, spec.y, radius)
+    push!(eng.spawn_pool, nb)
+    eng.spawn_pool_n = length(eng.spawn_pool)
+    return nb
 end
 
 # ---------------------------------------------------------------------------
@@ -931,7 +1043,7 @@ function _step_body!(eng::ShotEngine, dt::Float64)::Nothing
     # physics on the following fixed step.
     if !isempty(eng.pending_spawn_specs)
         for spec in eng.pending_spawn_specs
-            nb = BallState(0, spec.x, spec.y, eng.config.ball_radius)
+            nb = _take_spawn_ball!(eng, spec)
             nb.launched = true
             nb.vx = spec.vx
             nb.vy = spec.vy

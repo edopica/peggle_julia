@@ -118,8 +118,7 @@ function ball_state_process!(
         if !t.all_idle_latch
             t.all_idle_latch = true
             emit_derived!(journal, "all_balls_became_idle", nothing)
-            push_command!(commands, "start_midturn_clearing",
-                          Dict{String,Any}("reason" => "all_balls_became_idle"))
+            push_start_midturn_clearing!(commands, "all_balls_became_idle")
         end
     else
         # A non-idle ball (or no launched balls) resets the episode latch.
@@ -131,8 +130,7 @@ function ball_state_process!(
         t.no_score_timeout_fired = true
         emit_derived!(journal, "no_score_timeout_reached",
                       EventFields(elapsed = t.no_score_timer))
-        push_command!(commands, "start_midturn_clearing",
-                      Dict{String,Any}("reason" => "no_score_timeout_reached"))
+        push_start_midturn_clearing!(commands, "no_score_timeout_reached")
     end
     return nothing
 end

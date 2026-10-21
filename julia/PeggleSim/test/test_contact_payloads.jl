@@ -116,11 +116,16 @@ end
     @test PeggleSim.trace_json(PeggleSim.event_dict(ev)) == before
 
     # Typed payloads also export ordinary nested dictionaries through commands.
+    # Command payloads are exported as ordinary nested dictionaries. The
+    # export is detached from both the journal payload and the command record,
+    # so mutating it changes neither.
     commands = PeggleSim.GameplayCommands()
     PeggleSim.push_command!(commands, "contact", ev.fields)
-    @test commands.commands[1]["line"] isa Dict{String,Any}
-    commands.commands[1]["line"]["id"] = "command mutation"
+    exported = PeggleSim.command_snapshot(commands)
+    @test exported[1]["line"] isa Dict{String,Any}
+    exported[1]["line"]["id"] = "command mutation"
     @test ev.fields["line"]["id"] == line.id
+    @test PeggleSim.command_snapshot(commands)[1]["line"]["id"] == line.id
 end
 
 function _contact_journal_batch!(journal, fields)

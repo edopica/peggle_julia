@@ -94,25 +94,58 @@ function _style_ensure_award_tab!(t::StyleShotTrackers, ball_id::Int)
     return tab
 end
 
+# Take an emptied per-ball `slide_awarded` marker map from the reuse pool.
+function _style_take_slide_award_map!(t::StyleShotTrackers)
+    if t.slide_award_pool_n < length(t.slide_award_pool)
+        t.slide_award_pool_n += 1
+        m = t.slide_award_pool[t.slide_award_pool_n]
+        empty!(m)
+        return m
+    end
+    m = Dict{String,Bool}()
+    push!(t.slide_award_pool, m)
+    t.slide_award_pool_n = length(t.slide_award_pool)
+    return m
+end
+
 # A ball's slide runs are keyed by its integer id; checkpoint serialization
 # stringifies the key exactly as the Lua `string(ball_id)` table does.
 # clear_ball_slide empties the ball's run map (keeping its capacity); the
 # per-(ball, line) award markers in slide_awarded survive.
 function _style_clear_ball_slide!(t::StyleShotTrackers, ball_id::Int)
-    # Drop the ball's run map outright. Handing it back to a shared pool is
-    # unsound: a cleared map can be taken again while another ball still holds
-    # it, which silently merges two balls' slide runs.
+    # End the ball's slide: drop the live run map from `slide_runs`, zero every
+    # run (so a later reuse cannot extend a stale run) and park the map in the
+    # per-ball cache. Handing a cleared map to a *shared* pool is unsound: it
+    # can be taken again while another ball still holds it. The cache is keyed
+    # by ball id, so a map is only ever handed back to the ball that owned it.
+    by_line = get(t.slide_runs, ball_id, nothing)
+    by_line === nothing && return nothing
     delete!(t.slide_runs, ball_id)
+    for run in values(by_line)
+        run.len = 0
+        run.last = nothing
+        run.dir = 0
+        empty!(run.seqs)
+    end
+    t.slide_cache[ball_id] = by_line
     return nothing
 end
 
 # run_tab: returns (creating if needed) the run for one (ball, line):
-# { len, last, dir, seqs }. Run objects come from a reuse pool so a warmed
-# repeat of the same shot does not allocate here.
+# { len, last, dir, seqs }. Run objects are created once per distinct
+# (ball, line) pair: `run_pool` is a monotonic registry (never rewound, so a
+# run object is handed out at most once) and the per-ball maps that hold the
+# runs survive `reset_shot!` in `slide_cache`, zeroed. A warmed repeat of the
+# same shot therefore reuses the same map and run objects.
 function _style_run_tab!(t::StyleShotTrackers, ball_id::Int, line_id::AbstractString)
     by_line = get(t.slide_runs, ball_id, nothing)
     if by_line === nothing
-        by_line = Dict{String,StyleSlideRun}()
+        by_line = get(t.slide_cache, ball_id, nothing)
+        if by_line === nothing
+            by_line = Dict{String,StyleSlideRun}()
+        else
+            delete!(t.slide_cache, ball_id)
+        end
         t.slide_runs[ball_id] = by_line
     end
     key = String(line_id)
@@ -210,17 +243,11 @@ function _style_note_slide_score!(
             return nothing
         end
         if awarded === nothing
-            awarded = Dict{String,Bool}()
+            awarded = _style_take_slide_award_map!(t)
             t.slide_awarded[bid] = awarded
         end
         awarded[line_id] = true
-        push_command!(commands, "award_style_points", Dict{String,Any}(
-            "ball_id" => bid,
-            "style" => "slide",
-            "points" => points,
-            "line_id" => line_id,
-            "source_sequences" => seqs,
-        ))
+        push_style_award_seqs!(commands, bid, "slide", points, line_id, seqs)
     end
     return nothing
 end
@@ -305,12 +332,9 @@ function _style_process_event!(
            _style_truthy(get(t.bounced_after_bucket, bid, nothing)) &&
            !_style_truthy(get(tab, "lucky", nothing))
             tab["lucky"] = true
-            push_command!(commands, "award_style_points", Dict{String,Any}(
-                "ball_id" => bid,
-                "style" => "lucky_bounce",
-                "points" => pt_lucky,
-                "source_sequences" => Any[t.bucket_bounced[bid], ev.sequence],
-            ))
+            push_style_award!(commands, bid, "lucky_bounce", pt_lucky,
+                              nothing, nothing, t.bucket_bounced[bid],
+                              ev.sequence)
         end
 
     elseif ev.type == "ball_contacted_peg"
@@ -349,15 +373,12 @@ function _style_process_event!(
                 # Chain-eligible scoring impact.
                 # Off the Wall: non-blue peg scored after a side wall.
                 wall_seq = get(t.side_wall_hit, bid, nothing)
-                if _style_truthy(wall_seq) && !_style_truthy(get(tab, "off_wall", nothing))
+                if _style_truthy(wall_seq) && !_style_truthy(get(tab, "off_wall", nothing)) &&
+                   wall_seq !== nothing
                     tab["off_wall"] = true
-                    push_command!(commands, "award_style_points", Dict{String,Any}(
-                        "ball_id" => bid,
-                        "style" => "off_the_wall",
-                        "points" => pt_off_wall,
-                        "peg_id" => scored.fields.peg_id,
-                        "source_sequences" => Any[wall_seq, ev.sequence],
-                    ))
+                    push_style_award!(commands, bid, "off_the_wall", pt_off_wall,
+                                      scored.fields.peg_id, nothing,
+                                      Int(wall_seq), ev.sequence)
                     delete!(t.side_wall_hit, bid)   # consumed (awarded)
                 end
 
@@ -368,25 +389,17 @@ function _style_process_event!(
                     if d >= super_d
                         if !_style_truthy(get(tab, "super", nothing))
                             tab["super"] = true
-                            push_command!(commands, "award_style_points", Dict{String,Any}(
-                                "ball_id" => bid,
-                                "style" => "super_long_shot",
-                                "points" => pt_super,
-                                "distance" => d,
-                                "source_sequences" => Any[last.seq, ev.sequence],
-                            ))
+                            push_style_award!(commands, bid, "super_long_shot",
+                                              pt_super, nothing, d, last.seq,
+                                              ev.sequence)
                         end
                         segment_qualified = true
                     elseif d >= long_d
                         if !_style_truthy(get(tab, "long", nothing))
                             tab["long"] = true
-                            push_command!(commands, "award_style_points", Dict{String,Any}(
-                                "ball_id" => bid,
-                                "style" => "long_shot",
-                                "points" => pt_long,
-                                "distance" => d,
-                                "source_sequences" => Any[last.seq, ev.sequence],
-                            ))
+                            push_style_award!(commands, bid, "long_shot",
+                                              pt_long, nothing, d, last.seq,
+                                              ev.sequence)
                         end
                         segment_qualified = true
                     end
@@ -400,12 +413,23 @@ function _style_process_event!(
                         t.qualifying_streak[bid] = streak_new
                         if streak_new >= 2 && !_style_truthy(get(tab, "double_long_shot", nothing))
                             tab["double_long_shot"] = true
-                            push_command!(commands, "award_style_points", Dict{String,Any}(
-                                "ball_id" => bid,
-                                "style" => "double_long_shot",
-                                "points" => pt_double,
-                                "source_sequences" => Any[prev_qual_seq, ev.sequence],
-                            ))
+                            if prev_qual_seq === nothing
+                                # Unreachable: a streak of two implies the first
+                                # segment stored its completing sequence. Keep
+                                # the old detached payload as a safe fallback.
+                                push_command!(commands, "award_style_points", Dict{String,Any}(
+                                    "ball_id" => bid,
+                                    "style" => "double_long_shot",
+                                    "points" => pt_double,
+                                    "source_sequences" => Any[prev_qual_seq, ev.sequence],
+                                ))
+                            else
+                                push_style_award!(commands, bid,
+                                                  "double_long_shot", pt_double,
+                                                  nothing, nothing,
+                                                  Int(prev_qual_seq),
+                                                  ev.sequence)
+                            end
                         end
                         t.last_qualifying_seq[bid] = ev.sequence
                     else

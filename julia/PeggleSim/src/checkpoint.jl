@@ -654,7 +654,8 @@ function _parse_trackers(d::AbstractDict)::Trackers
         _parse_int_nested_map(Bool, ss["awarded"]),
         _parse_int_nested_map(StyleSlideRun, ss["slide_runs"]),
         _parse_int_nested_map(Bool, ss["slide_awarded"]),
-        StyleSlideRun[], 0, Dict{String,Bool}[], 0,
+        Dict{Int,Dict{String,StyleSlideRun}}(),
+        StyleSlideRun[], 0, Dict{String,Bool}[], 0, Dict{String,Bool}[], 0,
     )
     ball = BallStateTrackers(
         _parse_int_tracker_map(Bool, bs["idle"]),
