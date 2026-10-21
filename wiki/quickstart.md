@@ -18,7 +18,7 @@ in `../peggle_evolved/wiki/`.
 | M1 — interchange, fixtures, level previews | **Done** |
 | M2 — math and state foundations (first Julia code) | **Done** |
 | M3 — full-physics shot engine, mustache traces, first benchmark | **Done** |
-| M4 — full static-level shot behavior + main performance gate | **In progress** — correctness breadth and the performance gate validated; a small command-path allocation residue and cross-machine qualification remain |
+| M4 — full static-level shot behavior + main performance gate | **Done** — correctness breadth and strict zero-allocation gate passed; second-host corpus qualification recorded; M4 closed |
 
 The repository contains the frozen Lua reference, the baseline sweep harness,
 the versioned interchange artifacts and fixtures, the M2/M3 Julia package
@@ -28,8 +28,11 @@ measured M3 results are in `wiki/benchmarks/m3-shot.md`. M4 correctness
 breadth is validated on the pinned corpus
 (`wiki/context/m4-validation.md`), and the M4 performance gate — the
 zero-allocation criterion plus the seven-workload benchmark against Lua — is in
-`wiki/benchmarks/m4-perf.md`. A small command-path allocation residue and
-cross-machine qualification remain open; M4 is not done.
+`wiki/benchmarks/m4-perf.md`. M4 is **closed** as of session 3: the gate is
+strict zero on all five allocation probes, the benchmark was re-run, and the
+validated corpus is byte-identical on a second Linux host. The cross-platform
+runbook's macOS ARM64 and Windows x86-64 rows remain uncollected and are not
+claimed.
 
 ## Requirements
 
@@ -90,6 +93,7 @@ M4 Julia targets:
 make m4-parity           # full M4 correctness-breadth run (replay, sweeps, threads, scenarios)
 make m4-replay           # fixture replay + trace parity into results/m4/
 make m4-bench            # M4 seven-workload benchmark (Lua + Julia, latency/throughput/alloc/RSS)
+scripts/m4_allocation.jl --workload all --out results/m4/allocation-profile.json  # strict-zero allocation gate
 ```
 
 The `wpd-*` targets are the experimental CORE-MATH comparison; their outputs
@@ -195,7 +199,7 @@ Conventions:
 | Which reference fixtures exist and why? | `wiki/context/fixtures.md` |
 | How is the Julia side built? | `wiki/context/julia.md` |
 | Which M3 fixtures exist, and how are they compared? | `wiki/context/m3-mustache.md` |
-| What M4 parity is validated, and what remains open? | `wiki/context/m4-validation.md` |
+| What M4 validated, and how it was closed? | `wiki/context/m4-validation.md` |
 | How do I collect the macOS/Windows qualification evidence? | `wiki/context/cross-platform-qualification.md` |
 | How fast is Lua today? | `wiki/benchmarks/baseline-metrics.md` |
 | How fast is the M2 checkpoint/reset? | `wiki/benchmarks/m2-checkpoint.md` |

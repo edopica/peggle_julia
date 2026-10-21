@@ -7,20 +7,20 @@
   ],
   "environment": {
     "cpu_model": "AMD Ryzen 5 4600H with Radeon Graphics",
-    "dirty": true,
+    "dirty": false,
     "git_dirty_scope": "julia/PeggleSim/src",
-    "git_head": "b8e94f046ddecb779b5cc592dd23df2c092a5b89",
+    "git_head": "4ae588d83f811b1ff03303bda94e29845f222ead",
     "julia_version": "1.12.6",
     "machine": "x86_64-linux-gnu",
     "nthreads": 1,
     "requested_threads": 1,
     "source_moving": false,
-    "src_file_count": 53,
+    "src_file_count": 32,
     "src_jl_file_count": 26,
-    "src_jl_sha256": "0631c71457a55c2585c5f208a9c291a6c20119231a9a7c08eb5758e69c74d44c",
-    "src_jl_sha256_at_first_workload": "0631c71457a55c2585c5f208a9c291a6c20119231a9a7c08eb5758e69c74d44c",
-    "src_jl_sha256_at_last_workload": "0631c71457a55c2585c5f208a9c291a6c20119231a9a7c08eb5758e69c74d44c",
-    "src_tree_sha256": "ebcc3c4dcd4a732e4015492800df512ad4fb20e185130b6270b500ed11d1db09",
+    "src_jl_sha256": "38bbc5021f8f539e5f14a395941b84a987eda5b4b588d59e772d1cc3e5a8e2d1",
+    "src_jl_sha256_at_first_workload": "38bbc5021f8f539e5f14a395941b84a987eda5b4b588d59e772d1cc3e5a8e2d1",
+    "src_jl_sha256_at_last_workload": "38bbc5021f8f539e5f14a395941b84a987eda5b4b588d59e772d1cc3e5a8e2d1",
+    "src_tree_sha256": "ee82bf130912541929fa3e7e69dd1cc37cee3a5135fc2a616db9f852ca7cc3f0",
     "src_tree_sha256_method": "sha256 of the concatenated contents of every regular file under julia/PeggleSim/src, files sorted by relative path; src_jl_sha256 applies the same method to *.jl files only",
     "tree_changed_during_run": false
   },
@@ -41,20 +41,20 @@
       "config": "interchange/config.v1.json",
       "environment": {
         "cpu_model": "AMD Ryzen 5 4600H with Radeon Graphics",
-        "dirty": true,
+        "dirty": false,
         "git_dirty_scope": "julia/PeggleSim/src",
-        "git_head": "b8e94f046ddecb779b5cc592dd23df2c092a5b89",
+        "git_head": "4ae588d83f811b1ff03303bda94e29845f222ead",
         "julia_version": "1.12.6",
         "machine": "x86_64-linux-gnu",
         "nthreads": 1,
         "requested_threads": 1,
         "source_moving": false,
-        "src_file_count": 53,
+        "src_file_count": 32,
         "src_jl_file_count": 26,
-        "src_jl_sha256": "0631c71457a55c2585c5f208a9c291a6c20119231a9a7c08eb5758e69c74d44c",
-        "src_jl_sha256_at_first_workload": "0631c71457a55c2585c5f208a9c291a6c20119231a9a7c08eb5758e69c74d44c",
-        "src_jl_sha256_at_last_workload": "0631c71457a55c2585c5f208a9c291a6c20119231a9a7c08eb5758e69c74d44c",
-        "src_tree_sha256": "ebcc3c4dcd4a732e4015492800df512ad4fb20e185130b6270b500ed11d1db09",
+        "src_jl_sha256": "38bbc5021f8f539e5f14a395941b84a987eda5b4b588d59e772d1cc3e5a8e2d1",
+        "src_jl_sha256_at_first_workload": "38bbc5021f8f539e5f14a395941b84a987eda5b4b588d59e772d1cc3e5a8e2d1",
+        "src_jl_sha256_at_last_workload": "38bbc5021f8f539e5f14a395941b84a987eda5b4b588d59e772d1cc3e5a8e2d1",
+        "src_tree_sha256": "ee82bf130912541929fa3e7e69dd1cc37cee3a5135fc2a616db9f852ca7cc3f0",
         "src_tree_sha256_method": "sha256 of the concatenated contents of every regular file under julia/PeggleSim/src, files sorted by relative path; src_jl_sha256 applies the same method to *.jl files only",
         "tree_changed_during_run": false
       },
@@ -141,8 +141,8 @@
       "shot_step_cap": 4000,
       "sites": [],
       "src_changed_during_row": false,
-      "src_jl_sha256_at_end": "0631c71457a55c2585c5f208a9c291a6c20119231a9a7c08eb5758e69c74d44c",
-      "src_jl_sha256_at_start": "0631c71457a55c2585c5f208a9c291a6c20119231a9a7c08eb5758e69c74d44c",
+      "src_jl_sha256_at_end": "38bbc5021f8f539e5f14a395941b84a987eda5b4b588d59e772d1cc3e5a8e2d1",
+      "src_jl_sha256_at_start": "38bbc5021f8f539e5f14a395941b84a987eda5b4b588d59e772d1cc3e5a8e2d1",
       "warmups": 3,
       "workload": "annular_dense"
     },
@@ -152,20 +152,20 @@
       "config": "interchange/config.v1.json",
       "environment": {
         "cpu_model": "AMD Ryzen 5 4600H with Radeon Graphics",
-        "dirty": true,
+        "dirty": false,
         "git_dirty_scope": "julia/PeggleSim/src",
-        "git_head": "b8e94f046ddecb779b5cc592dd23df2c092a5b89",
+        "git_head": "4ae588d83f811b1ff03303bda94e29845f222ead",
         "julia_version": "1.12.6",
         "machine": "x86_64-linux-gnu",
         "nthreads": 1,
         "requested_threads": 1,
         "source_moving": false,
-        "src_file_count": 53,
+        "src_file_count": 32,
         "src_jl_file_count": 26,
-        "src_jl_sha256": "0631c71457a55c2585c5f208a9c291a6c20119231a9a7c08eb5758e69c74d44c",
-        "src_jl_sha256_at_first_workload": "0631c71457a55c2585c5f208a9c291a6c20119231a9a7c08eb5758e69c74d44c",
-        "src_jl_sha256_at_last_workload": "0631c71457a55c2585c5f208a9c291a6c20119231a9a7c08eb5758e69c74d44c",
-        "src_tree_sha256": "ebcc3c4dcd4a732e4015492800df512ad4fb20e185130b6270b500ed11d1db09",
+        "src_jl_sha256": "38bbc5021f8f539e5f14a395941b84a987eda5b4b588d59e772d1cc3e5a8e2d1",
+        "src_jl_sha256_at_first_workload": "38bbc5021f8f539e5f14a395941b84a987eda5b4b588d59e772d1cc3e5a8e2d1",
+        "src_jl_sha256_at_last_workload": "38bbc5021f8f539e5f14a395941b84a987eda5b4b588d59e772d1cc3e5a8e2d1",
+        "src_tree_sha256": "ee82bf130912541929fa3e7e69dd1cc37cee3a5135fc2a616db9f852ca7cc3f0",
         "src_tree_sha256_method": "sha256 of the concatenated contents of every regular file under julia/PeggleSim/src, files sorted by relative path; src_jl_sha256 applies the same method to *.jl files only",
         "tree_changed_during_run": false
       },
@@ -252,8 +252,8 @@
       "shot_step_cap": 4000,
       "sites": [],
       "src_changed_during_row": false,
-      "src_jl_sha256_at_end": "0631c71457a55c2585c5f208a9c291a6c20119231a9a7c08eb5758e69c74d44c",
-      "src_jl_sha256_at_start": "0631c71457a55c2585c5f208a9c291a6c20119231a9a7c08eb5758e69c74d44c",
+      "src_jl_sha256_at_end": "38bbc5021f8f539e5f14a395941b84a987eda5b4b588d59e772d1cc3e5a8e2d1",
+      "src_jl_sha256_at_start": "38bbc5021f8f539e5f14a395941b84a987eda5b4b588d59e772d1cc3e5a8e2d1",
       "warmups": 3,
       "workload": "circles_small"
     },
@@ -263,20 +263,20 @@
       "config": "interchange/config.v1.json",
       "environment": {
         "cpu_model": "AMD Ryzen 5 4600H with Radeon Graphics",
-        "dirty": true,
+        "dirty": false,
         "git_dirty_scope": "julia/PeggleSim/src",
-        "git_head": "b8e94f046ddecb779b5cc592dd23df2c092a5b89",
+        "git_head": "4ae588d83f811b1ff03303bda94e29845f222ead",
         "julia_version": "1.12.6",
         "machine": "x86_64-linux-gnu",
         "nthreads": 1,
         "requested_threads": 1,
         "source_moving": false,
-        "src_file_count": 53,
+        "src_file_count": 32,
         "src_jl_file_count": 26,
-        "src_jl_sha256": "0631c71457a55c2585c5f208a9c291a6c20119231a9a7c08eb5758e69c74d44c",
-        "src_jl_sha256_at_first_workload": "0631c71457a55c2585c5f208a9c291a6c20119231a9a7c08eb5758e69c74d44c",
-        "src_jl_sha256_at_last_workload": "0631c71457a55c2585c5f208a9c291a6c20119231a9a7c08eb5758e69c74d44c",
-        "src_tree_sha256": "ebcc3c4dcd4a732e4015492800df512ad4fb20e185130b6270b500ed11d1db09",
+        "src_jl_sha256": "38bbc5021f8f539e5f14a395941b84a987eda5b4b588d59e772d1cc3e5a8e2d1",
+        "src_jl_sha256_at_first_workload": "38bbc5021f8f539e5f14a395941b84a987eda5b4b588d59e772d1cc3e5a8e2d1",
+        "src_jl_sha256_at_last_workload": "38bbc5021f8f539e5f14a395941b84a987eda5b4b588d59e772d1cc3e5a8e2d1",
+        "src_tree_sha256": "ee82bf130912541929fa3e7e69dd1cc37cee3a5135fc2a616db9f852ca7cc3f0",
         "src_tree_sha256_method": "sha256 of the concatenated contents of every regular file under julia/PeggleSim/src, files sorted by relative path; src_jl_sha256 applies the same method to *.jl files only",
         "tree_changed_during_run": false
       },
@@ -301,8 +301,8 @@
           "pass": false
         },
         "run": {
-          "bytes": 9712,
-          "bytes_per_step": 12.645833,
+          "bytes": 0,
+          "bytes_per_step": 0.0,
           "gate": false,
           "includes": "run_shot!(eng; max_steps=step_cap) after reset+launch outside the region",
           "note": "whole-shot context; not part of the steady-state gate",
@@ -311,49 +311,49 @@
         },
         "steady_state": {
           "budget_bytes": 0,
-          "bytes_per_step": 11.125,
+          "bytes_per_step": 0.0,
           "criterion": "m4-perf section 1.1: sum(Base.gc_bytes() deltas) == 0 AND max single-step delta == 0 over a warmed pass starting from a fresh reset",
           "first_step_bytes": 0,
           "gate": true,
           "includes": "per-step update!(eng, config.fixed_dt): save_previous_state!, step_simulation!/finalize_step! (including the fever bucket update), and steps_run bookkeeping; loop condition identical to run_shot!",
-          "max_step_bytes": 4352,
-          "nonzero_steps": 2,
+          "max_step_bytes": 0,
+          "nonzero_steps": 0,
           "p50": 0,
           "p99": 0,
-          "pass": false,
+          "pass": true,
           "shot_completed": true,
           "step_cap": 4000,
           "steps": 768,
-          "total_bytes": 8544,
-          "zero_steps": 766
+          "total_bytes": 0,
+          "zero_steps": 768
         }
       },
       "profile": {
-        "attributed_bytes": 7864,
-        "attributed_count": 94,
-        "attributed_to_measured_ratio": 0.920412,
+        "attributed_bytes": 0,
+        "attributed_count": 0,
+        "attributed_to_measured_ratio": 0.0,
         "classification_basis": "sites are measured in the full steady-state pass at the same shot index as the measured pass; a site absent from a second pass on the same engine is classified one_time_capacity_growth, because it does not recur after the container has grown; checkpoint.jl/restore frames are reset and trace/snapshot/canonical/jsonio frames are export_only; everything else is in_scope_steady_state",
         "coverage_note": "Profile.Allocs records payload sizes; Base.gc_bytes() also counts GC object headers and padding, so profiled bytes are expected to be below the measured total. A nonzero measured_pass_delta_bytes also means the separate profiled pass allocated differently from the clean measured pass; that delta is not attributed to any site. Ratios are reported, not corrected.",
         "dropped_profiler_bytes": 0,
         "dropped_profiler_count": 0,
         "full_pass": {
-          "attributed_bytes": 7864,
-          "attributed_count": 94,
-          "measured_total_bytes": 8544,
-          "profiled_bytes": 7864,
-          "profiled_count": 94,
+          "attributed_bytes": 0,
+          "attributed_count": 0,
+          "measured_total_bytes": 0,
+          "profiled_bytes": 0,
+          "profiled_count": 0,
           "steps": 768
         },
         "measured_pass_delta_bytes": 0,
-        "measured_total_bytes": 8544,
-        "profiled_bytes": 7864,
-        "profiled_count": 94,
-        "profiled_to_measured_ratio": 0.920412,
+        "measured_total_bytes": 0,
+        "profiled_bytes": 0,
+        "profiled_count": 0,
+        "profiled_to_measured_ratio": 0.0,
         "repeat_pass": {
           "description": "second steady-state pass on the same engine immediately after the full pass; used only to separate one-time growth from per-step sites",
-          "measured_total_bytes": 8544,
-          "profiled_bytes": 7864,
-          "profiled_count": 94,
+          "measured_total_bytes": 0,
+          "profiled_bytes": 0,
+          "profiled_count": 0,
           "steps": 768
         },
         "sample_rate": 1.0,
@@ -361,391 +361,10 @@
         "unattributed_count": 0
       },
       "shot_step_cap": 4000,
-      "sites": [
-        {
-          "bytes": 1760,
-          "bytes_per_step": 2.291667,
-          "classification": "in_scope_steady_state",
-          "count": 6,
-          "file": "julia/PeggleSim/src/engine.jl",
-          "func": "apply_commands!",
-          "line": 613,
-          "note": "",
-          "types": [
-            {
-              "bytes": 1632,
-              "type": "PeggleSim.EventFields"
-            },
-            {
-              "bytes": 64,
-              "type": "@NamedTuple{ball_id::Int64, line_id::String, peg_id::Int64, reason::String}"
-            },
-            {
-              "bytes": 64,
-              "type": "Tuple{Int64, String, Int64, String}"
-            }
-          ]
-        },
-        {
-          "bytes": 1280,
-          "bytes_per_step": 1.666667,
-          "classification": "in_scope_steady_state",
-          "count": 12,
-          "file": "julia/PeggleSim/src/events.jl",
-          "func": "_copy_payload",
-          "line": 80,
-          "note": "",
-          "types": [
-            {
-              "bytes": 576,
-              "type": "Memory{Any}"
-            },
-            {
-              "bytes": 576,
-              "type": "Memory{String}"
-            },
-            {
-              "bytes": 128,
-              "type": "Memory{UInt8}"
-            }
-          ]
-        },
-        {
-          "bytes": 1064,
-          "bytes_per_step": 1.385417,
-          "classification": "in_scope_steady_state",
-          "count": 17,
-          "file": "julia/PeggleSim/src/events.jl",
-          "func": "push_command!",
-          "line": 272,
-          "note": "",
-          "types": [
-            {
-              "bytes": 288,
-              "type": "Memory{Any}"
-            },
-            {
-              "bytes": 288,
-              "type": "Memory{String}"
-            },
-            {
-              "bytes": 192,
-              "type": "Pair{String, Int64}"
-            }
-          ]
-        },
-        {
-          "bytes": 896,
-          "bytes_per_step": 1.166667,
-          "classification": "in_scope_steady_state",
-          "count": 3,
-          "file": "julia/PeggleSim/src/engine.jl",
-          "func": "apply_commands!",
-          "line": 569,
-          "note": "",
-          "types": [
-            {
-              "bytes": 816,
-              "type": "PeggleSim.EventFields"
-            },
-            {
-              "bytes": 40,
-              "type": "@NamedTuple{ball_id::Int64, style::String, points::Float64, distance::Nothing, peg_id::Nothing, line_id::String, source_sequences::Vector{Any}}"
-            },
-            {
-              "bytes": 40,
-              "type": "Tuple{Int64, String, Float64, Nothing, Nothing, String, Vector{Any}}"
-            }
-          ]
-        },
-        {
-          "bytes": 568,
-          "bytes_per_step": 0.739583,
-          "classification": "in_scope_steady_state",
-          "count": 10,
-          "file": "julia/PeggleSim/src/style_shots.jl",
-          "func": "_style_note_slide_score!",
-          "line": 227,
-          "note": "",
-          "types": [
-            {
-              "bytes": 144,
-              "type": "Memory{Any}"
-            },
-            {
-              "bytes": 144,
-              "type": "Memory{String}"
-            },
-            {
-              "bytes": 80,
-              "type": "Dict{String, Any}"
-            }
-          ]
-        },
-        {
-          "bytes": 528,
-          "bytes_per_step": 0.6875,
-          "classification": "in_scope_steady_state",
-          "count": 8,
-          "file": "julia/PeggleSim/src/slide_inversion.jl",
-          "func": "slide_inversion_process!",
-          "line": 232,
-          "note": "",
-          "types": [
-            {
-              "bytes": 144,
-              "type": "Memory{Any}"
-            },
-            {
-              "bytes": 144,
-              "type": "Memory{String}"
-            },
-            {
-              "bytes": 80,
-              "type": "Dict{String, Any}"
-            }
-          ]
-        },
-        {
-          "bytes": 320,
-          "bytes_per_step": 0.416667,
-          "classification": "in_scope_steady_state",
-          "count": 3,
-          "file": "julia/PeggleSim/src/engine.jl",
-          "func": "_present_payload",
-          "line": 554,
-          "note": "",
-          "types": [
-            {
-              "bytes": 144,
-              "type": "Memory{Any}"
-            },
-            {
-              "bytes": 144,
-              "type": "Memory{String}"
-            },
-            {
-              "bytes": 32,
-              "type": "Memory{UInt8}"
-            }
-          ]
-        },
-        {
-          "bytes": 320,
-          "bytes_per_step": 0.416667,
-          "classification": "in_scope_steady_state",
-          "count": 4,
-          "file": "julia/PeggleSim/src/events.jl",
-          "func": "_copy_payload",
-          "line": 78,
-          "note": "",
-          "types": [
-            {
-              "bytes": 320,
-              "type": "Dict{String, Any}"
-            }
-          ]
-        },
-        {
-          "bytes": 304,
-          "bytes_per_step": 0.395833,
-          "classification": "in_scope_steady_state",
-          "count": 8,
-          "file": "julia/PeggleSim/src/events.jl",
-          "func": "_copy_payload",
-          "line": 84,
-          "note": "",
-          "types": [
-            {
-              "bytes": 176,
-              "type": "Memory{Any}"
-            },
-            {
-              "bytes": 128,
-              "type": "Vector{Any}"
-            }
-          ]
-        },
-        {
-          "bytes": 280,
-          "bytes_per_step": 0.364583,
-          "classification": "in_scope_steady_state",
-          "count": 9,
-          "file": "julia/PeggleSim/src/engine.jl",
-          "func": "apply_commands!",
-          "line": 581,
-          "note": "",
-          "types": [
-            {
-              "bytes": 64,
-              "type": "Pair{String, String}"
-            },
-            {
-              "bytes": 56,
-              "type": "Memory{Any}"
-            },
-            {
-              "bytes": 32,
-              "type": "Pair{String, Float64}"
-            }
-          ]
-        },
-        {
-          "bytes": 208,
-          "bytes_per_step": 0.270833,
-          "classification": "in_scope_steady_state",
-          "count": 3,
-          "file": "julia/PeggleSim/src/style_shots.jl",
-          "func": "_style_note_slide_score!",
-          "line": 226,
-          "note": "",
-          "types": [
-            {
-              "bytes": 144,
-              "type": "Memory{String}"
-            },
-            {
-              "bytes": 32,
-              "type": "Memory{Bool}"
-            },
-            {
-              "bytes": 32,
-              "type": "Memory{UInt8}"
-            }
-          ]
-        },
-        {
-          "bytes": 80,
-          "bytes_per_step": 0.104167,
-          "classification": "in_scope_steady_state",
-          "count": 1,
-          "file": "julia/PeggleSim/src/engine.jl",
-          "func": "_present_payload",
-          "line": 552,
-          "note": "",
-          "types": [
-            {
-              "bytes": 80,
-              "type": "Dict{String, Any}"
-            }
-          ]
-        },
-        {
-          "bytes": 80,
-          "bytes_per_step": 0.104167,
-          "classification": "in_scope_steady_state",
-          "count": 1,
-          "file": "julia/PeggleSim/src/style_shots.jl",
-          "func": "_style_note_slide_score!",
-          "line": 223,
-          "note": "",
-          "types": [
-            {
-              "bytes": 80,
-              "type": "Dict{String, Bool}"
-            }
-          ]
-        },
-        {
-          "bytes": 64,
-          "bytes_per_step": 0.083333,
-          "classification": "in_scope_steady_state",
-          "count": 4,
-          "file": "julia/PeggleSim/src/engine.jl",
-          "func": "apply_commands!",
-          "line": 567,
-          "note": "",
-          "types": [
-            {
-              "bytes": 64,
-              "type": "Float64"
-            }
-          ]
-        },
-        {
-          "bytes": 40,
-          "bytes_per_step": 0.052083,
-          "classification": "in_scope_steady_state",
-          "count": 1,
-          "file": "julia/PeggleSim/src/slide_inversion.jl",
-          "func": "_si_lowest_hit_pegs",
-          "line": 126,
-          "note": "",
-          "types": [
-            {
-              "bytes": 40,
-              "type": "Memory{Int64}"
-            }
-          ]
-        },
-        {
-          "bytes": 32,
-          "bytes_per_step": 0.041667,
-          "classification": "in_scope_steady_state",
-          "count": 1,
-          "file": "julia/PeggleSim/src/slide_inversion.jl",
-          "func": "_si_lowest_hit_pegs",
-          "line": 0,
-          "note": "profiler reported line 0 (macro or inlined frame); only file-level attribution is available",
-          "types": [
-            {
-              "bytes": 32,
-              "type": "Vector{Int64}"
-            }
-          ]
-        },
-        {
-          "bytes": 16,
-          "bytes_per_step": 0.020833,
-          "classification": "in_scope_steady_state",
-          "count": 1,
-          "file": "julia/PeggleSim/src/engine.jl",
-          "func": "apply_commands!",
-          "line": 608,
-          "note": "",
-          "types": [
-            {
-              "bytes": 16,
-              "type": "Tuple{Int64, Int64}"
-            }
-          ]
-        },
-        {
-          "bytes": 16,
-          "bytes_per_step": 0.020833,
-          "classification": "in_scope_steady_state",
-          "count": 1,
-          "file": "julia/PeggleSim/src/engine.jl",
-          "func": "apply_commands!",
-          "line": 621,
-          "note": "",
-          "types": [
-            {
-              "bytes": 16,
-              "type": "Tuple{Int64, Int64}"
-            }
-          ]
-        },
-        {
-          "bytes": 8,
-          "bytes_per_step": 0.010417,
-          "classification": "in_scope_steady_state",
-          "count": 1,
-          "file": "julia/PeggleSim/src/engine.jl",
-          "func": "_present_payload",
-          "line": 553,
-          "note": "",
-          "types": [
-            {
-              "bytes": 8,
-              "type": "Float64"
-            }
-          ]
-        }
-      ],
+      "sites": [],
       "src_changed_during_row": false,
-      "src_jl_sha256_at_end": "0631c71457a55c2585c5f208a9c291a6c20119231a9a7c08eb5758e69c74d44c",
-      "src_jl_sha256_at_start": "0631c71457a55c2585c5f208a9c291a6c20119231a9a7c08eb5758e69c74d44c",
+      "src_jl_sha256_at_end": "38bbc5021f8f539e5f14a395941b84a987eda5b4b588d59e772d1cc3e5a8e2d1",
+      "src_jl_sha256_at_start": "38bbc5021f8f539e5f14a395941b84a987eda5b4b588d59e772d1cc3e5a8e2d1",
       "warmups": 3,
       "workload": "lines_rect_annular"
     },
@@ -755,20 +374,20 @@
       "config": "fixtures/mustache/config.dev.v1.json",
       "environment": {
         "cpu_model": "AMD Ryzen 5 4600H with Radeon Graphics",
-        "dirty": true,
+        "dirty": false,
         "git_dirty_scope": "julia/PeggleSim/src",
-        "git_head": "b8e94f046ddecb779b5cc592dd23df2c092a5b89",
+        "git_head": "4ae588d83f811b1ff03303bda94e29845f222ead",
         "julia_version": "1.12.6",
         "machine": "x86_64-linux-gnu",
         "nthreads": 1,
         "requested_threads": 1,
         "source_moving": false,
-        "src_file_count": 53,
+        "src_file_count": 32,
         "src_jl_file_count": 26,
-        "src_jl_sha256": "0631c71457a55c2585c5f208a9c291a6c20119231a9a7c08eb5758e69c74d44c",
-        "src_jl_sha256_at_first_workload": "0631c71457a55c2585c5f208a9c291a6c20119231a9a7c08eb5758e69c74d44c",
-        "src_jl_sha256_at_last_workload": "0631c71457a55c2585c5f208a9c291a6c20119231a9a7c08eb5758e69c74d44c",
-        "src_tree_sha256": "ebcc3c4dcd4a732e4015492800df512ad4fb20e185130b6270b500ed11d1db09",
+        "src_jl_sha256": "38bbc5021f8f539e5f14a395941b84a987eda5b4b588d59e772d1cc3e5a8e2d1",
+        "src_jl_sha256_at_first_workload": "38bbc5021f8f539e5f14a395941b84a987eda5b4b588d59e772d1cc3e5a8e2d1",
+        "src_jl_sha256_at_last_workload": "38bbc5021f8f539e5f14a395941b84a987eda5b4b588d59e772d1cc3e5a8e2d1",
+        "src_tree_sha256": "ee82bf130912541929fa3e7e69dd1cc37cee3a5135fc2a616db9f852ca7cc3f0",
         "src_tree_sha256_method": "sha256 of the concatenated contents of every regular file under julia/PeggleSim/src, files sorted by relative path; src_jl_sha256 applies the same method to *.jl files only",
         "tree_changed_during_run": false
       },
@@ -793,8 +412,8 @@
           "pass": false
         },
         "run": {
-          "bytes": 34384,
-          "bytes_per_step": 19.134112,
+          "bytes": 0,
+          "bytes_per_step": 0.0,
           "gate": false,
           "includes": "run_shot!(eng; max_steps=step_cap) after reset+launch outside the region",
           "note": "whole-shot context; not part of the steady-state gate",
@@ -803,49 +422,49 @@
         },
         "steady_state": {
           "budget_bytes": 0,
-          "bytes_per_step": 21.542571,
+          "bytes_per_step": 0.0,
           "criterion": "m4-perf section 1.1: sum(Base.gc_bytes() deltas) == 0 AND max single-step delta == 0 over a warmed pass starting from a fresh reset",
           "first_step_bytes": 0,
           "gate": true,
           "includes": "per-step update!(eng, config.fixed_dt): save_previous_state!, step_simulation!/finalize_step! (including the fever bucket update), and steps_run bookkeeping; loop condition identical to run_shot!",
-          "max_step_bytes": 4328,
-          "nonzero_steps": 13,
+          "max_step_bytes": 0,
+          "nonzero_steps": 0,
           "p50": 0,
           "p99": 0,
-          "pass": false,
+          "pass": true,
           "shot_completed": true,
           "step_cap": 4000,
           "steps": 1797,
-          "total_bytes": 38712,
-          "zero_steps": 1784
+          "total_bytes": 0,
+          "zero_steps": 1797
         }
       },
       "profile": {
-        "attributed_bytes": 35840,
-        "attributed_count": 353,
-        "attributed_to_measured_ratio": 0.925811,
+        "attributed_bytes": 0,
+        "attributed_count": 0,
+        "attributed_to_measured_ratio": 0.0,
         "classification_basis": "sites are measured in the full steady-state pass at the same shot index as the measured pass; a site absent from a second pass on the same engine is classified one_time_capacity_growth, because it does not recur after the container has grown; checkpoint.jl/restore frames are reset and trace/snapshot/canonical/jsonio frames are export_only; everything else is in_scope_steady_state",
         "coverage_note": "Profile.Allocs records payload sizes; Base.gc_bytes() also counts GC object headers and padding, so profiled bytes are expected to be below the measured total. A nonzero measured_pass_delta_bytes also means the separate profiled pass allocated differently from the clean measured pass; that delta is not attributed to any site. Ratios are reported, not corrected.",
         "dropped_profiler_bytes": 0,
         "dropped_profiler_count": 0,
         "full_pass": {
-          "attributed_bytes": 35840,
-          "attributed_count": 353,
-          "measured_total_bytes": 38712,
-          "profiled_bytes": 35840,
-          "profiled_count": 353,
+          "attributed_bytes": 0,
+          "attributed_count": 0,
+          "measured_total_bytes": 0,
+          "profiled_bytes": 0,
+          "profiled_count": 0,
           "steps": 1797
         },
         "measured_pass_delta_bytes": 0,
-        "measured_total_bytes": 38712,
-        "profiled_bytes": 35840,
-        "profiled_count": 353,
-        "profiled_to_measured_ratio": 0.925811,
+        "measured_total_bytes": 0,
+        "profiled_bytes": 0,
+        "profiled_count": 0,
+        "profiled_to_measured_ratio": 0.0,
         "repeat_pass": {
           "description": "second steady-state pass on the same engine immediately after the full pass; used only to separate one-time growth from per-step sites",
-          "measured_total_bytes": 34384,
-          "profiled_bytes": 31544,
-          "profiled_count": 351,
+          "measured_total_bytes": 0,
+          "profiled_bytes": 0,
+          "profiled_count": 0,
           "steps": 1797
         },
         "sample_rate": 1.0,
@@ -853,307 +472,10 @@
         "unattributed_count": 0
       },
       "shot_step_cap": 4000,
-      "sites": [
-        {
-          "bytes": 8800,
-          "bytes_per_step": 4.897051,
-          "classification": "in_scope_steady_state",
-          "count": 30,
-          "file": "julia/PeggleSim/src/engine.jl",
-          "func": "apply_commands!",
-          "line": 613,
-          "note": "",
-          "types": [
-            {
-              "bytes": 8160,
-              "type": "PeggleSim.EventFields"
-            },
-            {
-              "bytes": 320,
-              "type": "@NamedTuple{ball_id::Int64, line_id::String, peg_id::Int64, reason::String}"
-            },
-            {
-              "bytes": 320,
-              "type": "Tuple{Int64, String, Int64, String}"
-            }
-          ]
-        },
-        {
-          "bytes": 6400,
-          "bytes_per_step": 3.561491,
-          "classification": "in_scope_steady_state",
-          "count": 60,
-          "file": "julia/PeggleSim/src/events.jl",
-          "func": "_copy_payload",
-          "line": 80,
-          "note": "",
-          "types": [
-            {
-              "bytes": 2880,
-              "type": "Memory{Any}"
-            },
-            {
-              "bytes": 2880,
-              "type": "Memory{String}"
-            },
-            {
-              "bytes": 640,
-              "type": "Memory{UInt8}"
-            }
-          ]
-        },
-        {
-          "bytes": 5344,
-          "bytes_per_step": 2.973845,
-          "classification": "in_scope_steady_state",
-          "count": 88,
-          "file": "julia/PeggleSim/src/events.jl",
-          "func": "push_command!",
-          "line": 272,
-          "note": "",
-          "types": [
-            {
-              "bytes": 1440,
-              "type": "Memory{Any}"
-            },
-            {
-              "bytes": 1440,
-              "type": "Memory{String}"
-            },
-            {
-              "bytes": 960,
-              "type": "Pair{String, Int64}"
-            }
-          ]
-        },
-        {
-          "bytes": 4752,
-          "bytes_per_step": 2.644407,
-          "classification": "in_scope_steady_state",
-          "count": 72,
-          "file": "julia/PeggleSim/src/slide_inversion.jl",
-          "func": "slide_inversion_process!",
-          "line": 232,
-          "note": "",
-          "types": [
-            {
-              "bytes": 1296,
-              "type": "Memory{Any}"
-            },
-            {
-              "bytes": 1296,
-              "type": "Memory{String}"
-            },
-            {
-              "bytes": 720,
-              "type": "Dict{String, Any}"
-            }
-          ]
-        },
-        {
-          "bytes": 4296,
-          "bytes_per_step": 2.390651,
-          "classification": "one_time_capacity_growth",
-          "count": 2,
-          "file": "julia/PeggleSim/src/style_shots.jl",
-          "func": "_style_clear_ball_slide!",
-          "line": 106,
-          "note": "absent from a second steady-state pass on the same engine; a one-time allocation rather than a per-step cost (the container has already grown in the measured pass)",
-          "types": [
-            {
-              "bytes": 4272,
-              "type": "Profile.Allocs.BufferType"
-            },
-            {
-              "bytes": 24,
-              "type": "Memory{Dict{String, PeggleSim.StyleSlideRun}}"
-            }
-          ]
-        },
-        {
-          "bytes": 1600,
-          "bytes_per_step": 0.890373,
-          "classification": "in_scope_steady_state",
-          "count": 20,
-          "file": "julia/PeggleSim/src/events.jl",
-          "func": "_copy_payload",
-          "line": 78,
-          "note": "",
-          "types": [
-            {
-              "bytes": 1600,
-              "type": "Dict{String, Any}"
-            }
-          ]
-        },
-        {
-          "bytes": 1536,
-          "bytes_per_step": 0.854758,
-          "classification": "in_scope_steady_state",
-          "count": 5,
-          "file": "julia/PeggleSim/src/engine.jl",
-          "func": "start_clearing!",
-          "line": 485,
-          "note": "at least one contributing allocation's first PeggleSim/src frame is inlined; the reported file:line is the inlining site Julia recorded and may not be the physical caller",
-          "types": [
-            {
-              "bytes": 1504,
-              "type": "Memory{PeggleSim.Peg}"
-            },
-            {
-              "bytes": 32,
-              "type": "Vector{PeggleSim.Peg}"
-            }
-          ]
-        },
-        {
-          "bytes": 1024,
-          "bytes_per_step": 0.569839,
-          "classification": "in_scope_steady_state",
-          "count": 36,
-          "file": "julia/PeggleSim/src/events.jl",
-          "func": "_copy_payload",
-          "line": 84,
-          "note": "",
-          "types": [
-            {
-              "bytes": 576,
-              "type": "Vector{Any}"
-            },
-            {
-              "bytes": 448,
-              "type": "Memory{Any}"
-            }
-          ]
-        },
-        {
-          "bytes": 480,
-          "bytes_per_step": 0.267112,
-          "classification": "in_scope_steady_state",
-          "count": 6,
-          "file": "julia/PeggleSim/src/state.jl",
-          "func": "BallState",
-          "line": 88,
-          "note": "at least one contributing allocation's first PeggleSim/src frame is inlined; the reported file:line is the inlining site Julia recorded and may not be the physical caller",
-          "types": [
-            {
-              "bytes": 480,
-              "type": "PeggleSim.BallState"
-            }
-          ]
-        },
-        {
-          "bytes": 400,
-          "bytes_per_step": 0.222593,
-          "classification": "in_scope_steady_state",
-          "count": 4,
-          "file": "julia/PeggleSim/src/ball_state.jl",
-          "func": "ball_state_process!",
-          "line": 134,
-          "note": "",
-          "types": [
-            {
-              "bytes": 144,
-              "type": "Memory{Any}"
-            },
-            {
-              "bytes": 144,
-              "type": "Memory{String}"
-            },
-            {
-              "bytes": 80,
-              "type": "Dict{String, Any}"
-            }
-          ]
-        },
-        {
-          "bytes": 400,
-          "bytes_per_step": 0.222593,
-          "classification": "in_scope_steady_state",
-          "count": 2,
-          "file": "julia/PeggleSim/src/engine.jl",
-          "func": "start_clearing!",
-          "line": 486,
-          "note": "at least one contributing allocation's first PeggleSim/src frame is inlined; the reported file:line is the inlining site Julia recorded and may not be the physical caller",
-          "types": [
-            {
-              "bytes": 368,
-              "type": "Memory{PeggleSim.Peg}"
-            },
-            {
-              "bytes": 32,
-              "type": "Vector{PeggleSim.Peg}"
-            }
-          ]
-        },
-        {
-          "bytes": 360,
-          "bytes_per_step": 0.200334,
-          "classification": "in_scope_steady_state",
-          "count": 9,
-          "file": "julia/PeggleSim/src/slide_inversion.jl",
-          "func": "_si_lowest_hit_pegs",
-          "line": 126,
-          "note": "",
-          "types": [
-            {
-              "bytes": 360,
-              "type": "Memory{Int64}"
-            }
-          ]
-        },
-        {
-          "bytes": 288,
-          "bytes_per_step": 0.160267,
-          "classification": "in_scope_steady_state",
-          "count": 9,
-          "file": "julia/PeggleSim/src/slide_inversion.jl",
-          "func": "_si_lowest_hit_pegs",
-          "line": 0,
-          "note": "profiler reported line 0 (macro or inlined frame); only file-level attribution is available",
-          "types": [
-            {
-              "bytes": 288,
-              "type": "Vector{Int64}"
-            }
-          ]
-        },
-        {
-          "bytes": 144,
-          "bytes_per_step": 0.080134,
-          "classification": "in_scope_steady_state",
-          "count": 9,
-          "file": "julia/PeggleSim/src/engine.jl",
-          "func": "apply_commands!",
-          "line": 608,
-          "note": "",
-          "types": [
-            {
-              "bytes": 144,
-              "type": "Tuple{Int64, Int64}"
-            }
-          ]
-        },
-        {
-          "bytes": 16,
-          "bytes_per_step": 0.008904,
-          "classification": "in_scope_steady_state",
-          "count": 1,
-          "file": "julia/PeggleSim/src/engine.jl",
-          "func": "apply_commands!",
-          "line": 621,
-          "note": "",
-          "types": [
-            {
-              "bytes": 16,
-              "type": "Tuple{Int64, Int64}"
-            }
-          ]
-        }
-      ],
+      "sites": [],
       "src_changed_during_row": false,
-      "src_jl_sha256_at_end": "0631c71457a55c2585c5f208a9c291a6c20119231a9a7c08eb5758e69c74d44c",
-      "src_jl_sha256_at_start": "0631c71457a55c2585c5f208a9c291a6c20119231a9a7c08eb5758e69c74d44c",
+      "src_jl_sha256_at_end": "38bbc5021f8f539e5f14a395941b84a987eda5b4b588d59e772d1cc3e5a8e2d1",
+      "src_jl_sha256_at_start": "38bbc5021f8f539e5f14a395941b84a987eda5b4b588d59e772d1cc3e5a8e2d1",
       "warmups": 3,
       "workload": "mustache"
     },
@@ -1163,20 +485,20 @@
       "config": "fixtures/mustache/config.dev.v1.json",
       "environment": {
         "cpu_model": "AMD Ryzen 5 4600H with Radeon Graphics",
-        "dirty": true,
+        "dirty": false,
         "git_dirty_scope": "julia/PeggleSim/src",
-        "git_head": "b8e94f046ddecb779b5cc592dd23df2c092a5b89",
+        "git_head": "4ae588d83f811b1ff03303bda94e29845f222ead",
         "julia_version": "1.12.6",
         "machine": "x86_64-linux-gnu",
         "nthreads": 1,
         "requested_threads": 1,
         "source_moving": false,
-        "src_file_count": 53,
+        "src_file_count": 32,
         "src_jl_file_count": 26,
-        "src_jl_sha256": "0631c71457a55c2585c5f208a9c291a6c20119231a9a7c08eb5758e69c74d44c",
-        "src_jl_sha256_at_first_workload": "0631c71457a55c2585c5f208a9c291a6c20119231a9a7c08eb5758e69c74d44c",
-        "src_jl_sha256_at_last_workload": "0631c71457a55c2585c5f208a9c291a6c20119231a9a7c08eb5758e69c74d44c",
-        "src_tree_sha256": "ebcc3c4dcd4a732e4015492800df512ad4fb20e185130b6270b500ed11d1db09",
+        "src_jl_sha256": "38bbc5021f8f539e5f14a395941b84a987eda5b4b588d59e772d1cc3e5a8e2d1",
+        "src_jl_sha256_at_first_workload": "38bbc5021f8f539e5f14a395941b84a987eda5b4b588d59e772d1cc3e5a8e2d1",
+        "src_jl_sha256_at_last_workload": "38bbc5021f8f539e5f14a395941b84a987eda5b4b588d59e772d1cc3e5a8e2d1",
+        "src_tree_sha256": "ee82bf130912541929fa3e7e69dd1cc37cee3a5135fc2a616db9f852ca7cc3f0",
         "src_tree_sha256_method": "sha256 of the concatenated contents of every regular file under julia/PeggleSim/src, files sorted by relative path; src_jl_sha256 applies the same method to *.jl files only",
         "tree_changed_during_run": false
       },
@@ -1201,8 +523,8 @@
           "pass": false
         },
         "run": {
-          "bytes": 13520,
-          "bytes_per_step": 14.663774,
+          "bytes": 0,
+          "bytes_per_step": 0.0,
           "gate": false,
           "includes": "run_shot!(eng; max_steps=step_cap) after reset+launch outside the region",
           "note": "whole-shot context; not part of the steady-state gate",
@@ -1211,49 +533,49 @@
         },
         "steady_state": {
           "budget_bytes": 0,
-          "bytes_per_step": 14.993492,
+          "bytes_per_step": 0.0,
           "criterion": "m4-perf section 1.1: sum(Base.gc_bytes() deltas) == 0 AND max single-step delta == 0 over a warmed pass starting from a fresh reset",
           "first_step_bytes": 0,
           "gate": true,
           "includes": "per-step update!(eng, config.fixed_dt): save_previous_state!, step_simulation!/finalize_step! (including the fever bucket update), and steps_run bookkeeping; loop condition identical to run_shot!",
-          "max_step_bytes": 5136,
-          "nonzero_steps": 5,
+          "max_step_bytes": 0,
+          "nonzero_steps": 0,
           "p50": 0,
           "p99": 0,
-          "pass": false,
+          "pass": true,
           "shot_completed": true,
           "step_cap": 4000,
           "steps": 922,
-          "total_bytes": 13824,
-          "zero_steps": 917
+          "total_bytes": 0,
+          "zero_steps": 922
         }
       },
       "profile": {
-        "attributed_bytes": 12680,
-        "attributed_count": 145,
-        "attributed_to_measured_ratio": 0.917245,
+        "attributed_bytes": 0,
+        "attributed_count": 0,
+        "attributed_to_measured_ratio": 0.0,
         "classification_basis": "sites are measured in the full steady-state pass at the same shot index as the measured pass; a site absent from a second pass on the same engine is classified one_time_capacity_growth, because it does not recur after the container has grown; checkpoint.jl/restore frames are reset and trace/snapshot/canonical/jsonio frames are export_only; everything else is in_scope_steady_state",
         "coverage_note": "Profile.Allocs records payload sizes; Base.gc_bytes() also counts GC object headers and padding, so profiled bytes are expected to be below the measured total. A nonzero measured_pass_delta_bytes also means the separate profiled pass allocated differently from the clean measured pass; that delta is not attributed to any site. Ratios are reported, not corrected.",
         "dropped_profiler_bytes": 0,
         "dropped_profiler_count": 0,
         "full_pass": {
-          "attributed_bytes": 12680,
-          "attributed_count": 145,
-          "measured_total_bytes": 13824,
-          "profiled_bytes": 12680,
-          "profiled_count": 145,
+          "attributed_bytes": 0,
+          "attributed_count": 0,
+          "measured_total_bytes": 0,
+          "profiled_bytes": 0,
+          "profiled_count": 0,
           "steps": 922
         },
         "measured_pass_delta_bytes": 0,
-        "measured_total_bytes": 13824,
-        "profiled_bytes": 12680,
-        "profiled_count": 145,
-        "profiled_to_measured_ratio": 0.917245,
+        "measured_total_bytes": 0,
+        "profiled_bytes": 0,
+        "profiled_count": 0,
+        "profiled_to_measured_ratio": 0.0,
         "repeat_pass": {
           "description": "second steady-state pass on the same engine immediately after the full pass; used only to separate one-time growth from per-step sites",
-          "measured_total_bytes": 13520,
-          "profiled_bytes": 12392,
-          "profiled_count": 144,
+          "measured_total_bytes": 0,
+          "profiled_bytes": 0,
+          "profiled_count": 0,
           "steps": 922
         },
         "sample_rate": 1.0,
@@ -1261,451 +583,10 @@
         "unattributed_count": 0
       },
       "shot_step_cap": 4000,
-      "sites": [
-        {
-          "bytes": 2640,
-          "bytes_per_step": 2.863341,
-          "classification": "in_scope_steady_state",
-          "count": 9,
-          "file": "julia/PeggleSim/src/engine.jl",
-          "func": "apply_commands!",
-          "line": 613,
-          "note": "",
-          "types": [
-            {
-              "bytes": 2448,
-              "type": "PeggleSim.EventFields"
-            },
-            {
-              "bytes": 96,
-              "type": "@NamedTuple{ball_id::Int64, line_id::String, peg_id::Int64, reason::String}"
-            },
-            {
-              "bytes": 96,
-              "type": "Tuple{Int64, String, Int64, String}"
-            }
-          ]
-        },
-        {
-          "bytes": 2560,
-          "bytes_per_step": 2.776573,
-          "classification": "in_scope_steady_state",
-          "count": 24,
-          "file": "julia/PeggleSim/src/events.jl",
-          "func": "_copy_payload",
-          "line": 80,
-          "note": "",
-          "types": [
-            {
-              "bytes": 1152,
-              "type": "Memory{Any}"
-            },
-            {
-              "bytes": 1152,
-              "type": "Memory{String}"
-            },
-            {
-              "bytes": 256,
-              "type": "Memory{UInt8}"
-            }
-          ]
-        },
-        {
-          "bytes": 2136,
-          "bytes_per_step": 2.316703,
-          "classification": "in_scope_steady_state",
-          "count": 35,
-          "file": "julia/PeggleSim/src/events.jl",
-          "func": "push_command!",
-          "line": 272,
-          "note": "",
-          "types": [
-            {
-              "bytes": 576,
-              "type": "Memory{Any}"
-            },
-            {
-              "bytes": 576,
-              "type": "Memory{String}"
-            },
-            {
-              "bytes": 384,
-              "type": "Pair{String, Int64}"
-            }
-          ]
-        },
-        {
-          "bytes": 896,
-          "bytes_per_step": 0.9718,
-          "classification": "in_scope_steady_state",
-          "count": 3,
-          "file": "julia/PeggleSim/src/engine.jl",
-          "func": "apply_commands!",
-          "line": 569,
-          "note": "",
-          "types": [
-            {
-              "bytes": 816,
-              "type": "PeggleSim.EventFields"
-            },
-            {
-              "bytes": 40,
-              "type": "@NamedTuple{ball_id::Int64, style::String, points::Float64, distance::Nothing, peg_id::Nothing, line_id::String, source_sequences::Vector{Any}}"
-            },
-            {
-              "bytes": 40,
-              "type": "Tuple{Int64, String, Float64, Nothing, Nothing, String, Vector{Any}}"
-            }
-          ]
-        },
-        {
-          "bytes": 800,
-          "bytes_per_step": 0.867679,
-          "classification": "in_scope_steady_state",
-          "count": 8,
-          "file": "julia/PeggleSim/src/ball_state.jl",
-          "func": "ball_state_process!",
-          "line": 121,
-          "note": "",
-          "types": [
-            {
-              "bytes": 288,
-              "type": "Memory{Any}"
-            },
-            {
-              "bytes": 288,
-              "type": "Memory{String}"
-            },
-            {
-              "bytes": 160,
-              "type": "Dict{String, Any}"
-            }
-          ]
-        },
-        {
-          "bytes": 640,
-          "bytes_per_step": 0.694143,
-          "classification": "in_scope_steady_state",
-          "count": 8,
-          "file": "julia/PeggleSim/src/events.jl",
-          "func": "_copy_payload",
-          "line": 78,
-          "note": "",
-          "types": [
-            {
-              "bytes": 640,
-              "type": "Dict{String, Any}"
-            }
-          ]
-        },
-        {
-          "bytes": 568,
-          "bytes_per_step": 0.616052,
-          "classification": "in_scope_steady_state",
-          "count": 10,
-          "file": "julia/PeggleSim/src/style_shots.jl",
-          "func": "_style_note_slide_score!",
-          "line": 227,
-          "note": "",
-          "types": [
-            {
-              "bytes": 144,
-              "type": "Memory{Any}"
-            },
-            {
-              "bytes": 144,
-              "type": "Memory{String}"
-            },
-            {
-              "bytes": 80,
-              "type": "Dict{String, Any}"
-            }
-          ]
-        },
-        {
-          "bytes": 528,
-          "bytes_per_step": 0.572668,
-          "classification": "in_scope_steady_state",
-          "count": 8,
-          "file": "julia/PeggleSim/src/slide_inversion.jl",
-          "func": "slide_inversion_process!",
-          "line": 232,
-          "note": "",
-          "types": [
-            {
-              "bytes": 144,
-              "type": "Memory{Any}"
-            },
-            {
-              "bytes": 144,
-              "type": "Memory{String}"
-            },
-            {
-              "bytes": 80,
-              "type": "Dict{String, Any}"
-            }
-          ]
-        },
-        {
-          "bytes": 320,
-          "bytes_per_step": 0.347072,
-          "classification": "in_scope_steady_state",
-          "count": 3,
-          "file": "julia/PeggleSim/src/engine.jl",
-          "func": "_present_payload",
-          "line": 554,
-          "note": "",
-          "types": [
-            {
-              "bytes": 144,
-              "type": "Memory{Any}"
-            },
-            {
-              "bytes": 144,
-              "type": "Memory{String}"
-            },
-            {
-              "bytes": 32,
-              "type": "Memory{UInt8}"
-            }
-          ]
-        },
-        {
-          "bytes": 320,
-          "bytes_per_step": 0.347072,
-          "classification": "in_scope_steady_state",
-          "count": 8,
-          "file": "julia/PeggleSim/src/events.jl",
-          "func": "_copy_payload",
-          "line": 84,
-          "note": "",
-          "types": [
-            {
-              "bytes": 192,
-              "type": "Memory{Any}"
-            },
-            {
-              "bytes": 128,
-              "type": "Vector{Any}"
-            }
-          ]
-        },
-        {
-          "bytes": 288,
-          "bytes_per_step": 0.312364,
-          "classification": "one_time_capacity_growth",
-          "count": 1,
-          "file": "julia/PeggleSim/src/style_shots.jl",
-          "func": "_style_clear_ball_slide!",
-          "line": 106,
-          "note": "absent from a second steady-state pass on the same engine; a one-time allocation rather than a per-step cost (the container has already grown in the measured pass)",
-          "types": [
-            {
-              "bytes": 288,
-              "type": "Memory{Dict{String, PeggleSim.StyleSlideRun}}"
-            }
-          ]
-        },
-        {
-          "bytes": 280,
-          "bytes_per_step": 0.303688,
-          "classification": "in_scope_steady_state",
-          "count": 9,
-          "file": "julia/PeggleSim/src/engine.jl",
-          "func": "apply_commands!",
-          "line": 581,
-          "note": "",
-          "types": [
-            {
-              "bytes": 64,
-              "type": "Pair{String, String}"
-            },
-            {
-              "bytes": 56,
-              "type": "Memory{Any}"
-            },
-            {
-              "bytes": 32,
-              "type": "Pair{String, Float64}"
-            }
-          ]
-        },
-        {
-          "bytes": 208,
-          "bytes_per_step": 0.225597,
-          "classification": "in_scope_steady_state",
-          "count": 3,
-          "file": "julia/PeggleSim/src/style_shots.jl",
-          "func": "_style_note_slide_score!",
-          "line": 226,
-          "note": "",
-          "types": [
-            {
-              "bytes": 144,
-              "type": "Memory{String}"
-            },
-            {
-              "bytes": 32,
-              "type": "Memory{Bool}"
-            },
-            {
-              "bytes": 32,
-              "type": "Memory{UInt8}"
-            }
-          ]
-        },
-        {
-          "bytes": 144,
-          "bytes_per_step": 0.156182,
-          "classification": "in_scope_steady_state",
-          "count": 4,
-          "file": "julia/PeggleSim/src/engine.jl",
-          "func": "start_clearing!",
-          "line": 485,
-          "note": "at least one contributing allocation's first PeggleSim/src frame is inlined; the reported file:line is the inlining site Julia recorded and may not be the physical caller",
-          "types": [
-            {
-              "bytes": 80,
-              "type": "Memory{PeggleSim.Peg}"
-            },
-            {
-              "bytes": 64,
-              "type": "Vector{PeggleSim.Peg}"
-            }
-          ]
-        },
-        {
-          "bytes": 80,
-          "bytes_per_step": 0.086768,
-          "classification": "in_scope_steady_state",
-          "count": 1,
-          "file": "julia/PeggleSim/src/engine.jl",
-          "func": "_present_payload",
-          "line": 552,
-          "note": "",
-          "types": [
-            {
-              "bytes": 80,
-              "type": "Dict{String, Any}"
-            }
-          ]
-        },
-        {
-          "bytes": 80,
-          "bytes_per_step": 0.086768,
-          "classification": "in_scope_steady_state",
-          "count": 1,
-          "file": "julia/PeggleSim/src/style_shots.jl",
-          "func": "_style_note_slide_score!",
-          "line": 223,
-          "note": "",
-          "types": [
-            {
-              "bytes": 80,
-              "type": "Dict{String, Bool}"
-            }
-          ]
-        },
-        {
-          "bytes": 64,
-          "bytes_per_step": 0.069414,
-          "classification": "in_scope_steady_state",
-          "count": 4,
-          "file": "julia/PeggleSim/src/engine.jl",
-          "func": "apply_commands!",
-          "line": 567,
-          "note": "",
-          "types": [
-            {
-              "bytes": 64,
-              "type": "Float64"
-            }
-          ]
-        },
-        {
-          "bytes": 40,
-          "bytes_per_step": 0.043384,
-          "classification": "in_scope_steady_state",
-          "count": 1,
-          "file": "julia/PeggleSim/src/slide_inversion.jl",
-          "func": "_si_lowest_hit_pegs",
-          "line": 126,
-          "note": "",
-          "types": [
-            {
-              "bytes": 40,
-              "type": "Memory{Int64}"
-            }
-          ]
-        },
-        {
-          "bytes": 32,
-          "bytes_per_step": 0.034707,
-          "classification": "in_scope_steady_state",
-          "count": 2,
-          "file": "julia/PeggleSim/src/engine.jl",
-          "func": "apply_commands!",
-          "line": 621,
-          "note": "",
-          "types": [
-            {
-              "bytes": 32,
-              "type": "Tuple{Int64, Int64}"
-            }
-          ]
-        },
-        {
-          "bytes": 32,
-          "bytes_per_step": 0.034707,
-          "classification": "in_scope_steady_state",
-          "count": 1,
-          "file": "julia/PeggleSim/src/slide_inversion.jl",
-          "func": "_si_lowest_hit_pegs",
-          "line": 0,
-          "note": "profiler reported line 0 (macro or inlined frame); only file-level attribution is available",
-          "types": [
-            {
-              "bytes": 32,
-              "type": "Vector{Int64}"
-            }
-          ]
-        },
-        {
-          "bytes": 16,
-          "bytes_per_step": 0.017354,
-          "classification": "in_scope_steady_state",
-          "count": 1,
-          "file": "julia/PeggleSim/src/engine.jl",
-          "func": "apply_commands!",
-          "line": 608,
-          "note": "",
-          "types": [
-            {
-              "bytes": 16,
-              "type": "Tuple{Int64, Int64}"
-            }
-          ]
-        },
-        {
-          "bytes": 8,
-          "bytes_per_step": 0.008677,
-          "classification": "in_scope_steady_state",
-          "count": 1,
-          "file": "julia/PeggleSim/src/engine.jl",
-          "func": "_present_payload",
-          "line": 553,
-          "note": "",
-          "types": [
-            {
-              "bytes": 8,
-              "type": "Float64"
-            }
-          ]
-        }
-      ],
+      "sites": [],
       "src_changed_during_row": false,
-      "src_jl_sha256_at_end": "0631c71457a55c2585c5f208a9c291a6c20119231a9a7c08eb5758e69c74d44c",
-      "src_jl_sha256_at_start": "0631c71457a55c2585c5f208a9c291a6c20119231a9a7c08eb5758e69c74d44c",
+      "src_jl_sha256_at_end": "38bbc5021f8f539e5f14a395941b84a987eda5b4b588d59e772d1cc3e5a8e2d1",
+      "src_jl_sha256_at_start": "38bbc5021f8f539e5f14a395941b84a987eda5b4b588d59e772d1cc3e5a8e2d1",
       "warmups": 3,
       "workload": "mustache"
     }

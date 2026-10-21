@@ -1,23 +1,24 @@
 # M4 correctness-breadth validation
 
-M4 is the full static-level shot-behavior milestone. It is **open**. This page
-records **sessions 1 and 2 of 3**. Session 1 is corpus parity (this page);
-session 2 is the performance gate, recorded in
-[`wiki/benchmarks/m4-perf.md`](../benchmarks/m4-perf.md) and
-[`wiki/devlog/2026-10-21.md`](../devlog/2026-10-21.md). Cross-machine
-qualification is still to come (§9). Session 1 validates the
-pinned corpus end to end: 14 shot fixtures, 11 boundary scenarios, 6 gameplay
-traces, and 7 full-grid candidate workloads all match the frozen Lua reference
-exactly, with one real parity bug found and fixed along the way (§6.1).
+M4 is the full static-level shot-behavior milestone. It is **closed** as of
+session 3. This page records **sessions 1–3**: session 1 is corpus parity
+(this page), session 2 is the performance gate
+([`wiki/benchmarks/m4-perf.md`](../benchmarks/m4-perf.md) and
+[`wiki/devlog/2026-10-21.md`](../devlog/2026-10-21.md)), and session 3 is the
+strict-zero allocation closeout and second-host qualification (§10). Session 1
+validates the pinned corpus end to end: 14 shot fixtures, 11 boundary
+scenarios, 6 gameplay traces, and 7 full-grid candidate workloads all match the
+frozen Lua reference exactly, with one real parity bug found and fixed along
+the way (§6.1).
 
 ## 1. Status and scope
 
 | Item | State |
 | --- | --- |
-| M4 milestone | **In progress / open** |
+| M4 milestone | **Closed** (session 3) |
 | Session 1 — correctness breadth | Complete (this page) |
-| Session 2 — performance gate | Complete; see [`m4-perf.md`](../benchmarks/m4-perf.md) |
-| Session 3 — cross-machine qualification + closeout | Not started |
+| Session 2 — performance gate | Complete; see [`m4-perf.md`](../benchmarks/m4-perf.md) — its committed allocation profile was stale, see §10.1 |
+| Session 3 — strict-zero closeout + cross-machine qualification | Complete (§10) |
 
 Session 1 covers:
 
@@ -317,20 +318,106 @@ All gates were run on the final tree in this session, after the divider fix.
 | `make m3-mustache` | 5/5 byte-identical; `expected_records_identical = true`; `differences = []`; `failures = 0` |
 | `make m4-parity` | 4/4 groups pass; combined report `overall_pass = true` (see [`parity-summary.json`](../../results/m4/parity-summary.json)) |
 
-## 9. Remaining M4 work
+## 9. Remaining work: none — M4 closed
 
-M4 remains **open**. The two remaining sessions are:
+At the end of session 2 the remaining work was the command-path allocation
+residue and cross-machine qualification. Both were completed in session 3
+(§10), so there is no remaining M4 work. Session 2's claim that the gate
+"passes on `circles_small` and `annular_dense`" held only for its pre-final
+working tree; the committed-profile discrepancy is recorded once in
+[`m4-perf.md` §4.5](../benchmarks/m4-perf.md). The session-2 criterion, method
+and removal accounting stand. M4 is closed.
 
-1. ~~**Performance gate (session 2).**~~ Done. The criterion, the per-site
-   allocation accounting, the seven-workload benchmark and the same-host Lua
-   comparison are in [`wiki/benchmarks/m4-perf.md`](../benchmarks/m4-perf.md).
-   Steady-state stepping is 0 B/step on `circles_small` and `annular_dense`;
-   `mustache` (both aims) and `lines_rect_annular` retain a small command-path
-   residue (2–13 allocating steps out of 768–1,797) that is itemised with a
-   concrete fix plan in §4.3 of that page. Session 3 should close that residue
-   and then qualify cross-machine.
-2. **Qualification and closeout (session 3).** Cross-machine bit-identical
-   qualification of the validated corpus, then M4 closeout. The cross-platform
-   capture procedure is in `wiki/context/cross-platform-qualification.md`.
+## 10. Session 3 — strict zero and cross-machine qualification
 
-Until those are complete and recorded, M4 must not be marked done.
+### 10.1 Allocation gate strictly met
+
+Session 3 re-measured the committed session-2 profile before changing code: it
+was stale, and the per-probe comparison and root cause are in
+[`m4-perf.md` §4.5](../benchmarks/m4-perf.md).
+
+The session-3 refactor (commit `4ae588d`) moves the command ownership boundary
+rather than deleting it: `GameplayCommands` holds concrete
+`GameplayCommand <: AbstractDict{String,Any}` records, and the detached
+`Dict{String,Any}` is materialized only at `command_snapshot` /
+`applied_snapshot` and the trace export. The exported key set, value types and
+ordering are unchanged, so trace bytes are unchanged; the test that pinned
+`commands.commands[1]["line"] isa Dict` was relocated to the export boundary.
+With the pooled event views, `StyleInfo` callback view, pooled clear queue and
+insertion sort, spawn-ball pool, per-ball slide-run map cache, and pooled
+`peg_ids` scratch, the gate is now strict zero on all five probes: sum and max
+single-step delta are 0, and `Profile.Allocs` records zero sites. The per-probe
+table is [`m4-perf.md` §4.1](../benchmarks/m4-perf.md); the refactor detail is
+§4.3. Reset and launch accounting is unchanged and remains reported separately.
+
+### 10.2 Cross-machine corpus qualification
+
+The second host is `deathstar` (AMD Ryzen Threadripper 2990WX, 32 cores / 64
+threads, Ubuntu 22.04, glibc 2.35); the local host is `omarchy` (AMD Ryzen 5
+4600H, 12 threads, glibc 2.44). Both hosts ran commit `4ae588d`, Julia 1.12.6,
+and the same `julia/PeggleSim/src` tree hash
+`38bbc5021f8f539e5f14a395941b84a987eda5b4b588d59e772d1cc3e5a8e2d1`.
+
+| Check on `deathstar` | Result |
+| --- | --- |
+| `make julia-test` | 5,617 / 5,617 |
+| fixtures | 14/14 |
+| traces | 6/6 byte-identical |
+| sweeps | 7/7; 1,801 candidates per workload, all completed; serial == parallel |
+| scenarios | 11/11 |
+| `native_qualify` | 16/16 checks; artifact sha256 `d012f42e0185fbf7d15b892a687b5a07e93668cb5b66ba9021dcbf9d006d0494` |
+
+The corpus comparison across hosts is byte-identical: 3/3 corpus reports
+(`fixture-parity.json`, `trace-parity.json`, `scenario-parity.json`), 9/9
+compared candidate-row files (`results/raw/m4-julia-*.jsonl`: 7 at t1 plus t2
+for `lines_rect_annular` and `annular_dense`), and 11/11 sweep summaries
+field-equal with timing fields excluded. The parity manifest reports
+`identity_equal = true` and `authoritative_equal = true`. The comparison report
+is `results/m4/cross-machine.json` (sha256
+`685a1687c8d95710f174478309d237382485698109f0394eacd5c13c8ec79703`):
+`verdict.complete = true`, `reasons = []`, `scope = "second host, same OS"`,
+`distinct_os = false`, and `same_commit` / `same_source_tree` /
+`same_julia_version` all true. On the M2 side the regenerated local manifest
+(`results/core-math/qualification/linux-x86_64.json`, sha256
+`6cb16574b603d48be20510a91868f63d4d7ef924d1d28c4200113951350becad`) and the
+second-host manifest
+(`results/core-math/qualification/linux-x86_64-deathstar.json`, sha256
+`7dfe294892b4d19a0639957b56c43bd1a65e610eeccde1d023fd240a5e838533`) compare
+`PARITY OK` with exit 0.
+
+Scope discipline: this is a second **host** on the same OS (`linux-x86_64`),
+not a second OS. It is bit-identical on a second host, same OS; the
+cross-platform runbook's macOS ARM64 and Windows x86-64 rows remain
+uncollected and must not be claimed.
+
+### 10.3 Gates and reproduction
+
+| Gate | Result |
+| --- | --- |
+| `make verify` | 133/133 |
+| `make julia-test` | 5,617 / 5,617 |
+| `make m3-mustache` | 5/5 traces byte-identical |
+| `make m4-parity` | `overall_pass = true`; fixtures 14/14, traces 6/6 byte-identical, sweeps 7/7, scenarios 11/11 (210/210 fields) |
+| allocation gate | strict zero on all five probes; `results/m4/allocation-profile.json` |
+| `make m4-bench` | 7/7 workloads, 0 failed runs, 35/35 thread rows identical; serial median -2.5%, no systematic throughput change |
+| cross-machine | 3/3 reports, 9/9 candidate rows, 11/11 summaries, parity manifests equal; `results/m4/cross-machine.json` sha256 `685a1687…`; `complete=true` |
+
+The benchmark re-run is 7/7 workloads, 0 failed runs, 35/35 thread rows
+identical. Serial-pass medians are -2.5% overall (range -16.2% to -0.0%, the
+low end being the ~20 ms `circles_small` pass); the two watched same-core
+ratios moved `circles_mixed` 0.641 → 0.692 (still below Lua) and
+`overhead_static_2p` 1.049 → 0.976 (just under 1.0×). No improvement is
+claimed; both are indicative ratios.
+
+```bash
+make verify
+make julia-test
+make m3-mustache
+make m4-parity
+scripts/m4_allocation.jl --workload all --out results/m4/allocation-profile.json
+make m4-bench
+python3 scripts/m4_cross_machine.py --left-root tmp/cross-machine-local \
+  --right-root tmp/cross-machine-deathstar --out results/m4/cross-machine.json
+scripts/compare_parity.sh results/core-math/qualification/linux-x86_64.json \
+  results/core-math/qualification/linux-x86_64-deathstar.json
+```

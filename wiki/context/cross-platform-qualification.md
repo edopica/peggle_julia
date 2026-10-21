@@ -78,7 +78,7 @@ Build and qualify (from the repository root):
 bash native/build.sh --platform darwin-aarch64 --smoke
 scripts/verify_core_math.sh --platform darwin-aarch64
 julia --project=julia/PeggleSim -e 'using Pkg; Pkg.instantiate()'
-PEGGLE_MATH_BACKEND=core_math julia --project=julia/PeggleSim julia/PeggleSim/bin/native_qualify.jl
+PEGGLE_MATH_BACKEND=core_math julia --startup-file=no --project=julia/PeggleSim julia/PeggleSim/bin/native_qualify.jl
 mkdir -p results/core-math/qualification
 PEGGLE_MATH_BACKEND=core_math julia --project=julia/PeggleSim julia/PeggleSim/bin/parity_emit.jl \
     --census results/core-math/parity/math_census.v1.json \
@@ -105,7 +105,7 @@ Notes:
   native `build --smoke` is preferred for full qualification:
   ```bash
   PEGGLE_MATH_LIB="$PWD/native/artifacts/darwin-aarch64/libpeggle_math.dylib" \
-    julia --project=julia/PeggleSim julia/PeggleSim/bin/native_qualify.jl
+    julia --startup-file=no --project=julia/PeggleSim julia/PeggleSim/bin/native_qualify.jl
   PEGGLE_MATH_BACKEND=core_math \
   PEGGLE_MATH_LIB="$PWD/native/artifacts/darwin-aarch64/libpeggle_math.dylib" \
     julia --project=julia/PeggleSim julia/PeggleSim/bin/parity_emit.jl \
@@ -205,7 +205,7 @@ on every host. If any repository source changed after the Linux baseline was
 captured, regenerate it from the tracked census and re-run the comparisons:
 
 ```bash
-PEGGLE_MATH_BACKEND=core_math julia --project=julia/PeggleSim julia/PeggleSim/bin/parity_emit.jl \
+PEGGLE_MATH_BACKEND=core_math julia --startup-file=no --project=julia/PeggleSim julia/PeggleSim/bin/parity_emit.jl \
     --census results/core-math/parity/math_census.v1.json \
     --label linux-x86_64 \
     --out results/core-math/qualification/linux-x86_64.json
@@ -364,19 +364,62 @@ with the manifests.
 | Host / OS | Julia | Backend | Artifact sha256 | native_qualify | Manifest | Tier 2 |
 | --- | --- | --- | --- | --- | --- | --- |
 | Linux x86-64 (reference) | 1.12.6 | core_math | `d012f42e...` (`libpeggle_math.so`) | PASS 16/16 | `results/core-math/qualification/linux-x86_64.json` | optional |
+| Linux x86-64 (deathstar, second host) | 1.12.6 | core_math | `d012f42e...` (`libpeggle_math.so`) | PASS 16/16 | `results/core-math/qualification/linux-x86_64-deathstar.json` | n/a |
 | macOS ARM64 | 1.12.6 | core_math | native build sha or committed `3b877368...` | PASS __/16 | `results/core-math/qualification/darwin-arm64.json` | if LÖVE present |
 | Windows x86-64 | 1.12.6 | core_math | committed `bad2c227...` or native build sha | PASS __/16 | `results/core-math/qualification/windows-x64.json` | if LÖVE present |
 
-Bring back: both manifests, the
+### M4 second-host qualification (session 3)
+
+M4 session 3 qualified the validated corpus on a second host, same OS. Both
+hosts ran commit `4ae588d`, Julia 1.12.6, and the same `julia/PeggleSim/src`
+tree (sha256 `38bbc5021f8f539e5f14a395941b84a987eda5b4b588d59e772d1cc3e5a8e2d1`).
+
+| Host | CPU / threads | OS / glibc | Julia | Commit | `src` sha256 | Evidence | Outcome |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| omarchy (local) | Ryzen 5 4600H / 12 | Linux x86-64 / glibc 2.44 | 1.12.6 | `4ae588d` | `38bbc502…` | local M4 gates; `native_qualify` 16/16 | baseline; regenerated in session 3 |
+| deathstar | Threadripper 2990WX / 64 | Ubuntu 22.04 / glibc 2.35 | 1.12.6 | `4ae588d` | `38bbc502…` | tests 5,617/5,617; fixtures 14/14; traces 6/6 byte-identical; sweeps 7/7 (1,801 candidates per workload, all completed; serial == parallel); scenarios 11/11; `native_qualify` 16/16 (artifact `d012f42e…`) | corpus byte-identical to local |
+
+The local Linux baseline manifest
+(`results/core-math/qualification/linux-x86_64.json`) was regenerated in
+session 3 because `julia/PeggleSim/src` changed; it is sha256
+`6cb16574b603d48be20510a91868f63d4d7ef924d1d28c4200113951350becad`, with
+`native_qualify` 16/16 and the artifact sha256 unchanged. The second host's
+manifest is recorded at
+`results/core-math/qualification/linux-x86_64-deathstar.json` (sha256
+`7dfe294892b4d19a0639957b56c43bd1a65e610eeccde1d023fd240a5e838533`);
+`scripts/compare_parity.sh` between the two prints `PARITY OK` and exits 0.
+
+The M4 comparison report is `results/m4/cross-machine.json` (sha256
+`685a1687c8d95710f174478309d237382485698109f0394eacd5c13c8ec79703`):
+`verdict.complete = true`, `reasons = []`, `scope = "second host, same OS"`,
+`distinct_os = false`, with 3/3 corpus reports, 9/9 candidate-row files,
+11/11 sweep summaries field-equal (timing excluded), and parity-manifest
+`identity_equal` / `authoritative_equal` true. Hash note: the
+`julia/PeggleSim/src` tree hash above (`38bbc502…`) is the hash of the 26
+tracked `src/*.jl` contents; the parity manifests'
+`identity.julia_source_sha256` (`0c8bfa506…`) is a different construction over
+`src/*.jl` plus `Project.toml`/`Manifest.toml`. Both hosts agree on both
+values; the two hashes are not interchangeable.
+
+The comparison is byte-identical on a second **host**, same OS
+(`linux-x86_64`), not a second OS. The macOS ARM64 and Windows x86-64 rows
+above remain uncollected and are not claimed.
+
+The M4 second-host criterion is implemented by `scripts/m4_cross_machine.py`
+and deliberately counts a distinct *host* on the same OS as sufficient, with
+`verdict.scope` recording that; it is not the WP-E `cross-machine-summary.json`
+rule in §5b, which requires two distinct `os` values for `complete: true`.
+
+Bring back from the macOS/Windows trip: both manifests, the
 `native_qualify.jl` terminal output, the artifact sha256 values actually
 loaded, and the comparison results. Commit the two new manifests under
 `results/core-math/qualification/`.
 
-What the evidence supports: CORE-MATH runtime qualification on the target OS
-and bit-exact `authoritative` parity of the M2 state across Linux, macOS
-ARM64, and Windows x86-64 for the tracked census. It does not itself decide
-CORE-MATH adoption and does not replace the historical `system_libm`
-fixtures.
+Once the macOS and Windows rows are collected, the evidence will support
+CORE-MATH runtime qualification on the target OS and bit-exact
+`authoritative` parity of the M2 state across Linux, macOS ARM64, and Windows
+x86-64 for the tracked census. It does not itself decide CORE-MATH adoption
+and does not replace the historical `system_libm` fixtures.
 
 ## 7. Do not
 

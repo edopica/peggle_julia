@@ -1,0 +1,363 @@
+{
+  "comparisons": {
+    "candidate_rows": [
+      {
+        "identical": true,
+        "left_sha256": "47ddb6b7e7cba6493ff435f0844ee4284960553f707018f0fb2778a19932de6b",
+        "path": "results/raw/m4-julia-annular_dense-t1.jsonl",
+        "right_sha256": "47ddb6b7e7cba6493ff435f0844ee4284960553f707018f0fb2778a19932de6b",
+        "threads": 1,
+        "workload": "annular_dense"
+      },
+      {
+        "identical": true,
+        "left_sha256": "47ddb6b7e7cba6493ff435f0844ee4284960553f707018f0fb2778a19932de6b",
+        "path": "results/raw/m4-julia-annular_dense-t2.jsonl",
+        "right_sha256": "47ddb6b7e7cba6493ff435f0844ee4284960553f707018f0fb2778a19932de6b",
+        "threads": 2,
+        "workload": "annular_dense"
+      },
+      {
+        "identical": true,
+        "left_sha256": "10193bb276048a5cb3af67ff9dc4070d3acd22f8759cf1ec3aa1cd505afdf46b",
+        "path": "results/raw/m4-julia-annular_dense_multi3-t1.jsonl",
+        "right_sha256": "10193bb276048a5cb3af67ff9dc4070d3acd22f8759cf1ec3aa1cd505afdf46b",
+        "threads": 1,
+        "workload": "annular_dense_multi3"
+      },
+      {
+        "identical": true,
+        "left_sha256": "62f521a61c815bd88a867b771ef7d04fb41f39a11db7e5af21c5028383a87a97",
+        "path": "results/raw/m4-julia-circles_mixed-t1.jsonl",
+        "right_sha256": "62f521a61c815bd88a867b771ef7d04fb41f39a11db7e5af21c5028383a87a97",
+        "threads": 1,
+        "workload": "circles_mixed"
+      },
+      {
+        "identical": true,
+        "left_sha256": "9acfb833f9b639b72ee75f07b6f8414f4621863005b15cb35c3cae112e693312",
+        "path": "results/raw/m4-julia-circles_small-t1.jsonl",
+        "right_sha256": "9acfb833f9b639b72ee75f07b6f8414f4621863005b15cb35c3cae112e693312",
+        "threads": 1,
+        "workload": "circles_small"
+      },
+      {
+        "identical": true,
+        "left_sha256": "68aa2154854ae5496f19dd956308beaf117766f54833aff6402ccf76c1f9914c",
+        "path": "results/raw/m4-julia-lines_rect_annular-t1.jsonl",
+        "right_sha256": "68aa2154854ae5496f19dd956308beaf117766f54833aff6402ccf76c1f9914c",
+        "threads": 1,
+        "workload": "lines_rect_annular"
+      },
+      {
+        "identical": true,
+        "left_sha256": "68aa2154854ae5496f19dd956308beaf117766f54833aff6402ccf76c1f9914c",
+        "path": "results/raw/m4-julia-lines_rect_annular-t2.jsonl",
+        "right_sha256": "68aa2154854ae5496f19dd956308beaf117766f54833aff6402ccf76c1f9914c",
+        "threads": 2,
+        "workload": "lines_rect_annular"
+      },
+      {
+        "identical": true,
+        "left_sha256": "649c0b450caf6a7f56a3ae584082de6eb76d2c6b57149778ff7d6a3052515b58",
+        "path": "results/raw/m4-julia-lines_rect_annular_multi3-t1.jsonl",
+        "right_sha256": "649c0b450caf6a7f56a3ae584082de6eb76d2c6b57149778ff7d6a3052515b58",
+        "threads": 1,
+        "workload": "lines_rect_annular_multi3"
+      },
+      {
+        "identical": true,
+        "left_sha256": "7d104655915c7e1258ee6f6f557f1761ce8efb59858924358b3843825f58b62c",
+        "path": "results/raw/m4-julia-overhead_static_2p-t1.jsonl",
+        "right_sha256": "7d104655915c7e1258ee6f6f557f1761ce8efb59858924358b3843825f58b62c",
+        "threads": 1,
+        "workload": "overhead_static_2p"
+      }
+    ],
+    "parity_manifests": [
+      {
+        "authoritative_equal": true,
+        "first_authoritative_difference": null,
+        "first_identity_difference": null,
+        "identity": {
+          "checkpoint_schema_version": 1,
+          "config_sha256": "455757c900c604563865b5195eda2f31cfeba3d8666b6d782390e38c47e91d4d",
+          "format": "peggle.parity",
+          "julia_source_sha256": "0c8bfa5069355a9c1c6cd0a07eab87609f4e19a150610181111ec745c3344fb2",
+          "package_version": "0.1.0",
+          "prerequisites": {
+            "census_fixture_path": "results/core-math/parity/math_census.v1.json",
+            "census_fixture_sha256": "075130e0ce57043e9582bc16272b6f633ae1584b7f900a13ee4223182d62b9f2",
+            "config_artifact_sha256": "f4a0a1482a6c791d3d38a935ffdb669ff91e65fb03367a258ef8f40d0b5d17b6",
+            "levels_sha256": "eeb217385f8feeb9098106b54bf775b780b14058daa21df26325df69036d2c8e",
+            "math_backend": {
+              "abi_version": 1,
+              "backend": "core_math",
+              "component_source_sha256": "346a6ee1d444734ce45773fc523147ea7b38358a596011793ab713aafcfb9bfc",
+              "core_math_revision": "040ee482a8caefe2afe71a3a59d43923d2f0c7e6",
+              "numeric_contract_version": 1
+            },
+            "package_version": "0.1.0",
+            "peg_colors_fixture_sha256": "456552bcb4ab140ee0405d623c5cd8e8c3e2a2678fddff8b79cb17a0b6902032",
+            "rng_sequences_fixture_sha256": "f105d119c5d0b20fd5d6c3bdb253d4c1983c411da0e0c297249d1f49350bec02"
+          },
+          "reference_revision": "d17f6e7089b6e761f4367fc6a6dcd5b4da0309b9",
+          "reference_tree": "3dc7ddfe19916e149d2531b20c73463c28a202c8",
+          "schema_version": 2
+        },
+        "identity_equal": true,
+        "left": "results/core-math/qualification/linux-x86_64.json",
+        "left_label": null,
+        "right": "results/core-math/qualification/linux-x86_64-deathstar.json",
+        "right_label": null
+      }
+    ],
+    "reports": [
+      {
+        "identical": true,
+        "left_sha256": "9ac472c7a720d97e25c39c0653d13d64642731801b22ba03a6bb28d4fa243ec3",
+        "path": "results/m4/fixture-parity.json",
+        "right_sha256": "9ac472c7a720d97e25c39c0653d13d64642731801b22ba03a6bb28d4fa243ec3"
+      },
+      {
+        "identical": true,
+        "left_sha256": "ca1b5bd9bcc4a0223820907ce16a2a6bfebeb09551b117db7e2e89acb9757085",
+        "path": "results/m4/trace-parity.json",
+        "right_sha256": "ca1b5bd9bcc4a0223820907ce16a2a6bfebeb09551b117db7e2e89acb9757085"
+      },
+      {
+        "identical": true,
+        "left_sha256": "33522625e50c0b4f95db51fa42987def02dbdff0f0e2ba95e28d75866d23f5a2",
+        "path": "results/m4/scenario-parity.json",
+        "right_sha256": "33522625e50c0b4f95db51fa42987def02dbdff0f0e2ba95e28d75866d23f5a2"
+      }
+    ],
+    "sweep_summaries": [
+      {
+        "candidates": 1801,
+        "differing_fields": [],
+        "fields_equal": true,
+        "path": "results/m4/julia-annular_dense-t1.json",
+        "serial_parallel_identical": true,
+        "threads": 1,
+        "timing_fields_excluded": [
+          "wall_seconds",
+          "candidates_per_second",
+          "steps_per_second",
+          "serial",
+          "parallel",
+          "phases"
+        ]
+      },
+      {
+        "candidates": 1801,
+        "differing_fields": [],
+        "fields_equal": true,
+        "path": "results/m4/julia-annular_dense-t2.json",
+        "serial_parallel_identical": true,
+        "threads": 2,
+        "timing_fields_excluded": [
+          "wall_seconds",
+          "candidates_per_second",
+          "steps_per_second",
+          "serial",
+          "parallel",
+          "phases"
+        ]
+      },
+      {
+        "candidates": 1801,
+        "differing_fields": [],
+        "fields_equal": true,
+        "path": "results/m4/julia-annular_dense-t4.json",
+        "serial_parallel_identical": true,
+        "threads": 4,
+        "timing_fields_excluded": [
+          "wall_seconds",
+          "candidates_per_second",
+          "steps_per_second",
+          "serial",
+          "parallel",
+          "phases"
+        ]
+      },
+      {
+        "candidates": 1801,
+        "differing_fields": [],
+        "fields_equal": true,
+        "path": "results/m4/julia-annular_dense_multi3-t1.json",
+        "serial_parallel_identical": true,
+        "threads": 1,
+        "timing_fields_excluded": [
+          "wall_seconds",
+          "candidates_per_second",
+          "steps_per_second",
+          "serial",
+          "parallel",
+          "phases"
+        ]
+      },
+      {
+        "candidates": 1801,
+        "differing_fields": [],
+        "fields_equal": true,
+        "path": "results/m4/julia-circles_mixed-t1.json",
+        "serial_parallel_identical": true,
+        "threads": 1,
+        "timing_fields_excluded": [
+          "wall_seconds",
+          "candidates_per_second",
+          "steps_per_second",
+          "serial",
+          "parallel",
+          "phases"
+        ]
+      },
+      {
+        "candidates": 1801,
+        "differing_fields": [],
+        "fields_equal": true,
+        "path": "results/m4/julia-circles_small-t1.json",
+        "serial_parallel_identical": true,
+        "threads": 1,
+        "timing_fields_excluded": [
+          "wall_seconds",
+          "candidates_per_second",
+          "steps_per_second",
+          "serial",
+          "parallel",
+          "phases"
+        ]
+      },
+      {
+        "candidates": 1801,
+        "differing_fields": [],
+        "fields_equal": true,
+        "path": "results/m4/julia-lines_rect_annular-t1.json",
+        "serial_parallel_identical": true,
+        "threads": 1,
+        "timing_fields_excluded": [
+          "wall_seconds",
+          "candidates_per_second",
+          "steps_per_second",
+          "serial",
+          "parallel",
+          "phases"
+        ]
+      },
+      {
+        "candidates": 1801,
+        "differing_fields": [],
+        "fields_equal": true,
+        "path": "results/m4/julia-lines_rect_annular-t2.json",
+        "serial_parallel_identical": true,
+        "threads": 2,
+        "timing_fields_excluded": [
+          "wall_seconds",
+          "candidates_per_second",
+          "steps_per_second",
+          "serial",
+          "parallel",
+          "phases"
+        ]
+      },
+      {
+        "candidates": 1801,
+        "differing_fields": [],
+        "fields_equal": true,
+        "path": "results/m4/julia-lines_rect_annular-t4.json",
+        "serial_parallel_identical": true,
+        "threads": 4,
+        "timing_fields_excluded": [
+          "wall_seconds",
+          "candidates_per_second",
+          "steps_per_second",
+          "serial",
+          "parallel",
+          "phases"
+        ]
+      },
+      {
+        "candidates": 1801,
+        "differing_fields": [],
+        "fields_equal": true,
+        "path": "results/m4/julia-lines_rect_annular_multi3-t1.json",
+        "serial_parallel_identical": true,
+        "threads": 1,
+        "timing_fields_excluded": [
+          "wall_seconds",
+          "candidates_per_second",
+          "steps_per_second",
+          "serial",
+          "parallel",
+          "phases"
+        ]
+      },
+      {
+        "candidates": 1801,
+        "differing_fields": [],
+        "fields_equal": true,
+        "path": "results/m4/julia-overhead_static_2p-t1.json",
+        "serial_parallel_identical": true,
+        "threads": 1,
+        "timing_fields_excluded": [
+          "wall_seconds",
+          "candidates_per_second",
+          "steps_per_second",
+          "serial",
+          "parallel",
+          "phases"
+        ]
+      }
+    ]
+  },
+  "format": "peggle.m4_cross_machine",
+  "hosts": {
+    "left": {
+      "captured_at_utc": "2026-10-21T12:01:12Z",
+      "cpu_model": "AMD Ryzen 5 4600H with Radeon Graphics",
+      "glibc": "ldd (GNU libc) 2.44",
+      "hostname": "omarchy",
+      "julia_src_tree_sha256": "38bbc5021f8f539e5f14a395941b84a987eda5b4b588d59e772d1cc3e5a8e2d1",
+      "julia_version": "1.12.6",
+      "native_qualify_artifact_sha256": "d012f42e0185fbf7d15b892a687b5a07e93668cb5b66ba9021dcbf9d006d0494",
+      "native_qualify_pass_count": 16,
+      "native_qualify_total_checks": 16,
+      "nproc": 12,
+      "repo_commit": "4ae588d",
+      "uname_m": "x86_64"
+    },
+    "right": {
+      "captured_at_utc": "2026-10-21T11:41:31Z",
+      "cpu_model": "AMD Ryzen Threadripper 2990WX 32-Core Processor",
+      "glibc": "ldd (Ubuntu GLIBC 2.35-0ubuntu3.1) 2.35",
+      "hostname": "deathstar",
+      "julia_src_tree_sha256": "38bbc5021f8f539e5f14a395941b84a987eda5b4b588d59e772d1cc3e5a8e2d1",
+      "julia_version": "1.12.6",
+      "native_qualify_artifact_sha256": "d012f42e0185fbf7d15b892a687b5a07e93668cb5b66ba9021dcbf9d006d0494",
+      "native_qualify_pass_count": 16,
+      "native_qualify_total_checks": 16,
+      "nproc": 64,
+      "repo_commit": "4ae588d",
+      "uname_m": "x86_64"
+    }
+  },
+  "method": "Two capture roots from two hosts. Corpus reports and candidate-row files must hash equal; sweep summaries compare structural fields only (timing fields are excluded); M2 parity manifests must agree on identity and authoritative blocks, the same blocks scripts/compare_parity.sh checks. Allocation and throughput measurements are never mixed across hosts.",
+  "schema_version": 1,
+  "verdict": {
+    "all_candidate_rows_identical": true,
+    "all_parity_manifests_equal": true,
+    "all_reports_identical": true,
+    "all_sweep_summaries_structurally_equal": true,
+    "complete": true,
+    "distinct_hosts": "deathstar",
+    "distinct_os": false,
+    "left_platform": "x86_64 ldd (GNU libc) 2.44",
+    "reasons": [],
+    "right_platform": "x86_64 ldd (Ubuntu GLIBC 2.35-0ubuntu3.1) 2.35",
+    "same_commit": true,
+    "same_julia_version": true,
+    "same_source_tree": true,
+    "scope": "second host, same OS"
+  }
+}

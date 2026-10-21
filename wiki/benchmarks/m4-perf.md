@@ -2,19 +2,23 @@
 
 Measured steady-state cost of the Julia shot engine across the seven M0
 workloads, the zero-allocation criterion for warm fixed-capacity stepping, the
-allocation accounting behind it, and the same-host Lua comparison.
+allocation accounting behind it, the same-host Lua comparison, and the
+session-3 strict-zero and second-host closeout.
 
-- Status: **session 2 of 3 complete; M4 itself remains open** (cross-machine
-  qualification and closeout are session 3).
+- Status: **session 3 of 3 complete; M4 is closed**.
 - Correctness anchor: the session-1 corpus (`results/m4/parity-summary.json`,
   `overall_pass = true`; 14/14 fixtures, 6/6 traces, 7/7 sweeps, 11/11
   scenarios) plus the gates in §7.
-- Producer: `scripts/bench_m4.sh` (`make m4-bench`) and
-  `scripts/m4_allocation.jl`.
+- Producers: `scripts/bench_m4.sh` (`make m4-bench`),
+  `scripts/m4_allocation.jl`, and `scripts/m4_cross_machine.py`.
 - Results: `results/m4/bench-report.json`,
-  `results/m4/allocation-profile.json`.
-- Host: omarchy, AMD Ryzen 5 4600H (6 cores / 12 threads), Linux, Julia
-  1.12.6, LÖVE 11.5.0, LuaJIT 2.1, math backend `system_libm`.
+  `results/m4/allocation-profile.json`, and the cross-machine comparison
+  (`results/m4/cross-machine.json`, sha256
+  `685a1687c8d95710f174478309d237382485698109f0394eacd5c13c8ec79703`).
+- Hosts: omarchy, AMD Ryzen 5 4600H (6 cores / 12 threads), Linux, Julia
+  1.12.6, LÖVE 11.5.0, LuaJIT 2.1, math backend `system_libm`; session-3
+  second host deathstar, AMD Ryzen Threadripper 2990WX (32 cores / 64
+  threads), Ubuntu 22.04, glibc 2.35.
 
 ## 1. Zero-allocation criterion
 
@@ -151,10 +155,10 @@ shared host. Allocation bytes are deterministic and are the gate.
 ### 2.2 Workloads and aims
 
 The allocation profile covers mustache (historical aims 900 and 570), plus
-`circles_small`, `lines_rect_annular`, `annular_dense` (1 ball), and one
-3-ball workload. Aims are chosen deterministically per workload and recorded
-in the profile. The benchmark covers all seven M0 workloads (stride 20, 91
-candidates), with the session-1 full grid used as the full-grid reference.
+`circles_small`, `lines_rect_annular`, and `annular_dense` (all 1 ball). Aims
+are chosen deterministically per workload and recorded in the profile. The
+benchmark covers all seven M0 workloads (stride 20, 91 candidates), with the
+session-1 full grid used as the full-grid reference.
 
 ### 2.3 Benchmark protocol
 
@@ -174,8 +178,8 @@ candidates), with the session-1 full grid used as the full-grid reference.
 
 ## 3. Per-workload benchmark
 
-Source: `results/m4/bench-report.json` (`make m4-bench`). Seven M0 workloads,
-stride 20 (91 candidates of the 1,801-index grid), Lua timed with
+Source: `results/m4/bench-report.json` (`make m4-bench`, session-3 re-run).
+Seven M0 workloads, stride 20 (91 candidates of the 1,801-index grid), Lua timed with
 `--stride 20 --repeat 2 --no-replay-serialize`, Julia one post-warmup pass per
 thread count with `--verify-serial --alloc`. Same host as §4.
 
@@ -183,20 +187,22 @@ thread count with `--verify-serial --alloc`. Same host as §4.
 
 | workload | Lua p50 ms | Lua p99 ms | Lua cand/s | Julia t1 p50 ms | Julia t1 p99 ms | Julia t1 cand/s | Julia t12 cand/s | ×Lua (t1) | t12 speedup (eff.) |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
-| overhead_static_2p | 0.76 | 4.34 | 976.9 | 0.076 | 0.50 | 1,025.2 | 999.7 | 1.0× | 0.98× (0.08) |
-| circles_small | 1.02 | 6.52 | 687.6 | 0.230 | 0.70 | 901.8 | 950.9 | 1.3× | 1.05× (0.09) |
-| circles_mixed | 0.38 | 3.95 | 1,582.8 | 0.079 | 0.42 | 1,014.8 | 976.7 | 0.6× | 0.96× (0.08) |
-| lines_rect_annular | 3.57 | 33.50 | 129.8 | 0.474 | 7.80 | 378.3 | 594.6 | 2.9× | 1.57× (0.13) |
-| annular_dense | 55.09 | 71.17 | 17.8 | 1.661 | 8.90 | 302.3 | 542.4 | 17.0× | 1.79× (0.15) |
-| lines_rect_annular_multi3 | 23.39 | 48.66 | 51.2 | 5.979 | 11.57 | 181.6 | 514.2 | 3.5× | 2.83× (0.24) |
-| annular_dense_multi3 | 75.46 | 98.33 | 13.1 | 6.633 | 14.53 | 130.2 | 462.4 | 10.0× | 3.55× (0.30) |
+| overhead_static_2p | 0.76 | 4.66 | 948.0 | 0.073 | 0.60 | 925.3 | 886.4 | 0.98× | 0.96× (0.08) |
+| circles_small | 0.90 | 6.60 | 715.7 | 0.267 | 0.81 | 850.4 | 1,119.4 | 1.19× | 1.32× (0.11) |
+| circles_mixed | 0.41 | 3.79 | 1,437.9 | 0.079 | 0.38 | 994.8 | 1,034.9 | 0.69× | 1.04× (0.09) |
+| lines_rect_annular | 3.70 | 39.45 | 121.7 | 0.486 | 8.17 | 366.5 | 610.5 | 3.01× | 1.67× (0.14) |
+| annular_dense | 61.26 | 78.00 | 16.2 | 1.756 | 9.17 | 292.3 | 652.0 | 18.02× | 2.23× (0.19) |
+| lines_rect_annular_multi3 | 24.82 | 49.88 | 48.8 | 6.182 | 11.87 | 177.5 | 564.5 | 3.64× | 3.18× (0.26) |
+| annular_dense_multi3 | 67.28 | 94.57 | 14.6 | 6.884 | 14.99 | 126.3 | 447.8 | 8.64× | 3.54× (0.30) |
 
 Reading the table:
 
-- Julia wins on the five workloads with real simulation cost (1.3–17×), loses
-  on `circles_mixed` (0.6×) and ties on `overhead_static_2p` (1.0×). Those two
-  are cheap levels where per-candidate fixed cost dominates and LuaJIT's tight
-  JITted loop is hard to beat; the loss is reported, not hidden.
+- Julia wins on the five workloads with real simulation cost (1.2–18.0×). The
+  two cheap rows moved slightly: `circles_mixed` 0.641 → 0.692× (still below
+  Lua) and `overhead_static_2p` 1.049 → 0.976× (now just under 1.0×). Both are
+  the report's own indicative, not benchmark-grade, ratios; they are reported,
+  not hidden. Those two are cheap levels where per-candidate fixed cost
+  dominates and LuaJIT's tight JITted loop is hard to beat.
 - The `×Lua` column is throughput at Julia T=1 (one worker) against Lua
   single-threaded. It is indicative: Lua is repeat-timed and Julia is one
   pass (see §6).
@@ -207,25 +213,25 @@ Reading the table:
   Throughput is the fair comparison.
 - Julia throughput is the t1 **parallel** pass, per the harness convention; the
   t1 serial verification pass is faster on small workloads because it avoids
-  the parallel dispatch (e.g. `circles_small` 4,071 vs 902 cand/s). Thread
+  the parallel dispatch (e.g. `circles_small` 3,412 vs 850 cand/s). Thread
   scaling is therefore measured against t1 parallel, not against serial.
 - Thread scaling is bounded by candidate granularity: 91 candidates over up to
   12 threads, and the cheap workloads finish a candidate in microseconds, so
   efficiency at 12 threads is 0.08–0.30 even though wall time still improves.
-  The dense and multi-ball workloads scale best (1.8–3.6× on 12 threads, i.e.
-  0.15–0.30 per-thread efficiency).
+  The dense and multi-ball workloads scale best (2.2–3.5× on 12 threads, i.e.
+  0.19–0.30 per-thread efficiency).
 
 ### 3.2 Allocations and peak memory
 
 | workload | Julia alloc p50 B/candidate | alloc mean B/candidate | Lua RSS MB | Julia t1 RSS MB |
 | --- | ---: | ---: | ---: | ---: |
-| overhead_static_2p | 5,360 | 6,238 | 153.2 | 587.6 |
-| circles_small | 10,512 | 11,339 | 156.2 | 571.6 |
-| circles_mixed | 8,496 | 9,064 | 154.0 | 570.2 |
-| lines_rect_annular | 22,144 | 25,279 | 163.3 | 590.4 |
-| annular_dense | 48,368 | 49,176 | 161.4 | 591.5 |
-| lines_rect_annular_multi3 | 30,544 | 30,318 | 160.9 | 573.8 |
-| annular_dense_multi3 | 49,872 | 50,989 | 163.0 | 574.3 |
+| overhead_static_2p | 5,360 | 6,156 | 120.8 | 616.0 |
+| circles_small | 10,512 | 11,056 | 123.6 | 612.0 |
+| circles_mixed | 8,496 | 8,983 | 121.3 | 602.0 |
+| lines_rect_annular | 21,264 | 22,505 | 130.2 | 601.9 |
+| annular_dense | 47,920 | 48,449 | 128.7 | 599.3 |
+| lines_rect_annular_multi3 | 21,440 | 22,790 | 129.1 | 602.2 |
+| annular_dense_multi3 | 48,080 | 48,970 | 131.4 | 597.4 |
 
 These per-candidate bytes cover `reset + launch + run + extract` on the serial
 path with an extra untimed warmup pass, so they are dominated by `reset`
@@ -234,16 +240,21 @@ path with an extra untimed warmup pass, so they are dominated by `reset`
 `scripts/bench_process.py`; Julia's larger figure is the runtime and JIT, not
 per-worker state, and for threads > 1 it is not a per-worker measure.
 
+Mean per-candidate allocation is informational, not the §1.1 gate; it fell on
+all seven workloads (e.g. `lines_rect_annular_multi3` 30,318 → 22,790
+B/candidate, -24.8%; `lines_rect_annular` -11.0%).
+
 - Every Julia thread-count row reports `serial_parallel_identical = true` and
-  byte-identical candidate rows across T = 1, 2, 4, 8, 12.
+  byte-identical candidate rows across T = 1, 2, 4, 8, 12 (`35/35` rows in the
+  session-3 run).
 - The stride-20 Lua-vs-Julia row agreement is clean for all seven workloads
   (`bench-sweeps-compare-*.json`, 91/91 candidates), and the full-grid
   reference is the session-1 stride-1 report.
 - **Baseline delta.** The pre-change tree had no same-protocol throughput run,
   so the honest baseline is the allocation profile: mustache 570 fell from
-  3,945 B/step to 21.5 B/step (≈183× less allocation in the step loop) at the
-  same authoritative outcome. Throughput should be read as absolute numbers
-  against Lua above, not as a before/after ratio.
+  3,929 B/step at the start of session 2 to strict zero in session 3 (§4.2,
+  §4.1) at the same authoritative outcome. Throughput should be read as
+  absolute numbers against Lua above, not as a before/after ratio.
 
 ## 4. Allocation accounting
 
@@ -257,24 +268,34 @@ warmup shots per aim, step cap 4000). Reproduce with §8.
 | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | :---: |
 | circles_small | 900 | 8,784 | 0 | 0 | 202 | 0.000 | 0 | 0 / 202 | **pass** |
 | annular_dense | 900 | 46,192 | 0 | 0 | 284 | 0.000 | 0 | 0 / 284 | **pass** |
-| lines_rect_annular | 900 | 19,536 | 0 | 8,544 | 768 | 11.125 | 4,352 | 2 / 768 | fail |
-| mustache | 900 | 25,360 | 0 | 13,824 | 922 | 14.993 | 5,136 | 5 / 922 | fail |
-| mustache | 570 | 29,688 | 0 | 38,712 | 1,797 | 21.543 | 4,328 | 13 / 1,797 | fail |
+| lines_rect_annular | 900 | 19,536 | 0 | 0 | 768 | 0.000 | 0 | 0 / 768 | **pass** |
+| mustache | 900 | 25,360 | 0 | 0 | 922 | 0.000 | 0 | 0 / 922 | **pass** |
+| mustache | 570 | 29,688 | 0 | 0 | 1,797 | 0.000 | 0 | 0 / 1,797 | **pass** |
 
-`p50` and `p99` are 0 B for every row: the non-zero steps are the handful that
-first emit a given command or event kind, not a per-step tax. Launch is 0 B
-everywhere, and the steady-state median step allocates nothing.
+All five probes meet §1.1 strictly: the sum **and** the maximum single-step
+delta are 0, not a median or an average. `Profile.Allocs` at
+`sample_rate = 1.0` over the same warmed loops records **zero allocation
+sites** on every row (the profile's `sites` arrays are empty, not filtered), so
+there is no residual site to classify, itemize, or plan around. Launch is 0 B
+everywhere. Reset is unchanged by this session (8,784 / 46,192 / 19,536 /
+25,360 / 29,688 B) and remains reported separately per §1.3.
 
-**Verdict.** The gate passes strictly on `circles_small` and `annular_dense`.
-It does **not** pass on `mustache` (both aims) or `lines_rect_annular`: those
-perform 2–13 allocating steps out of 768–1,797. Those steps are the
-"remaining in-scope sites with bytes/step and a plan" case in §1.6, not a
-silent pass; §4.3 lists them.
+Before/after on the same host and method (before = clean worktree at
+`6544414`, measured in session 3 so both columns describe the same tree
+history; after = this session):
 
-### 4.2 What was removed
+| probe | before B/step | before max B | before nonzero | after B/step | after max B |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| circles_small 900 | 0.000 | 0 | 0 / 202 | 0.000 | 0 |
+| annular_dense 900 | 6.310 | 448 | 4 / 284 | 0.000 | 0 |
+| lines_rect_annular 900 | 16.958 | 4,352 | 12 / 768 | 0.000 | 0 |
+| mustache 900 | 16.121 | 5,136 | 7 / 922 | 0.000 | 0 |
+| mustache 570 | 27.112 | 4,192 | 42 / 1,797 | 0.000 | 0 |
 
-Measured before/after on the same host and method (mustache 570 is the
-longest shot, 1,797 steps, and dominated the totals):
+### 4.2 Session 2: what was removed
+
+Measured before/after in session 2 on that session's working tree (mustache 570
+was the longest shot, 1,797 steps, and dominated the totals):
 
 | workload | aim | before B/step | after B/step | removed |
 | --- | ---: | ---: | ---: | ---: |
@@ -307,62 +328,154 @@ Four causes, all behavioural no-ops:
    the live containers (`_restore_trackers!`), which also cut reset from 27.8 →
    25.4 KB (mustache 900) and 32.2 → 29.7 KB (mustache 570).
 
-Reuse pools (`run_pool`, `award_pool`, `by_line_pool`, `track_pool`,
-`hits_pool`) are reset by index at `reset_shot!`, so a warmed repeat of the same
-aim hands the same objects back out instead of allocating new ones.
+The session-2 table is retained as the session-2 measurement; it was captured
+on the pre-final working tree and its numbers do not reproduce at `6544414`
+(§4.5). The session-3 column of §4.1 is the one that describes the commit.
 
-### 4.3 Remaining sites (in-scope, with plan)
+### 4.3 Session 3: the command-path cluster
 
-`Profile.Allocs` at `sample_rate = 1.0` over the warmed step loop; site bytes
-are profiler payload (91.7–92.6 % of `gc_bytes`, GC headers/padding are
-unattributed) and must not be summed to the gate total.
+The residue that session 2 left was one coherent cluster: command emission and
+application, plus the style-shot slide-run map churn that the final session-2
+change (removing an unsound reuse pool, §7 finding 2) had moved into the
+per-bounce path. The per-site B/step values are `Profile.Allocs` profiler
+payload, not gate bytes — the profile's `attributed_to_measured_ratio` is 0.910
+(≈91% of `gc_bytes`) — so they are not summed into the §1.1 gate.
 
-| site | B/step (570) | B/step (900) | B/step (slide) | classification | plan |
-| --- | ---: | ---: | ---: | --- | --- |
-| `engine.jl:613` `apply_commands!` | 4.897 | 2.863 | 2.292 | in-scope | pool/reuse the derived `EventFields` per command kind |
-| `events.jl:80` `_copy_payload` | 3.561 | 2.777 | 1.667 | in-scope | typed command payload removes the dict copy |
-| `events.jl:270` `push_command!` | 2.974 | 2.317 | 1.385 | in-scope | typed `GameplayCommand` struct (same pattern as `EventFields`) |
-| `slide_inversion.jl:232` | 2.644 | 0.573 | 0.688 | in-scope | typed command + reused `peg_ids` scratch |
-| `style_shots.jl:106` | 2.391 | 0.312 | — | capacity growth | pre-size `run_pool` from the first shot |
-| `engine.jl:569` `apply_commands!` | — | 0.972 | 1.167 | in-scope | same derived-payload pooling |
-| `engine.jl:485` `start_clearing!` | 0.855 | 0.156 | — | in-scope | fill a reused `clear_queue` instead of a comprehension |
-| `events.jl:84` `_copy_payload` | 0.570 | 0.347 | 0.396 | in-scope | no copy for producer-owned vectors |
+The sites measured at `6544414` with the same `Profile.Allocs` method (mustache
+570 unless noted):
 
-All of these are command emission/application or clearing; none is physics,
-scoring, RNG, or trace. The prescribed fix for the cluster (~10 B/step at
-mustache 570) is one refactor: give `GameplayCommands` a concrete payload type
-exactly as the journal got `EventFields`. That is session-3 work, tracked here
-so the gate is not reported as met.
+| site | B/step (570) | classification | fix |
+| --- | ---: | --- | --- |
+| `style_shots.jl:133` `by_line[key] = run` | 5.698 | steady-state | per-ball slide-run map cache; keys persist |
+| `engine.jl:613` `apply_commands!` `EventFields` | 4.897 | steady-state | typed command records make the emit type-stable |
+| `events.jl:80` `_copy_payload` (push) | 3.561 | steady-state | no payload copy on the push path |
+| `events.jl:272` `push_command!` `Dict` | 2.974 | steady-state | concrete `GameplayCommand` record |
+| `slide_inversion.jl:232` command `Dict` | 2.644 | steady-state | typed `remove_slide_pegs` push |
+| `style_shots.jl:115` new run map | 1.425 | steady-state | same map cache |
+| `events.jl:78` `_copy_payload` dict | 0.890 | steady-state | export-only copy |
+| `engine.jl:485` `start_clearing!` comprehension | 0.855 | steady-state | reused `clear_lit` + in-place sort |
+| `events.jl:84` `_copy_payload` vector | 0.570 | steady-state | pooled `source_sequences` |
+| `style_shots.jl:217/216/213` award pushes (900 only) | 0.616 | steady-state | typed award pushes |
+| `state.jl:88` `BallState` (power spawn) | 0.267 | steady-state | recycled spawn objects |
+| `ball_state.jl:134/121` clearing commands | 0.223 | steady-state | typed `start_midturn_clearing` |
+| `engine.jl:486` `sort!` scratch | 0.223 | steady-state | `InsertionSort` (stable, in place) |
+| `slide_inversion.jl:126` `_si_lowest_hit_pegs` | 0.200 | steady-state | pooled `peg_ids` scratch |
+| `slide_inversion.jl:0` `_si_lowest_hit_pegs` (inlined) | 0.160 | steady-state | same |
+| `engine.jl:608` `apply_commands!` `remove_slide_pegs` | 0.080 | steady-state | typed `remove_slide_pegs` slot |
+| `engine.jl:621` `apply_commands!` `remove_slide_pegs` | 0.009 | steady-state | same |
+| `engine.jl:554` `_present_payload` dict | 0.347 (900) | steady-state | reused `StyleInfo` callback view |
+| `engine.jl:581` `copy(seqs)` for callback | 0.304 (900) | steady-state | same |
 
-**Commands are deliberately excluded** from the gate: `GameplayCommands`
-payloads are exported to Lua and deep-copied at push time (a documented
-ownership boundary, covered by tests). The gate as written covers the journal
-and the step loop; that boundary is why the residual is where it is.
+The refactor, in the order the ownership boundary moves:
+
+1. **Commands got the `EventFields` treatment.** `GameplayCommands.commands` and
+   `.applied` are `Vector{GameplayCommand}`: a concrete record with the
+   envelope (`type`, `step`, `shot_id`, `sequence`) and one typed slot per
+   payload key the engine emits (`ball_id`, `style`, `points`, `distance`,
+   `peg_id`, `line_id`, `reason`, `source_sequences`, `peg_ids`, plus `status`
+   for applied records and a cold `extra` slot). It is a read-only
+   `AbstractDict{String,Any}` view, so consumers that used the dictionary form
+   still work.
+2. **The deep copy moved to the export boundary, it was not deleted.**
+   `push_command!` still detaches caller-owned dictionary input (typed slots or
+   a copied `extra`), and `command_snapshot` / `applied_snapshot` / the trace
+   step record still materialize detached `Dict{String,Any}` payloads with the
+   identical key set, value types and (sorted) trace bytes. The engine's own
+   emitters push typed records through `push_style_award!`,
+   `push_start_midturn_clearing!` and `push_remove_slide_pegs!`; the
+   `source_sequences`/`peg_ids` vectors come from per-buffer pools that are
+   rewound per step and never mutated after the push.
+3. **The derived event stopped being boxed.** The old `apply_commands!` read
+   `Any` out of a `Dict`, so the `style_awarded`/`slide_peg_removed`
+   `EventFields` could not be inferred and was heap-allocated (~270 B) on every
+   applied command. With typed reads the constructor stays unboxed and
+   `emit_derived!` is `@inline`d, so those events cost nothing.
+4. **The style callback got a reusable view.** `on_style_shot` is a dynamically
+   typed function field, so passing a fresh `Dict` boxed every scalar and
+   passing an immutable struct boxed the struct itself. It now receives
+   `eng.style_info`, a mutable `StyleInfo` filled in place, which exposes
+   exactly the keys the old detached dictionary carried.
+5. **Clearing reuses one list.** `start_clearing!` fills `eng.clear_lit`
+   (handed to `e.clear_queue` and drained to empty by `update_clearing!`) and
+   sorts it in place with `InsertionSort` — stable, like the default algorithm,
+   and allocation-free. Spawned balls are recycled from `eng.spawn_pool`
+   instead of constructing a new `BallState` per power spawn.
+6. **Slide-run maps survive the shot.** A ball holds either a live map in
+   `slide_runs` or a zeroed one in `slide_cache`, never both:
+   `_style_clear_ball_slide!` deletes the live map and parks it,
+   `_style_run_tab!` removes it from the cache before it goes live, and
+   `reset_shot!` reclaims live maps into the cache. `run_pool` is a monotonic
+   registry and is deliberately **not** rewound: a pooled run object is handed
+   out at most once and then owned by its (ball, line) map, so rewinding could
+   alias two lines onto one object (the session-2 failure mode in a new
+   disguise). The pool therefore grows only with the number of distinct
+   (ball, line) pairs ever played, which is bounded by the level.
+
+### 4.4 Remaining sites
+
+None. Every measured step allocates nothing on all five probes, so there is no
+residual site to classify with bytes/step or a plan. The classification
+vocabulary of §1.6 is unchanged and still describes any future residue; the
+profile schema still reports per-site classification when sites exist.
+
+### 4.5 Reproducibility finding: the session-2 committed profile is stale
+
+The `results/m4/allocation-profile.json` committed in session 2 was captured at
+`b8e94f0` with a **dirty** `julia/PeggleSim/src` (`src_jl_sha256
+0631c714…`), before the final session-2 changes. It does not reproduce at
+`6544414` (clean, `src_jl_sha256 df16438b…`):
+
+| probe | session-2 profile | re-measured at 6544414 | session-2 verdict | re-measured verdict |
+| --- | ---: | ---: | --- | --- |
+| circles_small 900 | 0.000 | 0.000 | pass | pass |
+| annular_dense 900 | 0.000 | 6.310 | pass | fail (4 steps) |
+| lines_rect_annular 900 | 11.125 | 16.958 | fail | fail |
+| mustache 900 | 14.993 | 16.121 | fail | fail |
+| mustache 570 | 21.543 | 27.112 | fail | fail |
+
+Root cause: the unsound per-ball slide-run map pool was removed after the
+profile was captured (§7 finding 2), which moved the `style_shots` map
+creation/insertion into the per-bounce path — ~7 B/step of profiler payload on
+mustache 570 (≈5.6 B/step measured; the removed pool also carried 2.391 B/step)
+and enough new allocating steps to fail `annular_dense`. So the session-2 page's
+"the gate passes strictly on `circles_small` and `annular_dense`" describes the
+pre-final tree, not the committed one; at `6544414` only `circles_small`
+passed. This session's measurements are the committed ones, and they are a
+strict zero on all five probes, so the gate is met on the final tree
+(`4ae588d`), not at `6544414` — but the discrepancy is recorded rather than
+quietly replaced.
 
 ## 5. Diagnostic overhead
 
-Measured on `circles_small` (91 candidates, T=1): one pass traced with
-`--trace-dir`, one untraced, same stride/level/balls.
+Session-3 measurement on `circles_small` (91 candidates, T=1): one pass traced
+with `--trace-dir`, one untraced, same stride/level/balls.
 
 | metric | value |
 | --- | --- |
-| result rows | byte-identical (same SHA-256 for traced and untraced) |
-| untraced throughput | 2,212.7 candidates/s |
-| traced throughput | 452.3 candidates/s |
-| traced/untraced throughput | 0.204 (≈4.9× slower per candidate) |
-| process wall seconds | +1.2 % (the sweep's wall time is dominated by candidate count, not by this pass) |
+| result rows | byte-identical (same SHA-256 `ea7c1a2f…`, unchanged from session 2) |
+| untraced throughput | 2,906.7 candidates/s |
+| traced throughput | 348.5 candidates/s |
+| traced/untraced throughput | 0.120 (≈8.3× slower per candidate) |
+| process wall seconds | +9.3 % (14.83 s vs 13.57 s, including Julia startup and run-to-run variance; the measured pass adds 0.23 s) |
 | trace volume | 187.4 bytes per simulated step |
 
 Tracing changes no result field, which is the point: the trace path is
-observation-only, and the main table in §3 is untraced. The 4.9× per-candidate
-figure is the cost of the trace writer, not of the engine.
+observation-only, and the main table in §3 is untraced. The traced and untraced
+rows are identical (same SHA-256) even though the traced pass is slower; the
+8.3× per-candidate figure is the cost of the trace writer, not of the engine.
 
 ## 6. Caveats
 
-- Same-host comparison only; no cross-machine claim is made in session 2.
-- `circles_mixed` and `overhead_static_2p` are Julia-slower or Julia-even:
-  per-candidate fixed cost dominates on cheap levels. Not a regression against
-  a measured baseline (none exists at this protocol), but not a win either.
+- Throughput and latency are same-host comparisons only. Session 3 adds
+  cross-machine corpus parity on a second host, same OS; it is not a
+  throughput comparison and makes no second-OS claim.
+- On the cheap levels (`circles_mixed`, `overhead_static_2p`) per-candidate
+  fixed cost dominates and LuaJIT is hard to beat; the comparison is reported
+  in §3. That is a reported loss/tie, not a regression against a measured
+  baseline (none exists at this protocol).
+- Cross-platform scope: the second host runs the same OS; the macOS ARM64 and
+  Windows x86-64 rows in `wiki/context/cross-platform-qualification.md` remain
+  uncollected and are not claimed.
 - Allocation accounting is process-wide, so it is single-threaded.
 - Stride-20 samples are 91 candidates; long shots dominate p99/max.
 - Julia and Lua are timed with different repeat counts; the same-core speedup
@@ -372,17 +485,18 @@ figure is the cost of the trace writer, not of the engine.
 
 ## 7. Gates
 
-All gates were run on the final tree for this session (HEAD plus the
-session-2 working-tree changes).
+All gates were run on the final session-3 tree (commit `4ae588d`, source tree
+clean; the report's `git_dirty` flag reflects uncommitted result files).
 
 | Gate | Result |
 | --- | --- |
 | `make verify` | 133/133 reference files match `reference/files.sha256` |
-| `make julia-test` | 5,616 / 5,616 |
+| `make julia-test` | 5,617 / 5,617 |
 | `make m3-mustache` | 5/5 traces byte-identical; `expected_records_identical = true` |
-| `make m4-parity` | fixtures 14/14, traces 6/6, sweeps 7/7, scenarios 11/11, `overall_pass = true` |
-| `make m4-bench` | 7/7 workloads complete, 0 failed runs, serial/parallel identical at every thread count |
-| allocation profile | `results/m4/allocation-profile.json`, reproducible byte-for-byte |
+| `make m4-parity` | fixtures 14/14, traces 6/6 byte-identical, sweeps 7/7, scenarios 11/11, `overall_pass = true` |
+| `make m4-bench` (session-3 re-run) | 7/7 workloads complete, 0 failed runs, 35/35 thread rows `serial_parallel_identical = true`, Lua stride-20 and full-grid agreement clean; serial median -2.5%, no systematic throughput change |
+| allocation gate | `results/m4/allocation-profile.json`; strict zero on all five probes (sum and max 0; zero sites) |
+| cross-machine | deathstar vs omarchy; 3/3 reports, 9/9 candidate rows, 11/11 summaries, parity manifests equal; `results/m4/cross-machine.json` sha256 `685a1687c8d95710f174478309d237382485698109f0394eacd5c13c8ec79703`; `complete=true`, scope `second host, same OS` |
 
 Two gate findings from session 2 worth keeping visible:
 
@@ -398,9 +512,18 @@ Two gate findings from session 2 worth keeping visible:
 ## 8. Reproduction
 
 ```bash
+make verify
+make julia-test
+make m3-mustache
+make m4-parity
 scripts/m4_allocation.jl --workload all --out results/m4/allocation-profile.json
 make m4-bench
+python3 scripts/m4_cross_machine.py --left-root tmp/cross-machine-local \
+  --right-root tmp/cross-machine-deathstar --out results/m4/cross-machine.json
+scripts/compare_parity.sh results/core-math/qualification/linux-x86_64.json \
+  results/core-math/qualification/linux-x86_64-deathstar.json
 ```
 
-Exact commands, host, and measured revisions are recorded in the result JSON
-and in §3/§4 when filled.
+Exact commands, hosts, and measured revisions are recorded in the result JSON
+(`git_head`, `src_jl_sha256`, `dirty`), the benchmark report, and the
+cross-machine comparison.
