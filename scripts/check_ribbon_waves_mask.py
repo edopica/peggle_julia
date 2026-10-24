@@ -55,12 +55,13 @@ the pass/fail gates use the **cleaned** mask: overall IoU >= ``--threshold``
 ribbon band.  These are **regression floors, not a fidelity claim**: the accepted model is
 the v3 single-slide representation — one continuous zero-gap
 ``Lines.generate`` line per ribbon (the ``squiggly_circle``/``mustache``
-primitive), with constant thickness and squared end caps.  The artifact does
-**not** open seam insets; adjacent pegs share a full cap and the old adaptive
-seam inset is gone.  The remaining gap is constant thickness, squared end
-caps and smooth-path/end-trim residuals, so the honest cleaned IoU is about
-0.945 overall and 0.886-0.930 per band.  The 0.97/0.95 values remain the
-fidelity reference and are reported for information only.
+primitive), with constant thickness and flat radial terminal sectors.  The
+artifact does **not** open seam insets; adjacent pegs share a full cap and the
+old adaptive seam inset is gone. Terminal regions are exact circular arcs
+fitted to the reference boundaries, with freely positioned flat end faces.
+The measured v5 cleaned IoU is 0.966956; the unchanged wave_2 body remains
+the largest residual. The 0.97/0.95 values remain fidelity references,
+not a claimed ceiling or a replacement for terminal-slope validation.
 
 Shapes and angle semantics
 --------------------------
@@ -1563,10 +1564,8 @@ def format_report(artifact, transform, clean, raw, cleaned, ribbons, circles, st
         f"regression floors: cleaned IoU >= {args.threshold:.4f} overall and "
         f">= {args.ribbon_threshold:.4f} per ribbon")
     lines.append(
-        "  (floors, not a fidelity claim: the smooth constant-thickness "
-        "single-slide model and squared end caps cap the honest cleaned IoU "
-        "near 0.945 overall / 0.886-0.930 per band; 0.97/0.95 is the "
-        "fidelity reference, reported only)")
+        "  (regression floors; 0.97 overall / 0.95 per band remains the "
+        "fidelity reference, reported only; terminal slope is checked separately)")
     lines.append(f"cleaned (authoritative): {_metric_block(cleaned)}")
     lines.append(f"raw (documented tolerance, not gated): {_metric_block(raw)}")
     lines.append("per-ribbon (cleaned, required >= %.4f):" % args.ribbon_threshold)

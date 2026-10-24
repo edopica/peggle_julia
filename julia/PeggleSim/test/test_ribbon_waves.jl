@@ -36,14 +36,15 @@ const RW_WORLD_PEG_RADIUS = 10.0
 const RW_WORLD_BALL_RADIUS = 6.0
 const RW_CIRCLES = 53
 const RW_LINE_IDS = ("wave_1", "wave_2", "wave_3", "wave_4", "wave_5")
-const RW_LINE_COUNTS = (20, 20, 26, 28, 20)
-const RW_ANNULAR = 114
+# Two exact terminal arcs plus six body cubics, tessellated as one slide.
+const RW_LINE_COUNTS = (16, 16, 16, 16, 16)
+const RW_ANNULAR = 80
 const RW_SEGMENTS = 16
 const RW_RED = 25
 const RW_GREEN = 1
-const RW_REVISION = "da752257f613abbd209f1aa1acdd37a5f9be05f5"
-const RW_TREE = "61278edc5467bf8399c24f4af0fcf36d75cac6a2"
-const RW_CONFIG_SHA256 = "a17e60b43b1437510a59ba59c8791b27600a4b7fd7d56bc5f9c18d3e94f114d9"
+const RW_REVISION = "de49dabb19ecfe960885af6eda04a7a848864be4"
+const RW_TREE = "b463d9143b5385d4462a0cb8903ca412d6a02bf6"
+const RW_CONFIG_SHA256 = "06c65f8f850c916748da08316a3e30b4e6b15abbfd57fe5e58f6aaeecca274ea"
 
 function _rw_require_file(path::AbstractString)::String
     isfile(path) || error("missing ribbon_waves fixture file: $path")
@@ -246,6 +247,31 @@ end
         config_doc = JSON.parsefile(_rw_require_file(RW_CONFIG))
         @test config_doc["source_sha256"] == RW_CONFIG_SHA256
         @test config_doc["values"]["aim_discretization_steps"] == 1800
+
+        # The outer arms are exact arcs with flat faces. Check the actual
+        # emitted sectors, not just the author's input path: upward-bending
+        # ends steepen toward the tip in screen coordinates (y downward).
+        for (id, expected_count) in zip(RW_LINE_IDS, RW_LINE_COUNTS)
+            members = sort([p for p in annular if p.line.id == id]; by = p -> p.line.index)
+            @test length(members) == expected_count
+            thickness = members[1].shape.r_out - members[1].shape.r_in
+            @test thickness > 0
+            @test all(abs((p.shape.r_out - p.shape.r_in) - thickness) < 1e-9 for p in members)
+            for (side, terminal) in ((:left, members[1]), (:left, members[2]),
+                                     (:right, members[end-1]), (:right, members[end]))
+                shape = terminal.shape
+                @test 0 < shape.r_in < shape.r_out
+                @test shape.theta_end_abs - shape.theta_start < pi / 2
+                # An upward arm's circle center is above the entire sector.
+                # Positive stored angle order runs right-to-left here, so
+                # left-to-right path curvature is negative.
+                angles = range(shape.theta_start, shape.theta_end_abs; length=41)
+                @test all(sin(theta) > 0 for theta in angles)
+                steepness = [abs(cos(theta) / sin(theta)) for theta in angles]
+                outward = side == :left ? steepness : reverse(steepness)
+                @test all(diff(outward) .> 0)
+            end
+        end
     end
 
     @testset "fixture records agree with the artifact" begin

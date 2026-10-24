@@ -9,6 +9,15 @@ no per-brick annular pegs and no seam insets: ``Lines.generate`` proves that
 every neighbouring pair of generated annular pieces shares a full cap before
 the level can load.
 
+Terminal shape
+--------------
+The outer two fitted cubics at each end are replaced by a circular arc fitted
+against the reference band's side boundaries and flat end face. Endpoints are
+free to move: vertical silhouette midpoints are biased near an angled face.
+The authored radii/lengths live in ribbon_waves_ends.json. Both ends have
+negative screen-space curvature, increasing outward steepness, and G1 joins
+to the unchanged six body cubics. The engine receives exact arc segments.
+
 Geometry contract
 -----------------
 ``level_segment/ribbon_waves_geometry.json`` (``ribbon_waves.geometry.v1``)
@@ -43,10 +52,12 @@ Usage
 -----
     python3 julia_clone/tools/generate_ribbon_waves_level.py
         [--geometry PATH] [--out PATH] [--seed 20261021]
-        [--check] [--no-verify]
+        [--check] [--check-geometry] [--no-verify]
 
-``--check`` loads the existing output with LuaJIT and verifies the emitted
-source, the five line groups, the annular segment count, and the authored
+``--check-geometry`` only loads the pinned geometry, runs the terminal-shape
+validation and gates it (no level I/O).  ``--check`` loads the existing output with
+LuaJIT and verifies the emitted source, the five line groups, the annular
+segment count, and the authored
 counts without rewriting the file.
 """
 
@@ -98,6 +109,9 @@ BALL_RADIUS = 6.0
 
 JOIN_EPSILON = 1e-9
 DEFAULT_SEED = 20261021
+
+TERMINAL_DESIGN = SCRIPT_PATH.with_name("ribbon_waves_ends.json")
+TERMINAL_JOIN_TOLERANCE = 1e-9
 
 
 def die(message: str) -> None:
@@ -175,6 +189,140 @@ def to_world(x_native: float, y_native: float) -> tuple[float, float]:
     )
 
 
+def _normalize(vector: tuple[float, float]) -> tuple[float, float]:
+    length = math.hypot(vector[0], vector[1])
+    if length <= 1e-12:
+        die("terminal path has a zero-length tangent")
+    return (vector[0] / length, vector[1] / length)
+
+
+def _cubic_point(segment: dict, t: float):
+    p0, c1, c2, p1 = (segment[key] for key in ("p0", "c1", "c2", "p1"))
+    mt = 1.0 - t
+    return (
+        mt ** 3 * p0[0] + 3.0 * mt * mt * t * c1[0]
+        + 3.0 * mt * t * t * c2[0] + t ** 3 * p1[0],
+        mt ** 3 * p0[1] + 3.0 * mt * mt * t * c1[1]
+        + 3.0 * mt * t * t * c2[1] + t ** 3 * p1[1],
+    )
+
+
+def _cubic_derivative(segment: dict, t: float):
+    p0, c1, c2, p1 = (segment[key] for key in ("p0", "c1", "c2", "p1"))
+    mt = 1.0 - t
+    return (
+        3.0 * (mt * mt * (c1[0] - p0[0]) + 2.0 * mt * t * (c2[0] - c1[0])
+               + t * t * (p1[0] - c2[0])),
+        3.0 * (mt * mt * (c1[1] - p0[1]) + 2.0 * mt * t * (c2[1] - c1[1])
+               + t * t * (p1[1] - c2[1])),
+    )
+
+
+# ---------------------------------------------------------------------------
+# Terminal shape and shared path evaluation
+# ---------------------------------------------------------------------------
+def _cubic_second_derivative(segment: dict, t: float):
+    p0, c1, c2, p1 = (segment[key] for key in ("p0", "c1", "c2", "p1"))
+    mt = 1.0 - t
+    return (
+        6.0 * (mt * (c2[0] - 2.0 * c1[0] + p0[0])
+               + t * (p1[0] - 2.0 * c2[0] + c1[0])),
+        6.0 * (mt * (c2[1] - 2.0 * c1[1] + p0[1])
+               + t * (p1[1] - 2.0 * c2[1] + c1[1])),
+    )
+
+
+def _cubic_curvature(segment: dict, t: float) -> float:
+    """Signed curvature of a cubic at parameter t (positive = left turn)."""
+    d1 = _cubic_derivative(segment, t)
+    d2 = _cubic_second_derivative(segment, t)
+    speed_squared = d1[0] * d1[0] + d1[1] * d1[1]
+    if speed_squared <= 1e-24:
+        die("terminal cubic has a zero-length derivative")
+    return (d1[0] * d2[1] - d1[1] * d2[0]) / speed_squared ** 1.5
+
+
+def path_point(segment: dict, t: float):
+    if segment.get("kind") != "arc":
+        return _cubic_point(segment, t)
+    theta = segment["theta_start"] + t * segment["sweep"]
+    return (segment["center"][0] + segment["radius"] * math.cos(theta),
+            segment["center"][1] + segment["radius"] * math.sin(theta))
+
+
+def path_derivative(segment: dict, t: float):
+    if segment.get("kind") != "arc":
+        return _cubic_derivative(segment, t)
+    theta = segment["theta_start"] + t * segment["sweep"]
+    speed = segment["radius"] * segment["sweep"]
+    return (-speed * math.sin(theta), speed * math.cos(theta))
+
+
+def path_curvature(segment: dict, t: float):
+    if segment.get("kind") != "arc":
+        return _cubic_curvature(segment, t)
+    return math.copysign(1.0 / segment["radius"], segment["sweep"])
+
+
+def _repair_terminal_cubics(segments: list, design: dict, where: str):
+    """Replace two cubics at either end with a boundary-fitted exact arc."""
+    repaired = [dict(segment) for segment in segments[2:-2]]
+    stats = {}
+    for label in ("start", "end"):
+        native = design[label]
+        radius = require_positive(native, "radius_native", where) * SCALE
+        length = require_positive(native, "length_native", where) * SCALE
+        # Anchor to the preserved body, never to a biased tip midpoint.
+        body = repaired[0] if label == "start" else repaired[-1]
+        t = 0.0 if label == "start" else 1.0
+        anchor = path_point(body, t)
+        tangent = _normalize(path_derivative(body, t))
+        center = (anchor[0] + radius * tangent[1],
+                  anchor[1] - radius * tangent[0])
+        theta = math.atan2(anchor[1] - center[1], anchor[0] - center[0])
+        sweep = -length / radius
+        arc = {"kind": "arc", "center": center, "radius": radius,
+               "theta_start": theta - sweep if label == "start" else theta,
+               "sweep": sweep}
+        tip_t = 0.0 if label == "start" else 1.0
+        tip = path_point(arc, tip_t)
+        tip_tangent = path_derivative(arc, tip_t)
+        old_tip = segments[0]["p0"] if label == "start" else segments[-1]["p1"]
+        stats[label] = {
+            "curvature": -1.0 / radius, "radius": radius,
+            "tip_tangent": math.degrees(math.atan2(tip_tangent[1], tip_tangent[0])),
+            "tip": tip, "deviation": math.dist(tip, old_tip),
+        }
+        if path_curvature(body, t) >= 0:
+            die(f"{where} {label}: body reverses curvature at the terminal join")
+        if label == "start":
+            repaired.insert(0, arc)
+        else:
+            repaired.append(arc)
+
+    for a, b in zip(repaired, repaired[1:]):
+        if math.dist(path_point(a, 1), path_point(b, 0)) > 1e-9:
+            die(f"{where}: discontinuous terminal join")
+        ta = _normalize(path_derivative(a, 1))
+        tb = _normalize(path_derivative(b, 0))
+        if math.dist(ta, tb) > TERMINAL_JOIN_TOLERANCE:
+            die(f"{where}: terminal join is not tangent-continuous")
+    for label, arc in (("start", repaired[0]), ("end", repaired[-1])):
+        # Exact angle bounds prove the whole arc stays in its outward-steepening
+        # quadrant, including between diagnostic samples (screen y is down).
+        lower, upper = (math.pi / 2, math.pi) if label == "start" else (0, math.pi / 2)
+        if not lower < arc["theta_start"] + arc["sweep"] < arc["theta_start"] < upper:
+            die(f"{where} {label}: terminal arc leaves its upward-bending quadrant")
+        previous = -1.0
+        for i in range(201):
+            t = 1 - i / 200 if label == "start" else i / 200
+            dx, dy = path_derivative(arc, t)
+            steepness = abs(dy / dx)
+            if dx <= 0 or path_curvature(arc, t) >= 0 or steepness < previous - 1e-9:
+                die(f"{where} {label}: terminal must steepen outward without reversing")
+            previous = steepness
+    return repaired, stats
+
 def lua_ident(raw: str) -> str:
     """Turn a geometry id into a safe, unique Lua identifier fragment."""
     ident = re.sub(r"[^0-9A-Za-z_]", "_", raw)
@@ -204,6 +352,12 @@ def load_geometry(path: Path) -> dict:
         die(f"cannot read geometry {path}: {exc}")
 
     sha256 = hashlib.sha256(raw_bytes).hexdigest()
+    try:
+        terminal_design = json.loads(TERMINAL_DESIGN.read_text())
+    except (OSError, ValueError) as exc:
+        die(f"cannot read terminal design {TERMINAL_DESIGN}: {exc}")
+    if terminal_design.get("geometry_sha256") != sha256:
+        die("terminal design was fitted against different source geometry; refit it first")
     try:
         data = json.loads(raw_bytes.decode("utf-8"))
     except UnicodeDecodeError as exc:
@@ -402,6 +556,12 @@ def load_geometry(path: Path) -> dict:
                 }
             )
 
+        # Refit the entire outer arm, including its freely positioned tip.
+        world_segments, terminal = _repair_terminal_cubics(
+            world_segments, terminal_design["ribbons"][ribbon_id],
+            f"{where}.path"
+        )
+
         ribbons.append(
             {
                 "id": ribbon_id,
@@ -415,6 +575,7 @@ def load_geometry(path: Path) -> dict:
                 "fit_max_px": fit_max_px,
                 "min_curvature_radius_px": min_curvature_radius_px,
                 "segments": world_segments,
+                "terminal": terminal,
             }
         )
 
@@ -506,11 +667,11 @@ def render_level(geom: dict, out_path: Path, seed: int, counts: dict | None) -> 
     add("--   The transform is affine, so cubic control points map directly.")
     add("--")
     add("-- One Lines.generate zero-gap line per ribbon (ids wave_1..wave_5), exactly the squiggly_circle/mustache primitive; 5 continuous slides, not 46 bricks.")
-    add("-- Each ribbon is one open Path of consecutive cubic segments; every generated")
-    add("-- annular peg carries gap = 0, and neighbouring pieces share a full cap.")
-    add("--")
-    add("-- Path model: cubic-hermite-lsq-spline-v1, 10-cubic Hermite LSQ-spline fit per")
-    add("-- ribbon. Path points are native in the geometry and are affine-mapped to world.")
+    add("-- Each ribbon has six unchanged body cubics and two exact terminal arcs.")
+    add("-- Terminal arcs fit the reference side boundaries and flat end faces;")
+    add("-- endpoints may move. Both ends steepen outward with negative screen-space")
+    add("-- curvature and tangent-continuous joins. No cap pegs are added.")
+    add(f"-- Terminal design sha256: {sha256_file(TERMINAL_DESIGN)}")
     for ribbon in geom["ribbons"]:
         add(
             f"--   {ribbon['id']}: trim_px={fmt_stat(ribbon['trim_px'])}, "
@@ -521,6 +682,14 @@ def render_level(geom: dict, out_path: Path, seed: int, counts: dict | None) -> 
         add(
             f"--           min_curvature_radius={fmt_stat(ribbon['min_curvature_radius_px'])} px, "
             f"thickness={ribbon['thickness_world']:.6f} world"
+        )
+        start = ribbon["terminal"]["start"]
+        end = ribbon["terminal"]["end"]
+        add(
+            f"--           terminal sectors: start k={start['curvature']:.6f} "
+            f"world (R={fmt_stat(start['radius'])}), end k={end['curvature']:.6f} "
+            f"world (R={fmt_stat(end['radius'])}); "
+            f"tip displacement {fmt_stat(max(start['deviation'], end['deviation']))} world px"
         )
     add("-- Per-line authoring: segments = 16, curve_tolerance = 1.0, max_length = 40.0, gap = 0, closed = false.")
     add("--")
@@ -569,13 +738,18 @@ def render_level(geom: dict, out_path: Path, seed: int, counts: dict | None) -> 
         add(f"local path_{ident} = Path.new({{")
         add("\tsegments = {")
         for segment in ribbon["segments"]:
-            add(
-                '\t\t{ kind = "cubic", '
-                f"p0 = {lua_point(segment['p0'])}, "
-                f"c1 = {lua_point(segment['c1'])}, "
-                f"c2 = {lua_point(segment['c2'])}, "
-                f"p1 = {lua_point(segment['p1'])} }},"
-            )
+            if segment.get("kind") == "arc":
+                add('\t\t{ kind = "arc", '
+                    f"center = {lua_point(segment['center'])}, "
+                    f"radius = {fmt(segment['radius'])}, "
+                    f"theta_start = {fmt(segment['theta_start'])}, "
+                    f"sweep = {fmt(segment['sweep'])} }},")
+            else:
+                add('\t\t{ kind = "cubic", '
+                    f"p0 = {lua_point(segment['p0'])}, "
+                    f"c1 = {lua_point(segment['c1'])}, "
+                    f"c2 = {lua_point(segment['c2'])}, "
+                    f"p1 = {lua_point(segment['p1'])} }},")
         add("\t},")
         add("})")
         add(f"local line_{ident} = Lines.generate({{")
@@ -1055,14 +1229,37 @@ def run_check_level(tmp_path: Path) -> str:
     return output
 
 
-def check_existing(out_path: Path) -> int:
+def print_terminal_summary(geom: dict) -> None:
+    print("terminal sectors (boundary-fitted exact arcs, outward steepening):")
+    for ribbon in geom["ribbons"]:
+        for label in ("start", "end"):
+            terminal = ribbon["terminal"][label]
+            print(
+                f"  {ribbon['id']:7s} {label:5s} "
+                f"k={terminal['curvature']:+.9g} world "
+                f"(R={fmt_stat(terminal['radius'])}), "
+                f"tip_tangent={terminal['tip_tangent']:+.6g} deg, "
+                f"tip_displacement={terminal['deviation']:.6g} world px"
+            )
+
+
+def check_existing(out_path: Path, geometry_path: Path) -> int:
     if not out_path.is_file():
         die(f"--check: level not found: {out_path}")
+    # Re-run the design gate and require the installed executable geometry
+    # to match this generator, not merely its peg counts.
+    geom = load_geometry(geometry_path)
+    print_terminal_summary(geom)
     text = out_path.read_text()
     stdout, probe_error = run_probe(out_path)
     if probe_error:
         die(f"--check: {probe_error}")
     meta, type_counts, pegs = parse_probe(stdout)
+    expected = render_level(geom, out_path, meta["level_seed"], counts=None)
+    def executable_lines(source):
+        return [line.strip() for line in strip_lua_comments(source).splitlines() if line.strip()]
+    if executable_lines(text) != executable_lines(expected):
+        die("--check: installed level differs from the current authored geometry")
     result = analyze(meta, type_counts, pegs, text)
     print_check_summary(result, out_path)
     if result["errors"]:
@@ -1097,6 +1294,7 @@ def print_generation_summary(
         f"(peg radius {fmt(PEG_RADIUS)}, ball radius {fmt(BALL_RADIUS)})"
     )
     print(f"  level_seed: {seed}")
+    print_terminal_summary(geom)
     thickness_text = ", ".join(
         f"{ribbon['id']}={ribbon['thickness_world']:.12g}"
         for ribbon in geom["ribbons"]
@@ -1207,6 +1405,14 @@ def main(argv: list[str] | None = None) -> int:
         help="verify the existing output without rewriting it",
     )
     parser.add_argument(
+        "--check-geometry",
+        action="store_true",
+        help=(
+            "only load the pinned geometry, run the terminal-sector repair and "
+            "gate it (negative curvature, outward steepening, G1 joins); no level I/O"
+        ),
+    )
+    parser.add_argument(
         "--no-verify",
         action="store_true",
         help="skip the check_level gate before installing the output",
@@ -1216,8 +1422,14 @@ def main(argv: list[str] | None = None) -> int:
     geometry_path = args.geometry.resolve()
     out_path = args.out.resolve()
 
+    if args.check_geometry:
+        geom = load_geometry(geometry_path)
+        print_terminal_summary(geom)
+        print("RESULT: PASS (all terminal arcs steepen outward with the required bend)")
+        return 0
+
     if args.check:
-        return check_existing(out_path)
+        return check_existing(out_path, geometry_path)
 
     return generate(geometry_path, out_path, args.seed, args.no_verify)
 

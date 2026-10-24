@@ -1,4 +1,4 @@
--- ribbon_waves benchmark workload (v3 world-scale level).
+-- ribbon_waves benchmark workload (v5 world-scale level).
 --
 -- Loaded explicitly with `--workloads fixtures/ribbon_waves/workloads.lua`
 -- against the dev tree; the pinned M1 reference cannot load the ribbon_waves
@@ -9,6 +9,6 @@ return {
     level = "ribbon_waves",
     balls = 1,
     group = "ribbon_waves",
-    note = "167 static pegs (53 circles r10 + 114 annular segments=16 in 5 zero-gap Lines.generate lines) on 702.27x613.18 world; full-physics benchmark",
+    note = "133 static pegs (53 circles r10 + 80 annular segments=16 in 5 zero-gap Lines.generate lines, exact terminal arcs steepen outward) on 702.27x613.18 world; full-physics benchmark",
   },
 }

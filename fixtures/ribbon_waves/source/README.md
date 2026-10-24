@@ -1,4 +1,4 @@
-# source/ — pinned v3 extraction geometry
+# source/ — pinned v3 extraction geometry (terminal-repaired at generation)
 
 `ribbon_waves_geometry.json` is a byte-for-byte copy of the final v3
 extraction:
@@ -123,16 +123,16 @@ declared virtual size matches this block.
 
 **`pieces` are legacy diagnostics, not the level's collision pieces.** They
 are the per-brick arc fits used by the v2 seam/colour analysis and by the
-source geometry layout; the exported v3 level is generated from
-`ribbons[].path` and contains 114 annular pegs grouped into 5 continuous
-`Lines.generate` lines (`20 / 20 / 26 / 28 / 20`).
+source geometry layout; the exported level is generated from
+`ribbons[].path` as extraction input. The generated level has 80 annular pegs
+in five continuous zero-gap slides.
 
-Coordinates are in screenshot pixels (x right, y down); the mask checkout
-uses pixel centres `(i+0.5, j+0.5)`. Annular pieces follow
-`vertex = (x + r*cos(theta), y + r*sin(theta))` with absolute radians and
-`theta_end_abs > theta_start` (screen y down, so increasing theta sweeps
-visually clockwise).
+## Generator-side terminal fit (v5)
 
-The mask checker deliberately rasterizes the **exported artifact**, not this
-file: this file only supplies the world transform. Any geometry drift must
-show up in the artifact check.
+The source itself remains unchanged. The generator preserves its six middle
+cubics and replaces the outer two cubics at each end with one exact circular
+arc. The radii and arc lengths come from `tools/ribbon_waves_ends.json`, fitted
+to the reference side boundaries and flat end faces. Tips can move, removing
+the bias caused by silhouette midpoints near angled end faces. The complete
+terminal arms steepen outward and join the body tangentially. See the
+[current documentation](../../../wiki/context/ribbon-waves.md).

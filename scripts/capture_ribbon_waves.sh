@@ -106,6 +106,10 @@ else
   cp "$upstream_geometry" "$source_geometry"
 fi
 
+# Validate fitted arcs: outward steepening, correct bend, tangent joins.
+python3 "$repo_root/tools/generate_ribbon_waves_level.py" \
+  --geometry "$upstream_geometry" --check-geometry
+
 if ! revision="$(git -C "$ref_dir" rev-parse HEAD 2>/dev/null)"; then
   echo "ERROR: cannot read HEAD from $ref_dir (not a git checkout?)" >&2
   exit 1

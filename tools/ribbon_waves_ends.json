@@ -1,0 +1,57 @@
+{
+  "description": "Boundary-fitted exact terminal arcs; native-pixel radius and length. Anchored to six preserved body cubics; tips are free.",
+  "geometry_sha256": "bc52e4282b9ee0c42fc20049f40ba18f6b3f52718a9b04616a786941a7e247ea",
+  "mask_sha256": "81edcd390bb37160325cce6979863a19aeb8f05527bb397b696279906f92c6f3",
+  "ribbons": {
+    "wave_1": {
+      "start": {
+        "radius_native": 90.6853157207279,
+        "length_native": 110.71045648724181
+      },
+      "end": {
+        "radius_native": 89.85654744003202,
+        "length_native": 109.11814575280034
+      }
+    },
+    "wave_2": {
+      "start": {
+        "radius_native": 97.76379703516389,
+        "length_native": 107.88221434297321
+      },
+      "end": {
+        "radius_native": 98.17204709645256,
+        "length_native": 108.68453366256587
+      }
+    },
+    "wave_3": {
+      "start": {
+        "radius_native": 130.82888562748866,
+        "length_native": 163.40670313205186
+      },
+      "end": {
+        "radius_native": 127.4700567014125,
+        "length_native": 161.69735795507503
+      }
+    },
+    "wave_4": {
+      "start": {
+        "radius_native": 131.46210894129115,
+        "length_native": 171.55418110246382
+      },
+      "end": {
+        "radius_native": 135.65613828546512,
+        "length_native": 170.4083551448293
+      }
+    },
+    "wave_5": {
+      "start": {
+        "radius_native": 89.20228250274069,
+        "length_native": 110.02029575301624
+      },
+      "end": {
+        "radius_native": 92.24442706931407,
+        "length_native": 109.21520424154717
+      }
+    }
+  }
+}
