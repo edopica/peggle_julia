@@ -1,0 +1,36 @@
+{
+  "julia": {
+    "command": "julia --project=julia/PeggleSim -t 8 julia/PeggleSim/test/runtests.jl",
+    "passed": 10996,
+    "failed": 0,
+    "log": "julia-tests.txt"
+  },
+  "lua": {
+    "command": "make test",
+    "passed": 475,
+    "failed": 0,
+    "log": "lua-tests.txt"
+  },
+  "interchange": {
+    "command": "make verify check",
+    "passed": true,
+    "log": "interchange.txt"
+  },
+  "current_config": {
+    "command": "python3 scripts/sync_campaign_config.py --check",
+    "passed": true,
+    "log": "config-check.txt"
+  },
+  "match_rule_oracle": {
+    "command": "luajit tools/capture_match_rules.lua",
+    "cases": 9,
+    "recapture_identical": true,
+    "fixture": "fixtures/matches/rules.v1.json"
+  },
+  "reference": {
+    "command": "scripts/verify_reference.sh",
+    "files": 133,
+    "before": "reference-before.txt",
+    "after": "reference-after.txt"
+  }
+}

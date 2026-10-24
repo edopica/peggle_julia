@@ -117,17 +117,18 @@ scripts/bench_m3.sh --stride 20 --threads "1 2 4"
 
 ## Ribbon bot campaign
 
-The MVP evaluates all 1,801 aim indices at every turn and runs three independent
-solo games with separate bot RNG streams on the same ribbon realization.
+The primary workload evaluates all 1,801 aim indices at every turn and runs
+eight independent **1v1 matches** on the same ribbon realization. Solo remains
+an explicit alternative. The current Lua config is copied into `campaigns/ribbon/`.
 
 ```bash
-julia --project=julia/PeggleSim -t 3 julia/PeggleSim/bin/campaign.jl --repeats 3
+julia --project=julia/PeggleSim -t 8 julia/PeggleSim/bin/campaign.jl --worker-counts 1,2,4,8 --repeats 3
 ```
 
-This performs warmup and repeated sequential/concurrent comparisons, verifies
-identical decision histories, and saves results under `results/campaign/`.
+This warms the simulation/output paths, measures the same eight matches at
+1/2/4/8 workers, verifies identical histories, and saves `results/campaign/1v1/`.
 See [workflow and contracts](context/bot-campaign.md) and
-[measured baseline](benchmarks/bot-campaign.md).
+[1v1 scaling baseline](benchmarks/1v1-campaign.md).
 
 ## Repository layout
 

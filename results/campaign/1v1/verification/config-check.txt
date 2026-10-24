@@ -1,0 +1,1 @@
+Campaign config matches current Lua source: 06c65f8f850c916748da08316a3e30b4e6b15abbfd57fe5e58f6aaeecca274ea

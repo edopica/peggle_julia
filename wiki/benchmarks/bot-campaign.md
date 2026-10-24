@@ -1,5 +1,8 @@
 # Ribbon bot campaign baseline
 
+Historical **solo** baseline at commit `e7070d9`. Current campaign defaults
+are 1v1; see [the 1v1 baseline](1v1-campaign.md).
+
 This is the first full-game baseline for the Julia MVP. The policy, lifecycle,
 output schema, and timing boundaries are specified in
 [the workflow](../context/bot-campaign.md). Only `ribbon_waves` was used.

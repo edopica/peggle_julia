@@ -1,0 +1,15 @@
+Warmup: full sequential campaign (excluded from measurements)
+Warmup: full concurrent campaign (excluded from measurements)
+sequential workers=1 repeat=1 wall=148.443s completed=8 candidates=142279
+parallel workers=2 repeat=1 wall=76.578s completed=8 candidates=142279
+parallel workers=4 repeat=1 wall=47.217s completed=8 candidates=142279
+parallel workers=8 repeat=1 wall=39.234s completed=8 candidates=142279
+parallel workers=8 repeat=2 wall=39.642s completed=8 candidates=142279
+parallel workers=4 repeat=2 wall=46.053s completed=8 candidates=142279
+parallel workers=2 repeat=2 wall=77.783s completed=8 candidates=142279
+sequential workers=1 repeat=2 wall=149.374s completed=8 candidates=142279
+sequential workers=1 repeat=3 wall=148.948s completed=8 candidates=142279
+parallel workers=2 repeat=3 wall=75.941s completed=8 candidates=142279
+parallel workers=4 repeat=3 wall=46.329s completed=8 candidates=142279
+parallel workers=8 repeat=3 wall=38.828s completed=8 candidates=142279
+Saved /home/kurapica/Projects/pevo/julia_clone/results/campaign/1v1/baseline.json

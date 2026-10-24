@@ -1,0 +1,428 @@
+{
+  "timestamp_utc": "2026-10-24T22:22:38Z",
+  "candidate_count": 1801,
+  "environment": {
+    "command": "julia --project=julia/PeggleSim -t 8 julia/PeggleSim/bin/campaign.jl --mode 1v1 --games 8 --workers 8 --worker-counts 1,2,4,8 --repeats 3 --base-seed 20261024 --sector-size 100 --epsilon 1 --max-steps 3600 --max-turns 100 --level fixtures/ribbon_waves/artifact/ribbon_waves.v1.json --config campaigns/ribbon/config.v1.json --out results/campaign/1v1/baseline.json",
+    "cpu_threads": 12,
+    "threads": 8,
+    "cpu": "znver2",
+    "total_memory_bytes": 16087932928,
+    "git_status": " M julia/PeggleSim/bin/campaign.jl\n M julia/PeggleSim/src/campaign.jl\n M julia/PeggleSim/test/test_campaign.jl\n M wiki/benchmarks/bot-campaign.md\n M wiki/context/bot-campaign.md\n M wiki/quickstart.md\n?? campaigns/\n?? fixtures/matches/\n?? julia/PeggleSim/test/test_match_campaign.jl\n?? results/campaign/1v1/\n?? scripts/audit_campaign.py\n?? scripts/sync_campaign_config.py\n?? temp/PLAN.md\n?? temp/artifact_test.json\n?? temp/cloud-cpu-rental-options.md\n?? temp/dump_level_pegs.lua\n?? temp/prompt.md\n?? temp/ribbon_caps/\n?? temp/ribbon_waves_endcap_handoff.md\n?? temp/ribbon_waves_test.lua\n?? temp/ribbon_waves_v4_wrong.patch\n?? temp/simulation-workflow-checks.md\n?? temp/sweep/\n?? tools/capture_match_rules.lua\n?? wiki/benchmarks/1v1-campaign.md\n?? wiki/context/optimization-strategy.md\n?? wiki/devlog/2026-10-25.md\n",
+    "git_revision": "e7070d95d087fedc80df467f6c75541e820dfba7",
+    "machine": "x86_64-linux-gnu",
+    "cpu_info": "model name\t: AMD Ryzen 5 4600H with Radeon Graphics",
+    "julia": "1.12.6",
+    "kernel": "Linux"
+  },
+  "source_sha256": {
+    "campaigns/ribbon/config.source.lua": "06c65f8f850c916748da08316a3e30b4e6b15abbfd57fe5e58f6aaeecca274ea",
+    "campaigns/ribbon/game.source.lua": "5317b0656239a6ed1b67c8a24f59ab481671d6b885a79e2b54ab06adb1512feb",
+    "julia/PeggleSim/bin/campaign.jl": "7d5640e7de92ce8523a734cc0b20c4cf4c72ae5b9dc866a3e9ac8b9deaf7b3df",
+    "scripts/sync_campaign_config.py": "48f3082d22b2cdd5154c313fc7b508d510db16aed093ad4394eca1008b206a61",
+    "julia/PeggleSim/src/campaign.jl": "cc32363d8a31935ac6d6312822cb957122d4cf1e03b623ffd34c5fb13fddf833",
+    "julia/PeggleSim/Manifest.toml": "a1c8030a05d2c2c6c721d1fa352556a828a4aa485fe58813f748d9d4a373becb"
+  },
+  "warmup_seconds": 187.731316668,
+  "load_seconds": 0.309831683,
+  "config_sha256": "9de96e70851daa3d596c9cd3e28a1ad67705ec70e4afda5090e6868a2cad385c",
+  "identity_verified": true,
+  "level_sha256": "073b426e66c948895a73a5a45b96b4a5538332c8db2d5b1318f245f8ffe6f86e",
+  "timing_boundary": "wall includes checkpoint/grid validation, worker and engine setup, all decisions, history identity verification and history JSON output/close; excludes process startup, one-time artifact load, GC before trial, warmup, final aggregate report write; load_seconds reported separately",
+  "options": {
+    "worker-counts": "1,2,4,8",
+    "max-steps": "3600",
+    "config": "campaigns/ribbon/config.v1.json",
+    "mode": "1v1",
+    "workers": "8",
+    "sector-size": "100",
+    "max-turns": "100",
+    "base-seed": "20261024",
+    "level": "fixtures/ribbon_waves/artifact/ribbon_waves.v1.json",
+    "games": "8",
+    "repeats": "3",
+    "out": "results/campaign/1v1/baseline.json",
+    "epsilon": "1"
+  },
+  "trials": [
+    {
+      "mode": "sequential",
+      "repeat": 1,
+      "decision_p50_seconds": 0.983151156,
+      "process_memory": [
+        "VmHWM:\t  645564 kB",
+        "VmRSS:\t  580368 kB"
+      ],
+      "process_peak_rss_bytes": 661057536,
+      "decision_p95_seconds": 6.720572662,
+      "candidates": 142279,
+      "completed_games_per_hour": 194.0141406032593,
+      "history": "results/campaign/1v1/baseline-workers-1-1.json",
+      "gameplay_sha256": "34f5319d5a5bcfaec6a190178495c1fae33fa94088339156bdb6ced6c9b92503",
+      "phase_worker_seconds": {
+        "candidate_reset": 1.655856224,
+        "selection": 0.010656359,
+        "simulation": 146.234214141,
+        "checkpoint": 0.008806317,
+        "actual_shot": 0.153080059
+      },
+      "completed_games": 8,
+      "decision_mean_seconds": 1.8786697938101269,
+      "wall_seconds": 148.442788296,
+      "campaign_setup_and_simulation_seconds": 148.416489487,
+      "workers": 1,
+      "completed_matches": 8,
+      "verification_and_output_seconds": 0.026298809,
+      "candidates_per_second": 958.4770107948309,
+      "completed_matches_per_hour": 194.0141406032593
+    },
+    {
+      "mode": "parallel",
+      "repeat": 1,
+      "decision_p50_seconds": 1.023591417,
+      "process_memory": [
+        "VmHWM:\t  645564 kB",
+        "VmRSS:\t  586708 kB"
+      ],
+      "process_peak_rss_bytes": 661057536,
+      "decision_p95_seconds": 7.042745843,
+      "candidates": 142279,
+      "completed_games_per_hour": 376.0866149512908,
+      "history": "results/campaign/1v1/baseline-workers-2-1.json",
+      "gameplay_sha256": "34f5319d5a5bcfaec6a190178495c1fae33fa94088339156bdb6ced6c9b92503",
+      "phase_worker_seconds": {
+        "candidate_reset": 1.64660898,
+        "selection": 0.009059978000000002,
+        "simulation": 150.68772462599998,
+        "checkpoint": 0.0081602,
+        "actual_shot": 0.157292842
+      },
+      "completed_games": 8,
+      "decision_mean_seconds": 1.9349486771518989,
+      "wall_seconds": 76.578104232,
+      "campaign_setup_and_simulation_seconds": 76.558334958,
+      "workers": 2,
+      "completed_matches": 8,
+      "verification_and_output_seconds": 0.019769274,
+      "candidates_per_second": 1857.9592878005108,
+      "completed_matches_per_hour": 376.0866149512908
+    },
+    {
+      "mode": "parallel",
+      "repeat": 1,
+      "decision_p50_seconds": 1.060967215,
+      "process_memory": [
+        "VmHWM:\t  645564 kB",
+        "VmRSS:\t  596076 kB"
+      ],
+      "process_peak_rss_bytes": 661057536,
+      "decision_p95_seconds": 7.909075815,
+      "candidates": 142279,
+      "completed_games_per_hour": 609.9473534418993,
+      "history": "results/campaign/1v1/baseline-workers-4-1.json",
+      "gameplay_sha256": "34f5319d5a5bcfaec6a190178495c1fae33fa94088339156bdb6ced6c9b92503",
+      "phase_worker_seconds": {
+        "candidate_reset": 1.841350846,
+        "selection": 0.009486849999999998,
+        "simulation": 169.761401594,
+        "checkpoint": 0.008018844999999998,
+        "actual_shot": 0.174054573
+      },
+      "completed_games": 8,
+      "decision_mean_seconds": 2.179212006924051,
+      "wall_seconds": 47.217189873,
+      "campaign_setup_and_simulation_seconds": 47.169022134,
+      "workers": 4,
+      "completed_matches": 8,
+      "verification_and_output_seconds": 0.048167739,
+      "candidates_per_second": 3013.288177095833,
+      "completed_matches_per_hour": 609.9473534418993
+    },
+    {
+      "mode": "parallel",
+      "repeat": 1,
+      "decision_p50_seconds": 1.185431989,
+      "process_memory": [
+        "VmHWM:\t  645564 kB",
+        "VmRSS:\t  601076 kB"
+      ],
+      "process_peak_rss_bytes": 661057536,
+      "decision_p95_seconds": 10.935860915,
+      "candidates": 142279,
+      "completed_games_per_hour": 734.0621272989516,
+      "history": "results/campaign/1v1/baseline-workers-8-1.json",
+      "gameplay_sha256": "34f5319d5a5bcfaec6a190178495c1fae33fa94088339156bdb6ced6c9b92503",
+      "phase_worker_seconds": {
+        "candidate_reset": 2.119013785,
+        "selection": 0.008345004,
+        "simulation": 220.87647930899996,
+        "checkpoint": 0.007954793000000002,
+        "actual_shot": 0.22148553199999998
+      },
+      "completed_games": 8,
+      "decision_mean_seconds": 2.8305167949113916,
+      "wall_seconds": 39.233736395,
+      "campaign_setup_and_simulation_seconds": 39.185225734,
+      "workers": 8,
+      "completed_matches": 8,
+      "verification_and_output_seconds": 0.048510661,
+      "candidates_per_second": 3626.4453267349836,
+      "completed_matches_per_hour": 734.0621272989516
+    },
+    {
+      "mode": "parallel",
+      "repeat": 2,
+      "decision_p50_seconds": 1.216445922,
+      "process_memory": [
+        "VmHWM:\t  645564 kB",
+        "VmRSS:\t  600476 kB"
+      ],
+      "process_peak_rss_bytes": 661057536,
+      "decision_p95_seconds": 11.783025188,
+      "candidates": 142279,
+      "completed_games_per_hour": 726.5011022330433,
+      "history": "results/campaign/1v1/baseline-workers-8-2.json",
+      "gameplay_sha256": "34f5319d5a5bcfaec6a190178495c1fae33fa94088339156bdb6ced6c9b92503",
+      "phase_worker_seconds": {
+        "candidate_reset": 2.105188887,
+        "selection": 0.008112152000000001,
+        "simulation": 218.27532324199998,
+        "checkpoint": 0.00790493,
+        "actual_shot": 0.20142738899999998
+      },
+      "completed_games": 8,
+      "decision_mean_seconds": 2.797117861835443,
+      "wall_seconds": 39.642059608,
+      "campaign_setup_and_simulation_seconds": 39.594123259,
+      "workers": 8,
+      "completed_matches": 8,
+      "verification_and_output_seconds": 0.047936349,
+      "candidates_per_second": 3589.092025160249,
+      "completed_matches_per_hour": 726.5011022330433
+    },
+    {
+      "mode": "parallel",
+      "repeat": 2,
+      "decision_p50_seconds": 1.032901114,
+      "process_memory": [
+        "VmHWM:\t  645564 kB",
+        "VmRSS:\t  603620 kB"
+      ],
+      "process_peak_rss_bytes": 661057536,
+      "decision_p95_seconds": 7.613155411,
+      "candidates": 142279,
+      "completed_games_per_hour": 625.3693623489113,
+      "history": "results/campaign/1v1/baseline-workers-4-2.json",
+      "gameplay_sha256": "34f5319d5a5bcfaec6a190178495c1fae33fa94088339156bdb6ced6c9b92503",
+      "phase_worker_seconds": {
+        "candidate_reset": 1.8243279319999997,
+        "selection": 0.007880834,
+        "simulation": 164.68406920800004,
+        "checkpoint": 0.007478616000000001,
+        "actual_shot": 0.168451407
+      },
+      "completed_games": 8,
+      "decision_mean_seconds": 2.1145979519493676,
+      "wall_seconds": 46.052783737,
+      "campaign_setup_and_simulation_seconds": 46.027815216,
+      "workers": 4,
+      "completed_matches": 8,
+      "verification_and_output_seconds": 0.024968521,
+      "candidates_per_second": 3089.4766495014146,
+      "completed_matches_per_hour": 625.3693623489113
+    },
+    {
+      "mode": "parallel",
+      "repeat": 2,
+      "decision_p50_seconds": 1.032610033,
+      "process_memory": [
+        "VmHWM:\t  645564 kB",
+        "VmRSS:\t  605916 kB"
+      ],
+      "process_peak_rss_bytes": 661057536,
+      "decision_p95_seconds": 7.043058157,
+      "candidates": 142279,
+      "completed_games_per_hour": 370.2616069185179,
+      "history": "results/campaign/1v1/baseline-workers-2-2.json",
+      "gameplay_sha256": "34f5319d5a5bcfaec6a190178495c1fae33fa94088339156bdb6ced6c9b92503",
+      "phase_worker_seconds": {
+        "candidate_reset": 1.6887492750000002,
+        "selection": 0.007856315,
+        "simulation": 152.968099427,
+        "checkpoint": 0.00808471,
+        "actual_shot": 0.159343151
+      },
+      "completed_games": 8,
+      "decision_mean_seconds": 1.9643766973417722,
+      "wall_seconds": 77.782841812,
+      "campaign_setup_and_simulation_seconds": 77.763859242,
+      "workers": 2,
+      "completed_matches": 8,
+      "verification_and_output_seconds": 0.01898257,
+      "candidates_per_second": 1829.1823323180488,
+      "completed_matches_per_hour": 370.2616069185179
+    },
+    {
+      "mode": "sequential",
+      "repeat": 2,
+      "decision_p50_seconds": 0.981543892,
+      "process_memory": [
+        "VmHWM:\t  645564 kB",
+        "VmRSS:\t  608768 kB"
+      ],
+      "process_peak_rss_bytes": 661057536,
+      "decision_p95_seconds": 6.750933569,
+      "candidates": 142279,
+      "completed_games_per_hour": 192.80484680833342,
+      "history": "results/campaign/1v1/baseline-workers-1-2.json",
+      "gameplay_sha256": "34f5319d5a5bcfaec6a190178495c1fae33fa94088339156bdb6ced6c9b92503",
+      "phase_worker_seconds": {
+        "candidate_reset": 1.6884697129999997,
+        "selection": 0.008026804,
+        "simulation": 147.14591436700002,
+        "checkpoint": 0.007829637,
+        "actual_shot": 0.15213803800000003
+      },
+      "completed_games": 8,
+      "decision_mean_seconds": 1.8905616746835443,
+      "wall_seconds": 149.373838245,
+      "campaign_setup_and_simulation_seconds": 149.355564783,
+      "workers": 1,
+      "completed_matches": 8,
+      "verification_and_output_seconds": 0.018273462,
+      "candidates_per_second": 952.5028055223219,
+      "completed_matches_per_hour": 192.80484680833342
+    },
+    {
+      "mode": "sequential",
+      "repeat": 3,
+      "decision_p50_seconds": 0.991574742,
+      "process_memory": [
+        "VmHWM:\t  645564 kB",
+        "VmRSS:\t  608780 kB"
+      ],
+      "process_peak_rss_bytes": 661057536,
+      "decision_p95_seconds": 6.727107369,
+      "candidates": 142279,
+      "completed_games_per_hour": 193.35546591009927,
+      "history": "results/campaign/1v1/baseline-workers-1-3.json",
+      "gameplay_sha256": "34f5319d5a5bcfaec6a190178495c1fae33fa94088339156bdb6ced6c9b92503",
+      "phase_worker_seconds": {
+        "candidate_reset": 1.674195876,
+        "selection": 0.007642389999999999,
+        "simulation": 146.733861913,
+        "checkpoint": 0.007882157,
+        "actual_shot": 0.15146732300000001
+      },
+      "completed_games": 8,
+      "decision_mean_seconds": 1.8851624385696202,
+      "wall_seconds": 148.948465793,
+      "campaign_setup_and_simulation_seconds": 148.929108664,
+      "workers": 1,
+      "completed_matches": 8,
+      "verification_and_output_seconds": 0.019357129,
+      "candidates_per_second": 955.222997716077,
+      "completed_matches_per_hour": 193.35546591009927
+    },
+    {
+      "mode": "parallel",
+      "repeat": 3,
+      "decision_p50_seconds": 1.004393732,
+      "process_memory": [
+        "VmHWM:\t  645564 kB",
+        "VmRSS:\t  610016 kB"
+      ],
+      "process_peak_rss_bytes": 661057536,
+      "decision_p95_seconds": 6.862570685,
+      "candidates": 142279,
+      "completed_games_per_hour": 379.24025642457985,
+      "history": "results/campaign/1v1/baseline-workers-2-3.json",
+      "gameplay_sha256": "34f5319d5a5bcfaec6a190178495c1fae33fa94088339156bdb6ced6c9b92503",
+      "phase_worker_seconds": {
+        "candidate_reset": 1.6596582549999999,
+        "selection": 0.007867004,
+        "simulation": 148.89322206199998,
+        "checkpoint": 0.007592659999999999,
+        "actual_shot": 0.153562656
+      },
+      "completed_games": 8,
+      "decision_mean_seconds": 1.9123269352405063,
+      "wall_seconds": 75.941305049,
+      "campaign_setup_and_simulation_seconds": 75.922636492,
+      "workers": 2,
+      "completed_matches": 8,
+      "verification_and_output_seconds": 0.018668557,
+      "candidates_per_second": 1873.539043188639,
+      "completed_matches_per_hour": 379.24025642457985
+    },
+    {
+      "mode": "parallel",
+      "repeat": 3,
+      "decision_p50_seconds": 1.043992874,
+      "process_memory": [
+        "VmHWM:\t  645564 kB",
+        "VmRSS:\t  613900 kB"
+      ],
+      "process_peak_rss_bytes": 661057536,
+      "decision_p95_seconds": 7.668270319,
+      "candidates": 142279,
+      "completed_games_per_hour": 621.6461602946558,
+      "history": "results/campaign/1v1/baseline-workers-4-3.json",
+      "gameplay_sha256": "34f5319d5a5bcfaec6a190178495c1fae33fa94088339156bdb6ced6c9b92503",
+      "phase_worker_seconds": {
+        "candidate_reset": 1.8380610889999998,
+        "selection": 0.009314056999999999,
+        "simulation": 165.69629702800003,
+        "checkpoint": 0.007291503999999999,
+        "actual_shot": 0.17312077499999998
+      },
+      "completed_games": 8,
+      "decision_mean_seconds": 2.127674386873418,
+      "wall_seconds": 46.328605949,
+      "campaign_setup_and_simulation_seconds": 46.28073394,
+      "workers": 4,
+      "completed_matches": 8,
+      "verification_and_output_seconds": 0.047872009,
+      "candidates_per_second": 3071.083126408449,
+      "completed_matches_per_hour": 621.6461602946558
+    },
+    {
+      "mode": "parallel",
+      "repeat": 3,
+      "decision_p50_seconds": 1.227312873,
+      "process_memory": [
+        "VmHWM:\t  649576 kB",
+        "VmRSS:\t  605020 kB"
+      ],
+      "process_peak_rss_bytes": 665165824,
+      "decision_p95_seconds": 11.086905971,
+      "candidates": 142279,
+      "completed_games_per_hour": 741.7418089931848,
+      "history": "results/campaign/1v1/baseline-workers-8-3.json",
+      "gameplay_sha256": "34f5319d5a5bcfaec6a190178495c1fae33fa94088339156bdb6ced6c9b92503",
+      "phase_worker_seconds": {
+        "candidate_reset": 2.156373448,
+        "selection": 0.008923159,
+        "simulation": 225.793888375,
+        "checkpoint": 0.008030358,
+        "actual_shot": 0.20964052799999996
+      },
+      "completed_games": 8,
+      "decision_mean_seconds": 2.89313633743038,
+      "wall_seconds": 38.827526844,
+      "campaign_setup_and_simulation_seconds": 38.777042395,
+      "workers": 8,
+      "completed_matches": 8,
+      "verification_and_output_seconds": 0.050484449,
+      "candidates_per_second": 3664.384820893796,
+      "completed_matches_per_hour": 741.7418089931848
+    }
+  ],
+  "memory_boundary": "process RSS sampled after history output; peak RSS is cumulative across warmup and all trials, not isolated per trial",
+  "worker_counts": [
+    1,
+    2,
+    4,
+    8
+  ]
+}
+

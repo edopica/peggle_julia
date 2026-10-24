@@ -1,0 +1,42 @@
+{
+  "identity_verified": true,
+  "decisions_audited": 948,
+  "measured_campaigns": 12,
+  "measured_candidates": 1707348,
+  "completed_matches": 96,
+  "source_and_input_hashes_verified": true,
+  "scaling": [
+    {
+      "workers": 1,
+      "median_wall_seconds": 148.948465793,
+      "median_completed_matches_per_hour": 193.35546591009927,
+      "median_candidates_per_second": 955.222997716077,
+      "speedup": 1.0,
+      "parallel_efficiency": 1.0
+    },
+    {
+      "workers": 2,
+      "median_wall_seconds": 76.578104232,
+      "median_completed_matches_per_hour": 376.0866149512908,
+      "median_candidates_per_second": 1857.9592878005108,
+      "speedup": 1.9450529271624133,
+      "parallel_efficiency": 0.9725264635812066
+    },
+    {
+      "workers": 4,
+      "median_wall_seconds": 46.328605949,
+      "median_completed_matches_per_hour": 621.6461602946558,
+      "median_candidates_per_second": 3071.083126408449,
+      "speedup": 3.2150431195138314,
+      "parallel_efficiency": 0.8037607798784578
+    },
+    {
+      "workers": 8,
+      "median_wall_seconds": 39.233736395,
+      "median_completed_matches_per_hour": 734.0621272989516,
+      "median_candidates_per_second": 3626.4453267349836,
+      "speedup": 3.7964384603446075,
+      "parallel_efficiency": 0.47455480754307594
+    }
+  ]
+}

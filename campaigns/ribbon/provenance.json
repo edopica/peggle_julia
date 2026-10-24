@@ -1,0 +1,8 @@
+{
+  "source": "../peggle_evolved/src/config.lua",
+  "source_sha256": "06c65f8f850c916748da08316a3e30b4e6b15abbfd57fe5e58f6aaeecca274ea",
+  "game_source_sha256": "5317b0656239a6ed1b67c8a24f59ab481671d6b885a79e2b54ab06adb1512feb",
+  "lua_revision": "de49dabb19ecfe960885af6eda04a7a848864be4",
+  "lua_config_dirty": true,
+  "changes_from_ribbon_fixture": {}
+}

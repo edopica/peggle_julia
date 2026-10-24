@@ -1,0 +1,55 @@
+rm -rf tmp/testrun
+mkdir -p tmp/testrun
+cp -r reference/peggle_evolved/. tmp/testrun/
+mkdir -p tmp/testrun/temp tmp/testrun/replays
+cd tmp/testrun && luajit tests/run.lua
+Running 26 test file(s)...
+== test_advanced_circuits.lua ==
+INFO: 88 peg(s) on closed path circuit(s) are outside the playfield at their initialized phase (intentional hidden-return policy; level geometry and physics tests own return-path safety)
+INFO: 88 peg(s) on closed path circuit(s) are outside the playfield at their initialized phase (intentional hidden-return policy; level geometry and physics tests own return-path safety)
+INFO: 88 peg(s) on closed path circuit(s) are outside the playfield at their initialized phase (intentional hidden-return policy; level geometry and physics tests own return-path safety)
+INFO: 88 peg(s) on closed path circuit(s) are outside the playfield at their initialized phase (intentional hidden-return policy; level geometry and physics tests own return-path safety)
+INFO: 88 peg(s) on closed path circuit(s) are outside the playfield at their initialized phase (intentional hidden-return policy; level geometry and physics tests own return-path safety)
+INFO: 88 peg(s) on closed path circuit(s) are outside the playfield at their initialized phase (intentional hidden-return policy; level geometry and physics tests own return-path safety)
+INFO: 88 peg(s) on closed path circuit(s) are outside the playfield at their initialized phase (intentional hidden-return policy; level geometry and physics tests own return-path safety)
+== test_annular_depenetration.lua ==
+== test_ball_ball_collisions.lua ==
+== test_ball_ids.lua ==
+== test_ball_state.lua ==
+== test_bounce_settling.lua ==
+== test_circuit_analyzer.lua ==
+== test_circuits.lua ==
+== test_contact_presentation.lua ==
+== test_engine_integration.lua ==
+WARNING: Discarding peg at (-100, 400) as it intersects with a wall boundary!
+== test_gameplay_commands.lua ==
+== test_gameplay_events.lua ==
+== test_gameplay_trace_exporter.lua ==
+GameplayTraceExporter: writing canonical trace to dummy.jsonl
+GameplayTraceExporter: closed (1 steps written).
+== test_level_manager.lua ==
+== test_level_validator.lua ==
+WARNING: Discarding peg at (-20, 600) as it intersects with a wall boundary!
+WARNING: Discarding peg at (1215, 600) as it intersects with a wall boundary!
+WARNING: Discarding peg at (600, -5) as it intersects with a wall boundary!
+INFO: 1 peg(s) on closed path circuit(s) are outside the playfield at their initialized phase (intentional hidden-return policy; level geometry and physics tests own return-path safety)
+WARNING: Discarding peg at (1300, -200) as it intersects with a wall boundary!
+WARNING: Discarding peg at (1300, -200) as it intersects with a wall boundary!
+WARNING: Discarding peg at (1300, -200) as it intersects with a wall boundary!
+== test_lines.lua ==
+== test_motion_schema.lua ==
+WARNING: circuit c1 uses path_fn instead of kind — migrate to primitive
+== test_path.lua ==
+== test_replay_compat.lua ==
+== test_replay_library.lua ==
+== test_simulation_snapshot.lua ==
+== test_slide_inversion.lua ==
+== test_slide_level.lua ==
+== test_squiggly_level.lua ==
+WARNING: Discarding peg at (1100.05, 500) as it intersects with a wall boundary!
+WARNING: Discarding peg at (99.95, 500) as it intersects with a wall boundary!
+WARNING: Discarding peg at (600, 99.95) as it intersects with a wall boundary!
+== test_step_record_ownership.lua ==
+== test_style_shots.lua ==
+
+Results: 475 passed, 0 failed

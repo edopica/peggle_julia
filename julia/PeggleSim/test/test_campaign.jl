@@ -105,13 +105,13 @@ end
     @test PeggleSim.finish_solo_turn!(redfree) == "all_red_cleared"
     @test redfree.sim.match.game_over
     # Full legal grid, intentionally short cap: limits never count as completion.
-    o = PeggleSim.CampaignOptions(max_steps=1, max_turns=2, workers=min(3,Threads.nthreads()))
+    o = PeggleSim.CampaignOptions(mode=:solo, games=3, max_steps=1, max_turns=2, workers=min(3,Threads.nthreads()))
     serial = PeggleSim.run_campaign(level, config, o; parallel=false)
     parallel = PeggleSim.run_campaign(level, config, o; parallel=true)
     @test serial.games == parallel.games
     @test all(g -> !g["completed"] && g["turns"] == 0 && g["termination_reason"] == "candidate_step_limit", serial.games)
     # Exercise actual selections and noisy executions, rather than only capped sweeps.
-    actual = PeggleSim.CampaignOptions(max_turns=1, workers=min(3,Threads.nthreads()))
+    actual = PeggleSim.CampaignOptions(mode=:solo, games=3, max_turns=1, workers=min(3,Threads.nthreads()))
     serial_actual = PeggleSim.run_campaign(level, config, actual; parallel=false)
     parallel_actual = PeggleSim.run_campaign(level, config, actual; parallel=true)
     @test serial_actual.games == parallel_actual.games
