@@ -1,0 +1,67 @@
+scripts/verify_reference.sh
+reference OK: 133 files match /home/kurapica/Projects/pevo/julia_clone/reference/files.sha256
+scripts/check_interchange.sh
+== 1/8 canonical JSON codec tests ==
+canonical_json_test: 34 checks passed
+== 2/8 export reproducibility ==
+OK: scratch export matches interchange/
+== 3/8 manifest ==
+interchange OK: 17 files match /home/kurapica/Projects/pevo/julia_clone/interchange/files.sha256
+== 4/8 schema validation ==
+OK   interchange/levels/circle_level.v1.json
+OK   interchange/levels/double_long_shot.v1.json
+OK   interchange/levels/long_shot.v1.json
+OK   interchange/levels/lucky_bounce.v1.json
+OK   interchange/levels/off_the_wall.v1.json
+OK   interchange/levels/slide.v1.json
+OK   interchange/levels/squiggly_circle.v1.json
+OK   interchange/levels/super_long_shot.v1.json
+OK   interchange/config.v1.json
+OK   fixtures/expected/bucket_catch.json
+OK   fixtures/expected/clearing_cascade.json
+OK   fixtures/expected/completion_miss_fell_out.json
+OK   fixtures/expected/double_long_shot_style.json
+OK   fixtures/expected/long_shot_style_fever.json
+OK   fixtures/expected/lucky_bounce_style.json
+OK   fixtures/expected/multiball_slide_3.json
+OK   fixtures/expected/off_the_wall_style.json
+OK   fixtures/expected/power_green_spawn.json
+OK   fixtures/expected/probe_annular_cap_crossing.json
+OK   fixtures/expected/probe_annular_inner_surface.json
+OK   fixtures/expected/probe_annular_outer_surface.json
+OK   fixtures/expected/probe_ball_ball_impulse.json
+OK   fixtures/expected/probe_depenetration_band_exit.json
+OK   fixtures/expected/probe_depenetration_inner_wall.json
+OK   fixtures/expected/probe_graze_gap_0_25.json
+OK   fixtures/expected/probe_graze_gap_0_50.json
+OK   fixtures/expected/probe_graze_gap_0_75.json
+OK   fixtures/expected/probe_near_tie_equal_toi.json
+OK   fixtures/expected/probe_rectangle_corner_rotated.json
+OK   fixtures/expected/slide_line_metadata.json
+OK   fixtures/expected/slide_rail_graze.json
+OK   fixtures/expected/slide_slide_style.json
+OK   fixtures/expected/squiggly_annular_drop.json
+OK   fixtures/expected/super_long_shot_fever.json
+OK   schemas/examples/action-log.v1.example.json
+OK   schemas/examples/checkpoint.v1.example.json
+OK   schemas/examples/shot-result.v1.example.json
+validate_interchange: 37 file(s) valid
+== 5/8 checkpoint contract cases ==
+== post-turn-retained-flag: retained is_end_of_turn must validate ==
+OK: post-turn-retained-flag validated
+== scoring/derived-field cases must be rejected ==
+OK: missing-hit-counter rejected
+OK: reds-over-total rejected
+OK: multiplier-mismatch rejected
+OK: fever-flag-mismatch rejected
+OK: nonzero-bonus-at-ready-to-aim rejected
+OK: nonzero-style-at-ready-to-aim rejected
+test_checkpoint_contract: OK
+== 6/8 parity comparison contract cases ==
+test_compare_parity: OK (12 contract cases)
+== 7/8 trace comparison contract cases ==
+test_compare_traces checks: OK
+test_compare_traces: OK (42 comparison cases, 4 ULP assertions)
+== 8/8 M3 sweep comparison contract cases ==
+test_compare_m3_sweeps: OK (4 contract cases)
+interchange check OK

@@ -1,0 +1,213 @@
+{
+  "timestamp_utc": "2026-10-24T21:46:33Z",
+  "candidate_count": 1801,
+  "environment": {
+    "command": "julia --project=julia/PeggleSim -t 3 julia/PeggleSim/bin/campaign.jl --level fixtures/ribbon_waves/artifact/ribbon_waves.v1.json --config fixtures/ribbon_waves/config.dev.v1.json --games 3 --workers 3 --base-seed 20261024 --sector-size 100 --epsilon 1 --max-steps 3600 --max-turns 100 --repeats 3 --out results/campaign/baseline.json",
+    "cpu_threads": 12,
+    "threads": 3,
+    "cpu": "znver2",
+    "total_memory_bytes": 16087932928,
+    "git_status": " M julia/PeggleSim/src/PeggleSim.jl\n M wiki/devlog/2026-10-24.md\n M wiki/quickstart.md\n?? julia/PeggleSim/bin/campaign.jl\n?? julia/PeggleSim/src/campaign.jl\n?? julia/PeggleSim/test/test_campaign.jl\n?? results/campaign/\n?? temp/PLAN.md\n?? temp/artifact_test.json\n?? temp/cloud-cpu-rental-options.md\n?? temp/dump_level_pegs.lua\n?? temp/prompt.md\n?? temp/ribbon_caps/\n?? temp/ribbon_waves_endcap_handoff.md\n?? temp/ribbon_waves_test.lua\n?? temp/ribbon_waves_v4_wrong.patch\n?? temp/simulation-workflow-checks.md\n?? temp/sweep/\n?? wiki/benchmarks/bot-campaign.md\n?? wiki/context/bot-campaign.md\n?? wiki/context/optimization-strategy.md\n",
+    "git_revision": "352ffb3838f5d6932299108a8b22045bed86cf52",
+    "machine": "x86_64-linux-gnu",
+    "cpu_info": "model name\t: AMD Ryzen 5 4600H with Radeon Graphics",
+    "julia": "1.12.6",
+    "kernel": "Linux"
+  },
+  "source_sha256": {
+    "julia/PeggleSim/bin/campaign.jl": "ce12021a05a0e345fae53a18a438a6e6bfb9488b6a5ccfff097b374daac41217",
+    "julia/PeggleSim/src/campaign.jl": "fc9f0de423a1fab2a15b35c99d05177b42a4806694e52f8f95a5dc7e5231d065",
+    "julia/PeggleSim/Manifest.toml": "a1c8030a05d2c2c6c721d1fa352556a828a4aa485fe58813f748d9d4a373becb"
+  },
+  "warmup_seconds": 82.348506291,
+  "load_seconds": 0.297526266,
+  "config_sha256": "9de96e70851daa3d596c9cd3e28a1ad67705ec70e4afda5090e6868a2cad385c",
+  "identity_verified": true,
+  "level_sha256": "073b426e66c948895a73a5a45b96b4a5538332c8db2d5b1318f245f8ffe6f86e",
+  "timing_boundary": "wall includes checkpoint/grid validation, worker and engine setup, all decisions, history identity verification and history JSON output/close; excludes process startup, one-time artifact load, GC before trial, warmup, final aggregate report write; load_seconds reported separately",
+  "options": {
+    "max-steps": "3600",
+    "config": "fixtures/ribbon_waves/config.dev.v1.json",
+    "workers": "3",
+    "sector-size": "100",
+    "max-turns": "100",
+    "base-seed": "20261024",
+    "level": "fixtures/ribbon_waves/artifact/ribbon_waves.v1.json",
+    "games": "3",
+    "repeats": "3",
+    "out": "results/campaign/baseline.json",
+    "epsilon": "1"
+  },
+  "trials": [
+    {
+      "mode": "sequential",
+      "repeat": 1,
+      "decision_p50_seconds": 0.944408174,
+      "process_memory": [
+        "VmHWM:\t  624428 kB",
+        "VmRSS:\t  541516 kB"
+      ],
+      "process_peak_rss_bytes": 639414272,
+      "decision_p95_seconds": 6.806102527,
+      "candidates": 50428,
+      "completed_games_per_hour": 192.44972931639256,
+      "history": "results/campaign/baseline-sequential-1.json",
+      "gameplay_sha256": "801471db35dd88d4cabc04178924719b751930b81dc601565539de076765d938",
+      "phase_worker_seconds": {
+        "candidate_reset": 0.6265869110000001,
+        "selection": 0.0030722749999999993,
+        "simulation": 55.281879294999996,
+        "checkpoint": 0.00302541,
+        "actual_shot": 0.058075102999999996
+      },
+      "completed_games": 3,
+      "decision_mean_seconds": 2.003682460035715,
+      "wall_seconds": 56.118551262,
+      "campaign_setup_and_simulation_seconds": 56.104054399,
+      "verification_and_output_seconds": 0.014496863,
+      "candidates_per_second": 898.5976805525041
+    },
+    {
+      "mode": "parallel",
+      "repeat": 1,
+      "decision_p50_seconds": 0.998567954,
+      "process_memory": [
+        "VmHWM:\t  624428 kB",
+        "VmRSS:\t  549204 kB"
+      ],
+      "process_peak_rss_bytes": 639414272,
+      "decision_p95_seconds": 7.19272179,
+      "candidates": 50428,
+      "completed_games_per_hour": 487.02763469413696,
+      "history": "results/campaign/baseline-parallel-1.json",
+      "gameplay_sha256": "801471db35dd88d4cabc04178924719b751930b81dc601565539de076765d938",
+      "phase_worker_seconds": {
+        "candidate_reset": 0.687344368,
+        "selection": 0.002745342,
+        "simulation": 58.36799977400001,
+        "checkpoint": 0.002459971,
+        "actual_shot": 0.060093045000000005
+      },
+      "completed_games": 3,
+      "decision_mean_seconds": 2.116087302357143,
+      "wall_seconds": 22.175333042,
+      "campaign_setup_and_simulation_seconds": 22.168991123,
+      "verification_and_output_seconds": 0.006341919,
+      "candidates_per_second": 2274.058292810735
+    },
+    {
+      "mode": "parallel",
+      "repeat": 2,
+      "decision_p50_seconds": 1.023411121,
+      "process_memory": [
+        "VmHWM:\t  624428 kB",
+        "VmRSS:\t  549776 kB"
+      ],
+      "process_peak_rss_bytes": 639414272,
+      "decision_p95_seconds": 7.310335911,
+      "candidates": 50428,
+      "completed_games_per_hour": 484.40658024294567,
+      "history": "results/campaign/baseline-parallel-2.json",
+      "gameplay_sha256": "801471db35dd88d4cabc04178924719b751930b81dc601565539de076765d938",
+      "phase_worker_seconds": {
+        "candidate_reset": 0.686709222,
+        "selection": 0.0025671080000000002,
+        "simulation": 59.28432512799999,
+        "checkpoint": 0.002553347,
+        "actual_shot": 0.060032628000000005
+      },
+      "completed_games": 3,
+      "decision_mean_seconds": 2.1488175827857146,
+      "wall_seconds": 22.295320585,
+      "campaign_setup_and_simulation_seconds": 22.289332694,
+      "verification_and_output_seconds": 0.005987891,
+      "candidates_per_second": 2261.819910045487
+    },
+    {
+      "mode": "sequential",
+      "repeat": 2,
+      "decision_p50_seconds": 0.98251516,
+      "process_memory": [
+        "VmHWM:\t  624428 kB",
+        "VmRSS:\t  548640 kB"
+      ],
+      "process_peak_rss_bytes": 639414272,
+      "decision_p95_seconds": 6.884898226,
+      "candidates": 50428,
+      "completed_games_per_hour": 189.81353407769268,
+      "history": "results/campaign/baseline-sequential-2.json",
+      "gameplay_sha256": "801471db35dd88d4cabc04178924719b751930b81dc601565539de076765d938",
+      "phase_worker_seconds": {
+        "candidate_reset": 0.701735489,
+        "selection": 0.002384328,
+        "simulation": 55.99525573799999,
+        "checkpoint": 0.002657413,
+        "actual_shot": 0.058277154
+      },
+      "completed_games": 3,
+      "decision_mean_seconds": 2.031832212392857,
+      "wall_seconds": 56.897944883,
+      "campaign_setup_and_simulation_seconds": 56.891849436,
+      "verification_and_output_seconds": 0.006095447,
+      "candidates_per_second": 886.2886015249894
+    },
+    {
+      "mode": "sequential",
+      "repeat": 3,
+      "decision_p50_seconds": 0.959264468,
+      "process_memory": [
+        "VmHWM:\t  624428 kB",
+        "VmRSS:\t  548688 kB"
+      ],
+      "process_peak_rss_bytes": 639414272,
+      "decision_p95_seconds": 6.981103898,
+      "candidates": 50428,
+      "completed_games_per_hour": 189.01756953135282,
+      "history": "results/campaign/baseline-sequential-3.json",
+      "gameplay_sha256": "801471db35dd88d4cabc04178924719b751930b81dc601565539de076765d938",
+      "phase_worker_seconds": {
+        "candidate_reset": 0.720481884,
+        "selection": 0.0027850369999999998,
+        "simulation": 56.21545450100001,
+        "checkpoint": 0.002829039,
+        "actual_shot": 0.05942897300000001
+      },
+      "completed_games": 3,
+      "decision_mean_seconds": 2.040382092357143,
+      "wall_seconds": 57.137545609,
+      "campaign_setup_and_simulation_seconds": 57.131339315,
+      "verification_and_output_seconds": 0.006206294,
+      "candidates_per_second": 882.5720366969499
+    },
+    {
+      "mode": "parallel",
+      "repeat": 3,
+      "decision_p50_seconds": 1.132097216,
+      "process_memory": [
+        "VmHWM:\t  624428 kB",
+        "VmRSS:\t  549632 kB"
+      ],
+      "process_peak_rss_bytes": 639414272,
+      "decision_p95_seconds": 7.412949058,
+      "candidates": 50428,
+      "completed_games_per_hour": 461.6878010673498,
+      "history": "results/campaign/baseline-parallel-3.json",
+      "gameplay_sha256": "801471db35dd88d4cabc04178924719b751930b81dc601565539de076765d938",
+      "phase_worker_seconds": {
+        "candidate_reset": 0.744604884,
+        "selection": 0.002831913,
+        "simulation": 62.41013111299999,
+        "checkpoint": 0.004534891,
+        "actual_shot": 0.066539711
+      },
+      "completed_games": 3,
+      "decision_mean_seconds": 2.2626754334999997,
+      "wall_seconds": 23.392430935,
+      "campaign_setup_and_simulation_seconds": 23.385761028,
+      "verification_and_output_seconds": 0.006669907,
+      "candidates_per_second": 2155.7400400207703
+    }
+  ],
+  "memory_boundary": "process RSS sampled after history output; peak RSS is cumulative across warmup and all trials, not isolated per trial"
+}
+

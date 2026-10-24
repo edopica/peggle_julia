@@ -115,6 +115,20 @@ scripts/compare_m3_mustache.sh --julia-only
 scripts/bench_m3.sh --stride 20 --threads "1 2 4"
 ```
 
+## Ribbon bot campaign
+
+The MVP evaluates all 1,801 aim indices at every turn and runs three independent
+solo games with separate bot RNG streams on the same ribbon realization.
+
+```bash
+julia --project=julia/PeggleSim -t 3 julia/PeggleSim/bin/campaign.jl --repeats 3
+```
+
+This performs warmup and repeated sequential/concurrent comparisons, verifies
+identical decision histories, and saves results under `results/campaign/`.
+See [workflow and contracts](context/bot-campaign.md) and
+[measured baseline](benchmarks/bot-campaign.md).
+
 ## Repository layout
 
 | Path | Purpose |

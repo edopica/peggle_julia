@@ -1,0 +1,10 @@
+{
+  "histories_identical": true,
+  "measured_campaigns": 6,
+  "measured_completed_games": 18,
+  "decisions_audited": 168,
+  "measured_candidates": 302568,
+  "sector_coverage_median_selection_noise_scores_verified": true,
+  "source_and_input_hashes_verified": true,
+  "gameplay_sha256": "801471db35dd88d4cabc04178924719b751930b81dc601565539de076765d938"
+}

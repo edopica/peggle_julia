@@ -1,0 +1,25 @@
+{
+  "julia": {
+    "command": "julia --project=julia/PeggleSim -t 3 julia/PeggleSim/test/runtests.jl",
+    "passed": 10871,
+    "failed": 0,
+    "log": "julia-tests.txt"
+  },
+  "lua": {
+    "command": "make test",
+    "passed": 475,
+    "failed": 0,
+    "log": "lua-tests.txt"
+  },
+  "interchange": {
+    "command": "make verify check",
+    "passed": true,
+    "log": "interchange.txt"
+  },
+  "reference": {
+    "command": "scripts/verify_reference.sh",
+    "files": 133,
+    "before": "reference-before.txt",
+    "after": "reference-after.txt"
+  }
+}

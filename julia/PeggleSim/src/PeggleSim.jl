@@ -30,6 +30,7 @@ include("snapshot.jl")
 include("trace.jl")
 include("engine.jl")
 
+include("campaign.jl")
 include("parity.jl")
 
 export DetMath

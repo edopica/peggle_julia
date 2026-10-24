@@ -1,0 +1,29 @@
+Precompiling packages...
+   2878.3 ms  ✓ PeggleSim
+  1 dependency successfully precompiled in 3 seconds. 11 already precompiled.
+math census: /home/kurapica/Projects/pevo/julia_clone/fixtures/math_census/math_census.v1.json
+  fixture_sha256=fa052e173e188444439242a802a8c6e807b3a1db9399b652d9dbcdb7235786b0
+  total cases: 15794
+  system libm mismatches: 0
+  openlibm divergences (diagnostic only):
+    asin       14 /    161
+    atan       35 /   1588
+    atan2     461 /   3164
+    cos        53 /   1588
+    exp         7 /   1558
+    log         1 /   1339
+    mod         0 /   1857
+    pow        89 /   1613
+    sin        45 /   1588
+    sqrt        0 /   1338
+checkpoint memory: circle_level.v1.json = 6597 bytes
+checkpoint memory: double_long_shot.v1.json = 4801 bytes
+checkpoint memory: long_shot.v1.json = 3514 bytes
+checkpoint memory: lucky_bounce.v1.json = 5253 bytes
+checkpoint memory: off_the_wall.v1.json = 5373 bytes
+checkpoint memory: slide.multiball3.v1.json = 17561 bytes
+checkpoint memory: slide.v1.json = 17401 bytes
+checkpoint memory: squiggly_circle.v1.json = 41408 bytes
+checkpoint memory: super_long_shot.v1.json = 3520 bytes
+Test Summary: |  Pass  Total     Time
+PeggleSim     | 10871  10871  1m41.7s
