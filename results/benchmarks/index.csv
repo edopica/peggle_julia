@@ -1,0 +1,3 @@
+run_id,benchmark,timestamp_utc,host_id,git_revision,workload_id,protocol_version,schema_version,status,manifest_path
+20261024T222238Z_omarchy_legacy_baseline,ribbon_1v1_campaign,2026-10-24T22:22:38Z,omarchy,e7070d95d087fedc80df467f6c75541e820dfba7,ribbon_1v1_8matches_1801aim,1.0.0,1.0.0,completed,results/benchmarks/runs/20261024T222238Z_omarchy_legacy_baseline/manifest.json
+20261025T093415Z_omarchy_v_beb3,ribbon_1v1_campaign,2026-10-25T09:34:15Z,omarchy,5de45c742ace599e2024d0751c851d189b9ddfe9,ribbon_1v1_small_verification,1.0.0,1.0.0,completed,results/benchmarks/runs/20261025T093415Z_omarchy_v_beb3/manifest.json

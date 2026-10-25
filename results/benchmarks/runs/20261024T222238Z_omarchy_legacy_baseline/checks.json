@@ -1,0 +1,91 @@
+{
+  "schema_version": "1.0.0",
+  "checks": [
+    {
+      "name": "julia_tests",
+      "status": "passed",
+      "command": "julia --project=julia/PeggleSim -t 8 julia/PeggleSim/test/runtests.jl",
+      "evidence_path": "verification/julia-tests.txt",
+      "evidence_sha256": "c358425ecfc8aeb52a52700cdb0a4b6582f17f6b15a44689a66f9ea3fc782b18",
+      "details": {
+        "passed": 10996,
+        "failed": 0
+      }
+    },
+    {
+      "name": "lua_tests",
+      "status": "passed",
+      "command": "make test",
+      "evidence_path": "verification/lua-tests.txt",
+      "evidence_sha256": "535cda92e23817512f428a0dee70f1145a153604e4302f032ae98d02bc98cff2",
+      "details": {
+        "passed": 475,
+        "failed": 0
+      }
+    },
+    {
+      "name": "interchange_validation",
+      "status": "passed",
+      "command": "make verify check",
+      "evidence_path": "verification/interchange.txt",
+      "evidence_sha256": "c05d71b3f1153f3595760392dd8170d9092bf4b78a85a4b6e1ce05a650858ce7",
+      "details": {
+        "reproducible": true
+      }
+    },
+    {
+      "name": "current_config",
+      "status": "passed",
+      "command": "python3 scripts/sync_campaign_config.py --check",
+      "evidence_path": "verification/config-check.txt",
+      "evidence_sha256": "a59a792674a4f4c29790bf960cbddf8d25e669f5362183561c525830b4aecfc4",
+      "details": {
+        "synchronized": true
+      }
+    },
+    {
+      "name": "match_rule_oracle",
+      "status": "passed",
+      "command": "luajit tools/capture_match_rules.lua",
+      "evidence_path": "fixtures/matches/rules.v1.json",
+      "evidence_sha256": "94258489167279d88a9fe5a39dcf30ce51b5895a7c42670dd90fad4fbe396251",
+      "details": {
+        "cases": 9,
+        "recapture_identical": true
+      }
+    },
+    {
+      "name": "reference_files",
+      "status": "passed",
+      "command": "scripts/verify_reference.sh",
+      "evidence_path": "verification/reference-before.txt",
+      "evidence_sha256": "687aeba9d3175969dc03f31c102b4488b9171d394140f045b7d475bc87046196",
+      "details": {
+        "verified_files": 133
+      }
+    },
+    {
+      "name": "history_audit",
+      "status": "passed",
+      "command": "python3 scripts/audit_campaign.py results/campaign/1v1/baseline.json --out results/campaign/1v1/verification/history-audit.json",
+      "evidence_path": "verification/history-audit.json",
+      "evidence_sha256": "52984ad31dde7890cbe62d014c02af35b9cd3099f4e3c1b7eb17d05fefe81969",
+      "details": {
+        "decisions_audited": 948,
+        "measured_candidates": 1707348,
+        "completed_matches": 96
+      }
+    },
+    {
+      "name": "gameplay_identity",
+      "status": "passed",
+      "command": null,
+      "evidence_path": "results/benchmarks/histories/34f5319d5a5bcfaec6a190178495c1fae33fa94088339156bdb6ced6c9b92503.json",
+      "evidence_sha256": "34f5319d5a5bcfaec6a190178495c1fae33fa94088339156bdb6ced6c9b92503",
+      "details": {
+        "unique_gameplay_hashes": 1,
+        "sha256": "34f5319d5a5bcfaec6a190178495c1fae33fa94088339156bdb6ced6c9b92503"
+      }
+    }
+  ]
+}

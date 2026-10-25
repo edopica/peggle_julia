@@ -1,0 +1,60 @@
+{
+  "schema_version": "1.0.0",
+  "checks": [
+    {
+      "name": "reference_files",
+      "status": "passed",
+      "command": "scripts/verify_reference.sh",
+      "evidence_path": "verification/reference-verification.txt",
+      "evidence_sha256": "687aeba9d3175969dc03f31c102b4488b9171d394140f045b7d475bc87046196",
+      "details": {
+        "verified": true
+      }
+    },
+    {
+      "name": "current_config",
+      "status": "passed",
+      "command": "python3 scripts/sync_campaign_config.py --check",
+      "evidence_path": "verification/config-check.txt",
+      "evidence_sha256": "a59a792674a4f4c29790bf960cbddf8d25e669f5362183561c525830b4aecfc4",
+      "details": {
+        "synchronized": true
+      }
+    },
+    {
+      "name": "match_rule_oracle",
+      "status": "passed",
+      "command": "luajit tools/capture_match_rules.lua",
+      "evidence_path": "fixtures/matches/rules.v1.json",
+      "evidence_sha256": "94258489167279d88a9fe5a39dcf30ce51b5895a7c42670dd90fad4fbe396251",
+      "details": {
+        "cases": 9,
+        "recapture_identical": true
+      }
+    },
+    {
+      "name": "gameplay_identity",
+      "status": "passed",
+      "command": null,
+      "evidence_path": "results/benchmarks/histories/9eb49cf1041370a850d9572430405840eab482019331d62d6ba78653aad76519.json",
+      "evidence_sha256": "9eb49cf1041370a850d9572430405840eab482019331d62d6ba78653aad76519",
+      "details": {
+        "unique_gameplay_hashes": 1,
+        "sha256": "9eb49cf1041370a850d9572430405840eab482019331d62d6ba78653aad76519"
+      }
+    },
+    {
+      "name": "candidate_count",
+      "status": "passed",
+      "command": null,
+      "evidence_path": null,
+      "evidence_sha256": null,
+      "details": {
+        "aim_steps": 1801,
+        "expected_per_trial": 61234,
+        "actual_total": 122468,
+        "trials_count": 2
+      }
+    }
+  ]
+}

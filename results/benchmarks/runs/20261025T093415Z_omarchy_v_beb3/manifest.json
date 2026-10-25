@@ -1,0 +1,99 @@
+{
+  "schema_version": "1.0.0",
+  "protocol_version": "1.0.0",
+  "run_id": "20261025T093415Z_omarchy_v_beb3",
+  "benchmark": "ribbon_1v1_campaign",
+  "workload_id": "ribbon_1v1_small_verification",
+  "status": "completed",
+  "timestamp_utc": "2026-10-25T09:34:15Z",
+  "host": {
+    "host_id": "omarchy",
+    "machine": "x86_64",
+    "kernel": "Linux",
+    "os_release": "NAME=\"Omarchy\"\nPRETTY_NAME=\"Omarchy\"\nID=omarchy\nID_LIKE=arch\nBUILD_ID=\"4.0.6\"\nVERSION_ID=\"4.0.6\"\nANSI_COLOR=\"38;2;158;206;106\"\nHOME_URL=\"https://omarchy.org/\"\nDOCUMENTATION_URL=\"https://learn.omacom.io/2/the-omarchy-manual\"\nSUPPORT_URL=\"https://discord.gg/tXFUdasqhY\"\nBUG_REPORT_URL=\"https://github.com/basecamp/omarchy/issues\"\nLOGO=omarchy\n",
+    "cpu_model": "AMD Ryzen 5 4600H with Radeon Graphics",
+    "cpu_family": "znver2",
+    "physical_cores": 6,
+    "cpu_threads": 12,
+    "total_memory_bytes": 16087928832,
+    "cpu_governors": [
+      "schedutil"
+    ],
+    "allowed_cpus": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11
+    ],
+    "cgroup_cpuset": "0-11"
+  },
+  "runtime": {
+    "julia_version": "1.12.6",
+    "julia_threads": 4,
+    "command": "julia --project=/home/kurapica/Projects/pevo/julia_clone/julia/PeggleSim -t 4 /home/kurapica/Projects/pevo/julia_clone/julia/PeggleSim/bin/campaign.jl --mode 1v1 --games 4 --base-seed 20261024 --sector-size 100 --epsilon 1 --max-steps 3600 --max-turns 100 --workers 4 --worker-counts 2,4 --repeats 1 --warmup none --level /home/kurapica/Projects/pevo/julia_clone/fixtures/ribbon_waves/artifact/ribbon_waves.v1.json --config /home/kurapica/Projects/pevo/julia_clone/campaigns/ribbon/config.v1.json --out /home/kurapica/Projects/pevo/julia_clone/results/benchmarks/.staging/20261025T093415Z_omarchy_v_beb3/raw/campaign_raw.json",
+    "math_backend": "system_libm"
+  },
+  "source": {
+    "git_revision": "5de45c742ace599e2024d0751c851d189b9ddfe9",
+    "git_dirty": true,
+    "git_status": " M julia/PeggleSim/bin/campaign.jl\n M wiki/quickstart.md\n?? results/benchmarks/\n?? scripts/benchmark_schema.py\n?? scripts/compare_benchmarks.py\n?? scripts/generate_benchmark_index.py\n?? scripts/import_legacy_benchmark.py\n?? scripts/run_campaign_benchmark.py\n?? scripts/validate_benchmark.py\n?? temp/PLAN.md\n?? temp/artifact_test.json\n?? temp/benchmark-improvement-plan.md\n?? temp/cloud-cpu-rental-options.md\n?? temp/dump_level_pegs.lua\n?? temp/opt_next_steps.md\n?? temp/ribbon_caps/\n?? temp/ribbon_waves_endcap_handoff.md\n?? temp/ribbon_waves_test.lua\n?? temp/ribbon_waves_v4_wrong.patch\n?? temp/simulation-workflow-checks.md\n?? temp/sweep/\n?? wiki/context/optimization-strategy.md\n",
+    "harness_entry_point": "julia/PeggleSim/bin/campaign.jl",
+    "harness_fingerprint": "e9bbc75d73a801e7408118e3c9e19ba35179b3e4459d224ee02c662f47bbfac0",
+    "harness_files": {
+      "campaigns/ribbon/config.source.lua": "06c65f8f850c916748da08316a3e30b4e6b15abbfd57fe5e58f6aaeecca274ea",
+      "campaigns/ribbon/game.source.lua": "5317b0656239a6ed1b67c8a24f59ab481671d6b885a79e2b54ab06adb1512feb",
+      "julia/PeggleSim/Manifest.toml": "a1c8030a05d2c2c6c721d1fa352556a828a4aa485fe58813f748d9d4a373becb",
+      "julia/PeggleSim/bin/campaign.jl": "16ca57c5f44d89a70e05ea919065041010ff5564610c976b1c9a7cf3026ad73f",
+      "julia/PeggleSim/src/campaign.jl": "cc32363d8a31935ac6d6312822cb957122d4cf1e03b623ffd34c5fb13fddf833",
+      "scripts/sync_campaign_config.py": "48f3082d22b2cdd5154c313fc7b508d510db16aed093ad4394eca1008b206a61"
+    }
+  },
+  "workload": {
+    "mode": "1v1",
+    "games": 4,
+    "repeats": 1,
+    "worker_counts": [
+      2,
+      4
+    ],
+    "base_seed": 20261024,
+    "candidate_count": 1801,
+    "sector_size": 100,
+    "epsilon": 1,
+    "max_steps": 3600,
+    "max_turns": 100,
+    "level_file": "fixtures/ribbon_waves/artifact/ribbon_waves.v1.json",
+    "level_sha256": "073b426e66c948895a73a5a45b96b4a5538332c8db2d5b1318f245f8ffe6f86e",
+    "config_file": "campaigns/ribbon/config.v1.json",
+    "config_sha256": "9de96e70851daa3d596c9cd3e28a1ad67705ec70e4afda5090e6868a2cad385c",
+    "warmup": "none"
+  },
+  "timing_boundaries": {
+    "load_seconds": 0.305339559,
+    "warmup_seconds": 0.0,
+    "wall_boundary_description": "wall includes checkpoint/grid validation, worker and engine setup, all decisions, history identity verification and history JSON output/close; excludes process startup, one-time artifact load, GC before trial, warmup, final aggregate report write; load_seconds reported separately",
+    "memory_boundary_description": "process RSS sampled after history output; peak RSS is cumulative across warmup and all trials, not isolated per trial"
+  },
+  "artifacts": {
+    "canonical_gameplay_history": {
+      "path": "results/benchmarks/histories/9eb49cf1041370a850d9572430405840eab482019331d62d6ba78653aad76519.json",
+      "sha256": "9eb49cf1041370a850d9572430405840eab482019331d62d6ba78653aad76519",
+      "size_bytes": 82613
+    },
+    "archive_bundle": {
+      "path": "results/benchmarks/artifacts/20261025T093415Z_omarchy_v_beb3.tar.gz",
+      "sha256": "5e23e277ac3a0f64df8e3602a78585351d46aff664fb4fc3d6e358e24afe06ed",
+      "size_bytes": 37344,
+      "format": "tar.gz",
+      "retrieval_instructions": "tar -xzf results/benchmarks/artifacts/20261025T093415Z_omarchy_v_beb3.tar.gz"
+    }
+  }
+}

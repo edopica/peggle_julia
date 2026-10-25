@@ -10,10 +10,12 @@ function main(args)
         "worker-counts" => "1,2,4,8",
         "base-seed" => "20261024", "sector-size" => "100", "epsilon" => "1",
         "max-steps" => "3600", "max-turns" => "100", "workers" => "8",
-        "repeats" => "3", "out" => "results/campaign/1v1/baseline.json")
+        "repeats" => "3", "out" => "results/campaign/1v1/baseline.json",
+        "warmup" => "full")
     if "--help" in args
         println("julia --project=julia/PeggleSim -t 8 julia/PeggleSim/bin/campaign.jl [--NAME VALUE]")
-        println("Benchmarks eight ribbon 1v1 matches at 1,2,4,8 workers; --mode solo is optional.")
+        println("Benchmarks ribbon 1v1 matches; --mode solo is optional.")
+        println("  --warmup full|fast|none (default: full)")
         for k in sort(collect(keys(defaults)))
             println("  --$k (default: $(defaults[k]))")
         end
@@ -26,18 +28,21 @@ function main(args)
         haskey(defaults, key) || error("unknown option $(args[i])")
         defaults[key] = args[i+1]
     end
+    defaults["warmup"] in ("full", "fast", "none") || error("warmup must be one of: full, fast, none")
     num(k) = parse(Int, defaults[k])
     options_for(workers) = PeggleSim.CampaignOptions(mode = Symbol(defaults["mode"]),
         games = num("games"), base_seed = num("base-seed"), sector_size = num("sector-size"),
         epsilon = num("epsilon"), max_steps = num("max-steps"), max_turns = num("max-turns"), workers = workers)
-    o = options_for(num("workers"))
-    counts = isempty(defaults["worker-counts"]) ? collect(1:min(o.workers, o.games)) :
+    counts = isempty(defaults["worker-counts"]) ? collect(1:min(num("workers"), num("games"))) :
         sort(unique(parse.(Int, split(defaults["worker-counts"], ','))))
-    !isempty(counts) && first(counts) == 1 || error("worker-counts must include the sequential baseline 1")
-    all(w -> 1 <= w <= min(o.workers, o.games), counts) || error("invalid worker-counts")
+    !isempty(counts) || error("worker-counts must not be empty")
+    all(w -> w >= 1, counts) || error("all worker-counts must be positive integers")
+    all(w -> w <= num("games"), counts) || error("worker-counts cannot exceed games ($(num("games")))")
+    max_workers = maximum(counts)
+    o = options_for(min(max_workers, num("games")))
     PeggleSim.validate_campaign(o)
     num("repeats") > 0 || error("repeats must be positive")
-    Threads.nthreads() >= min(o.workers, o.games) || error("insufficient Julia threads")
+    Threads.nthreads() >= min(max_workers, num("games")) || error("insufficient Julia threads (have $(Threads.nthreads()), need $(min(max_workers, num("games"))))")
     out = abspath(defaults["out"])
     mkpath(dirname(out))
     t = time_ns()
@@ -47,23 +52,46 @@ function main(args)
     level.name == "ribbon_waves" || error("MVP campaign supports only ribbon_waves")
     config = PeggleSim.load_config(configpath)
     load_seconds = (time_ns() - t) / 1e9
-    println("Warmup: full sequential campaign (excluded from measurements)")
-    flush(stdout)
+
+    warmup_mode = defaults["warmup"]
     t = time_ns()
-    warmup = PeggleSim.run_campaign(level, config, o; parallel = false)
-    println("Warmup: full concurrent campaign (excluded from measurements)")
-    flush(stdout)
-    parallel_warmup = PeggleSim.run_campaign(level, config, o; parallel = true)
-    parallel_warmup.games == warmup.games || error("warmup gameplay/history mismatch")
-    # Exercise the exact IOStream/pretty-print path used by measured output.
-    mktemp() do path, io
-        JSON.print(io, warmup, 2)
-        println(io)
+    expected = nothing
+    warmup_seconds = 0.0
+
+    if warmup_mode == "full"
+        println("Warmup: full sequential campaign (excluded from measurements)")
+        flush(stdout)
+        warmup = PeggleSim.run_campaign(level, config, options_for(1); parallel = false)
+        println("Warmup: full concurrent campaign (excluded from measurements)")
+        flush(stdout)
+        parallel_warmup = PeggleSim.run_campaign(level, config, options_for(max_workers); parallel = (max_workers > 1))
+        parallel_warmup.games == warmup.games || error("warmup gameplay/history mismatch")
+        # Exercise the exact IOStream/pretty-print path used by measured output.
+        mktemp() do path, io
+            JSON.print(io, warmup, 2)
+            println(io)
+        end
+        bytes2hex(sha256(PeggleSim.canonical_json(warmup.games)))
+        warmup_seconds = (time_ns() - t) / 1e9
+        expected = warmup.games
+    elseif warmup_mode == "fast"
+        println("Warmup: fast concurrent campaign (excluded from measurements)")
+        flush(stdout)
+        fast_warmup = PeggleSim.run_campaign(level, config, options_for(max_workers); parallel = (max_workers > 1))
+        mktemp() do path, io
+            JSON.print(io, fast_warmup, 2)
+            println(io)
+        end
+        bytes2hex(sha256(PeggleSim.canonical_json(fast_warmup.games)))
+        warmup_seconds = (time_ns() - t) / 1e9
+        expected = fast_warmup.games
+    elseif warmup_mode == "none"
+        println("Warmup: skipped (--warmup none)")
+        flush(stdout)
+        warmup_seconds = 0.0
     end
-    bytes2hex(sha256(PeggleSim.canonical_json(warmup.games)))
-    warmup_seconds = (time_ns() - t) / 1e9
+
     trials = Any[]
-    expected = warmup.games
     for repeat in 1:num("repeats")
         # Alternate order to reduce systematic thermal/order bias.
         for workers in (isodd(repeat) ? counts : reverse(counts))
@@ -73,9 +101,14 @@ function main(args)
             t = time_ns()
             run = PeggleSim.run_campaign(level, config, trial_options; parallel)
             simulation_end = time_ns()
-            run.games == expected || error("gameplay/history mismatch: repeat $repeat workers=$workers")
+            if expected === nothing
+                expected = run.games
+            else
+                run.games == expected || error("gameplay/history mismatch: repeat $repeat workers=$workers")
+            end
             mode = parallel ? "parallel" : "sequential"
-            historypath = joinpath(dirname(out), "$(splitext(basename(out))[1])-workers-$workers-$repeat.json")
+            prefix = splitext(basename(out))[1]
+            historypath = joinpath(dirname(out), "$prefix-workers-$workers-$repeat.json")
             open(historypath, "w") do io
                 JSON.print(io, run, 2)
                 println(io)
