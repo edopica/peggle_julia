@@ -600,7 +600,8 @@ def harness_files(root_dir: Path) -> List[str]:
     paths = ["campaigns/ribbon/config.source.lua", "campaigns/ribbon/game.source.lua",
              "julia/PeggleSim/Manifest.toml", "julia/PeggleSim/Project.toml",
              "scripts/sync_campaign_config.jl", "scripts/run_campaign_benchmark.jl",
-             "scripts/bench_process.jl", "scripts/verify_reference.sh",
+             "scripts/bench_process.jl", "scripts/bench_process_resource.py",
+             "scripts/verify_reference.sh",
              "scripts/benchmark_schema.py",
              "tools/capture_match_rules.lua", "tools/canonical_json.lua",
              "fixtures/matches/rules.v1.json"]

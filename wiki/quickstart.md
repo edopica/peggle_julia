@@ -39,7 +39,8 @@ claimed.
 - LuaJIT and LÖVE 11.x for the baseline harness (LÖVE needs a display, or
   `xvfb-run` on headless servers; `scripts/love.sh` handles both).
 - Python 3 for the remaining analysis/report tools (SVG previews, schema
-  validation, comparisons). Benchmark execution itself is Julia.
+  validation, comparisons), and the peak-RSS fallback when GNU time is
+  unavailable. Benchmark orchestration is Julia.
 - Julia 1.12.6 for the `julia/PeggleSim` package (M2/M3/M4) and for the
   benchmark-execution harness; the pinned environment is reproduced with
   `julia --project=julia/PeggleSim -e 'using Pkg; Pkg.instantiate()'`.

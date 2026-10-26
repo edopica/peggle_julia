@@ -17,6 +17,7 @@ const _HARNESS_FIXED_FILES = String[
     "julia/PeggleSim/Manifest.toml",
     "julia/PeggleSim/Project.toml",
     "scripts/bench_process.jl",
+    "scripts/bench_process_resource.py",
     "scripts/run_campaign_benchmark.jl",
     "scripts/sync_campaign_config.jl",
     "scripts/verify_reference.sh",

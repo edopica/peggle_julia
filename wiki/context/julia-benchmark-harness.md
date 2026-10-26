@@ -1,23 +1,25 @@
 # Julia benchmark-execution harness
 
-**Status:** current (2026-10-25). The benchmark-execution path is Julia. Python
-remains only for analysis, reporting, validation CLIs, and the diagnostics
-protocol; they are outside this migration.
+**Status:** current (2026-10-26). The benchmark-execution path is Julia, with
+a small Python 3 resource-measurement helper when GNU time is unavailable.
+Python also remains for analysis, reporting, validation CLIs, and diagnostics.
 
 ## Why
 
 The repository's benchmark runner, per-process measurement wrapper, and config
 pre-check were Python. This port replaces that execution path with Julia so a
-benchmark can be run, measured, validated, archived, and indexed without a
-Python interpreter. The scope was deliberately limited to the execution
-harness; porting every analysis script was not attempted.
+benchmark can be run, validated, archived, and indexed without a Python
+interpreter. Per-process RSS measurement needs either GNU time or Python 3.
+The scope was deliberately limited to the execution harness; porting every
+analysis script was not attempted.
 
 ## Layout
 
 | Path | Role |
 | --- | --- |
 | `scripts/run_campaign_benchmark.jl` | Benchmark orchestrator: reserves a run, captures host/source provenance, runs pre-checks, executes `julia/PeggleSim/bin/campaign.jl`, transforms raw output to the versioned schemas, archives evidence, writes the manifest/README, validates, publishes, reindexes, and validates again. |
-| `scripts/bench_process.jl` | Runs one benchmark child and records wall time and peak RSS (GNU `time -v` when available, otherwise `getrusage(RUSAGE_CHILDREN)`); forwards stdio and the child exit code. |
+| `scripts/bench_process.jl` | Runs one benchmark child and records wall time and peak RSS (GNU `time -v` when available, otherwise a Python 3 helper collecting `getrusage(RUSAGE_CHILDREN)`); forwards stdio and the child exit code, mapping signal termination to `128 + signal`. |
+| `scripts/bench_process_resource.py` | Small fallback launcher: spawns the workload after Python has exec'd, so resource accounting excludes Julia's inherited footprint. Requires only Python 3 standard-library modules. |
 | `scripts/sync_campaign_config.jl` | Exports the current Lua config through `tools/export_config.lua`, writes the campaign inputs and provenance, and supports byte-exact `--check`. |
 | `scripts/benchmark/BenchmarkHarness.jl` | Module that includes the shared implementation. |
 | `scripts/benchmark/schema.jl` | Schema constants, canonical gameplay history, SHA-256, CSV, archive, manifest/checks I/O, README generation, harness fingerprint. |
@@ -53,6 +55,14 @@ julia --project=julia/PeggleSim scripts/bench_process.jl \
 
 `scripts/bench_m4.sh` calls `scripts/bench_process.jl`; its inline JSON helpers
 and the report generator remain Python analysis glue.
+
+The fallback must collect child usage inside the small helper. Reading
+`RUSAGE_CHILDREN` in Julia includes the launcher's inherited pre-exec memory
+and can report hundreds of MiB even for `/bin/true`. The fallback records
+`method: python_resource_ru_maxrss`; it still includes the small helper footprint
+inherited by the workload. Earlier `julia_resource_ru_maxrss` records may be
+inflated and should be remeasured before comparing memory results. If Python 3
+is unavailable, the fallback fails with nonzero status and null RSS.
 
 ## Behaviour and evidence
 

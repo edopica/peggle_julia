@@ -1145,8 +1145,8 @@ def main(argv=None):
                            "t1 run"),
             "peak_memory": ("scripts/bench_process.jl per sweep process: GNU "
                             "time -v Maximum resident set size when available, "
-                            "otherwise getrusage(RUSAGE_CHILDREN)"
-                            ".ru_maxrss (kernel VmHWM of the one child)"),
+                            "otherwise a Python helper reading getrusage(RUSAGE_CHILDREN)"
+                            ".ru_maxrss (excluding the Julia launcher footprint)"),
             "diagnostic_overhead": ("one untraced and one traced single serial "
                                     "Julia t1 pass; trace bytes/step = sum of "
                                     "per-candidate trace file sizes / total "

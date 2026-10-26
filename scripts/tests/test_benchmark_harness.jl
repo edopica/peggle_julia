@@ -106,6 +106,7 @@ end
     for required in (
         "scripts/run_campaign_benchmark.jl",
         "scripts/bench_process.jl",
+        "scripts/bench_process_resource.py",
         "scripts/sync_campaign_config.jl",
         "scripts/benchmark/schema.jl",
         "scripts/benchmark/harness.jl",
