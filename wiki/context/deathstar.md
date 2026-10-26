@@ -1,5 +1,9 @@
 # Deathstar Node Interaction Guide
 
+For this repository's Julia simulation campaigns, use the
+[benchmark workstation runbook](deathstar-benchmarks.md). The Flux workflow
+scripts below describe a separate project.
+
 ## Overview
 
 The remote node `deathstar` is a non-SLURM Ubuntu machine configured for remote execution. It is accessible via the SSH alias `deathstar` in `~/.ssh/config`. It has a fast Ryzen Threadripper CPU and 3 GPUs.
