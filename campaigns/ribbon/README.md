@@ -8,8 +8,8 @@ Lua revision; the config is explicitly marked dirty when it differs from HEAD.
 Sync or verify from the Julia repository root:
 
 ```bash
-python3 scripts/sync_campaign_config.py
-python3 scripts/sync_campaign_config.py --check
+julia --project=julia/PeggleSim scripts/sync_campaign_config.jl
+julia --project=julia/PeggleSim scripts/sync_campaign_config.jl --check
 luajit tools/capture_match_rules.lua > fixtures/matches/rules.v1.json
 ```
 

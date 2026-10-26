@@ -12,7 +12,7 @@
 
 ## Worker Scaling
 
-Summary metrics (medians across 3 repetitions):
+Summary metrics (medians across 3 repetition(s) per worker count):
 
 | Workers | Campaign wall (s) | Completed matches/hour | Candidates/second | Speedup | Efficiency |
 | ---: | ---: | ---: | ---: | ---: | ---: |
@@ -86,5 +86,5 @@ Seeded matches (8 matches per campaign, 12 trials, all completed):
 
 ## Artifacts
 
-- Canonical gameplay history: [`results/benchmarks/histories/34f5319d5a5bcfaec6a190178495c1fae33fa94088339156bdb6ced6c9b92503.json`](../../results/benchmarks/histories/34f5319d5a5bcfaec6a190178495c1fae33fa94088339156bdb6ced6c9b92503.json)
-- Full archive bundle: [`results/benchmarks/artifacts/20261024T222238Z_omarchy_legacy_baseline.tar.gz`](../../results/benchmarks/artifacts/20261024T222238Z_omarchy_legacy_baseline.tar.gz)
+- Canonical gameplay history: [`results/benchmarks/histories/34f5319d5a5bcfaec6a190178495c1fae33fa94088339156bdb6ced6c9b92503.json`](<../../histories/34f5319d5a5bcfaec6a190178495c1fae33fa94088339156bdb6ced6c9b92503.json>)
+- Full archive bundle: [`results/benchmarks/artifacts/20261024T222238Z_omarchy_legacy_baseline.tar.gz`](<../../artifacts/20261024T222238Z_omarchy_legacy_baseline.tar.gz>)

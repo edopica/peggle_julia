@@ -11,9 +11,10 @@ import argparse
 from pathlib import Path
 import statistics
 import sys
-from typing import Any, Dict, List, Tuple
+from typing import Any, Dict, List
 
-from benchmark_schema import load_manifest, read_csv_rows
+from benchmark_schema import load_manifest, read_csv_rows, sha256_file
+from validate_benchmark import BenchmarkValidator
 
 
 def resolve_run_dir(arg: str, benchmarks_dir: Path) -> Path:
@@ -26,13 +27,13 @@ def resolve_run_dir(arg: str, benchmarks_dir: Path) -> Path:
     raise FileNotFoundError(f"Could not resolve benchmark run directory from '{arg}'")
 
 
-def get_medians_by_worker(rows: List[Dict[str, str]]) -> Dict[int, Dict[str, float]]:
+def get_medians_by_worker(rows: List[Dict[str, str]]) -> Dict[int, Dict[str, float | None]]:
     groups: Dict[int, List[Dict[str, str]]] = {}
     for r in rows:
         w = int(r["workers"])
         groups.setdefault(w, []).append(r)
 
-    results: Dict[int, Dict[str, float]] = {}
+    results: Dict[int, Dict[str, float | None]] = {}
     w1_wall = None
     if 1 in groups:
         w1_wall = statistics.median(float(r["wall_seconds"]) for r in groups[1])
@@ -58,12 +59,11 @@ def get_medians_by_worker(rows: List[Dict[str, str]]) -> Dict[int, Dict[str, flo
             if r.get("process_peak_rss_bytes") and r["process_peak_rss_bytes"] != ""
         ]
 
-        rss_med = statistics.median(rss_list) / (1024 * 1024) if rss_list else 0.0
-        peak_med = statistics.median(peak_list) / (1024 * 1024) if peak_list else 0.0
+        rss_med = statistics.median(rss_list) / (1024 * 1024) if rss_list else None
+        peak_med = statistics.median(peak_list) / (1024 * 1024) if peak_list else None
 
-        base = w1_wall if w1_wall is not None else wall
-        speedup = base / wall if wall > 0 else 1.0
-        efficiency = (speedup / w) * 100.0
+        speedup = w1_wall / wall if w1_wall is not None and wall > 0 else None
+        efficiency = (speedup / w) * 100.0 if speedup is not None else None
 
         results[w] = {
             "wall_seconds": wall,
@@ -80,7 +80,31 @@ def get_medians_by_worker(rows: List[Dict[str, str]]) -> Dict[int, Dict[str, flo
     return results
 
 
-def compare_runs(dir1: Path, dir2: Path) -> None:
+def format_metric(value: float | None, spec: str = ".2f", suffix: str = "") -> str:
+    return "N/A" if value is None else f"{value:{spec}}{suffix}"
+
+
+def compatibility_checks(m1: dict, m2: dict) -> list[tuple[str, Any, Any]]:
+    """Compare measured work and semantics independently of user-supplied IDs."""
+    checks = [(key, m1.get(key), m2.get(key)) for key in
+              ("workload_id", "protocol_version", "schema_version", "benchmark")]
+    required = {"mode", "games", "base_seed", "candidate_count", "sector_size", "epsilon",
+                "max_steps", "max_turns", "level_sha256", "config_sha256"}
+    w1, w2 = m1.get("workload", {}), m2.get("workload", {})
+    ignored = {"repeats", "worker_counts", "level_file", "config_file", "warmup"}
+    for key in sorted(required | ((set(w1) | set(w2)) - ignored)):
+        checks.append((f"workload.{key}", w1.get(key), w2.get(key)))
+    # The legacy importer represents the original full-warmup protocol.
+    def warmup(m: dict) -> Any:
+        return m.get("workload", {}).get("warmup", "full" if m.get("importer") else None)
+    checks.append(("warmup", warmup(m1), warmup(m2)))
+    for key in ("wall_boundary_description", "memory_boundary_description"):
+        checks.append((key, m1.get("timing_boundaries", {}).get(key),
+                       m2.get("timing_boundaries", {}).get(key)))
+    return checks
+
+
+def compare_runs(dir1: Path, dir2: Path, root_dir: Path | None = None) -> bool:
     m1 = load_manifest(dir1 / "manifest.json")
     m2 = load_manifest(dir2 / "manifest.json")
 
@@ -99,20 +123,24 @@ def compare_runs(dir1: Path, dir2: Path) -> None:
 
     # 1. Compatibility & Provenance Check
     print("1. Compatibility & Intentional Differences:")
-    compat_checks = [
-        ("Workload ID", m1.get("workload_id"), m2.get("workload_id"), True),
-        ("Protocol Version", m1.get("protocol_version"), m2.get("protocol_version"), True),
-        ("Schema Version", m1.get("schema_version"), m2.get("schema_version"), True),
-        ("Benchmark", m1.get("benchmark"), m2.get("benchmark"), True),
-    ]
-
+    compat_checks = compatibility_checks(m1, m2)
     all_compat = True
-    for label, v1, v2, strict in compat_checks:
-        match = (v1 == v2)
-        tag = "[OK]" if match else ("[ERROR]" if strict else "[DIFF]")
-        if strict and not match:
+    for label, v1, v2 in compat_checks:
+        match = v1 is not None and v2 is not None and v1 == v2
+        if not match:
             all_compat = False
-        print(f"  {tag} {label:18}: Run 1 = '{v1}' | Run 2 = '{v2}'")
+        tag = "[OK]" if match else "[ERROR]"
+        print(f"  {tag} {label}: Run 1 = {v1!r} | Run 2 = {v2!r}")
+
+    root_dir = (root_dir or Path.cwd()).resolve()
+    for directory in (dir1, dir2):
+        validator = BenchmarkValidator(directory, root_dir=root_dir)
+        if not validator.validate():
+            all_compat = False
+            print(f"  [ERROR] Invalid run {directory.name}: {'; '.join(validator.errors)}")
+    if m1.get("status") != "completed" or m2.get("status") != "completed":
+        all_compat = False
+        print("  [ERROR] Performance comparisons require two completed runs.")
 
     h1 = m1.get("host", {})
     h2 = m2.get("host", {})
@@ -121,7 +149,7 @@ def compare_runs(dir1: Path, dir2: Path) -> None:
     r1 = m1.get("runtime", {})
     r2 = m2.get("runtime", {})
 
-    print("\n  Intentional / Environmental Differences:")
+    print("\n  Observed Source / Environmental Differences:")
     print(f"    Host ID:         {h1.get('host_id')} vs {h2.get('host_id')}")
     print(f"    CPU Model:       {h1.get('cpu_model')} vs {h2.get('cpu_model')}")
     print(f"    Cores / SMT:     {h1.get('physical_cores')}c/{h1.get('cpu_threads')}t vs {h2.get('physical_cores')}c/{h2.get('cpu_threads')}t")
@@ -139,10 +167,23 @@ def compare_runs(dir1: Path, dir2: Path) -> None:
     print("2. Gameplay Parity:")
     print(f"  Run 1 Gameplay SHA-256: {sha1}")
     print(f"  Run 2 Gameplay SHA-256: {sha2}")
-    if sha1 == sha2:
-        print("  Status: [PARITY VERIFIED] Byte-for-byte identical canonical gameplay history.")
+    verified = False
+    try:
+        path1 = root_dir / art1["path"]
+        path2 = root_dir / art2["path"]
+        verified = (sha1 == sha2 and sha256_file(path1) == sha1
+                    and sha256_file(path2) == sha2 and path1.read_bytes() == path2.read_bytes())
+    except (KeyError, OSError):
+        pass
+    if verified:
+        print("  Status: [PARITY VERIFIED] Retrieved canonical histories are byte-for-byte identical.")
     else:
-        print("  Status: [MISMATCH] Canonical gameplay histories differ! Physics or logic changed.")
+        all_compat = False
+        print("  Status: [ERROR] Gameplay differs or canonical history evidence could not be verified.")
+
+    if not all_compat:
+        print("\n[ERROR] Runs are incompatible or unverified; performance comparison omitted.")
+        return False
 
     # 3. Scaling & Wall Time Table
     common_workers = sorted(set(stats1.keys()) & set(stats2.keys()))
@@ -160,7 +201,7 @@ def compare_runs(dir1: Path, dir2: Path) -> None:
         delta_pct = ((wall2 - wall1) / wall1) * 100.0 if wall1 > 0 else 0.0
         delta_str = f"{delta_pct:+.1f}%"
         print(
-            f"{w:>7} | {wall1:>14.3f} | {wall2:>14.3f} | {delta_str:>10} | {st1['speedup']:>8.2f}× | {st2['speedup']:>8.2f}× | {st1['efficiency']:>8.1f}% | {st2['efficiency']:>8.1f}%"
+            f"{w:>7} | {wall1:>14.3f} | {wall2:>14.3f} | {delta_str:>10} | {format_metric(st1['speedup'], suffix='×'):>9} | {format_metric(st2['speedup'], suffix='×'):>9} | {format_metric(st1['efficiency'], '.1f', '%'):>9} | {format_metric(st2['efficiency'], '.1f', '%'):>9}"
         )
 
     # 4. Throughput & Decision Latencies Table
@@ -191,9 +232,10 @@ def compare_runs(dir1: Path, dir2: Path) -> None:
         st1 = stats1[w]
         st2 = stats2[w]
         print(
-            f"{w:>7} | {st1['rss_mib']:>15.1f} | {st2['rss_mib']:>15.1f} | {st1['peak_rss_mib']:>16.1f} | {st2['peak_rss_mib']:>16.1f}"
+            f"{w:>7} | {format_metric(st1['rss_mib'], '.1f'):>15} | {format_metric(st2['rss_mib'], '.1f'):>15} | {format_metric(st1['peak_rss_mib'], '.1f'):>16} | {format_metric(st2['peak_rss_mib'], '.1f'):>16}"
         )
     print("================================================================================")
+    return True
 
 
 def main() -> int:
@@ -216,8 +258,11 @@ def main() -> int:
         print(f"Error: {e}", file=sys.stderr)
         return 1
 
-    compare_runs(dir1, dir2)
-    return 0
+    try:
+        return 0 if compare_runs(dir1, dir2) else 1
+    except (OSError, ValueError, KeyError) as e:
+        print(f"Error: {e}", file=sys.stderr)
+        return 1
 
 
 if __name__ == "__main__":

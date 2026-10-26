@@ -11,7 +11,7 @@ alternative. The historical three-game solo baseline is preserved at commit
 From the repository root with Julia 1.12.6 and the pinned package environment:
 
 ```bash
-python3 scripts/sync_campaign_config.py --check
+julia --project=julia/PeggleSim scripts/sync_campaign_config.jl --check
 make verify
 julia --project=julia/PeggleSim -t 8 julia/PeggleSim/bin/campaign.jl \
   --mode 1v1 --games 8 --workers 8 --worker-counts 1,2,4,8 --repeats 3 \
@@ -57,9 +57,10 @@ reuse them. `parallel=false` runs the same matches sequentially.
 
 The default config is `campaigns/ribbon/config.v1.json`, exported through the
 existing Lua exporter from `../peggle_evolved/src/config.lua`. To copy updated
-parameters, run `python3 scripts/sync_campaign_config.py`; `--check` detects
-stale inputs. Saved Lua source and provenance hashes make working-tree edits
-explicit instead of attributing them to the committed Lua revision.
+parameters, run `julia --project=julia/PeggleSim scripts/sync_campaign_config.jl`;
+`--check` detects stale inputs. Saved Lua source and provenance hashes make
+working-tree edits explicit instead of attributing them to the committed Lua
+revision.
 
 The current values are gravity **700**, launch speed **600**, wall damping
 **1.0**. All exported values already matched the previous ribbon fixture on

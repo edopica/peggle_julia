@@ -23,7 +23,7 @@
 #     (serial + parallel passes, rows must be bit-identical) and --alloc
 #     (process-wide bytes on the serial pass). Thread counts are capped at
 #     nproc; the report records requested vs actual.
-#   * Peak memory: every sweep process is wrapped by scripts/bench_process.py,
+#   * Peak memory: every sweep process is wrapped by scripts/bench_process.jl,
 #     which uses GNU `time -v` when available and otherwise the kernel ru_maxrss
 #     high-water mark (VmHWM) of the one child.
 #   * Diagnostic: circles_small (default) timed once untraced and once with
@@ -86,7 +86,7 @@ lines_rect_annular_multi3 (from harness/workloads.lua).
 The Lua side always uses the frozen pinned tree reference/peggle_evolved.
 Full-grid stride-1 throughput is reused from session 1 (results/m4/); it is
 never re-measured here. Peak memory per process is captured by
-scripts/bench_process.py (GNU time -v when present, else ru_maxrss).
+scripts/bench_process.jl (GNU time -v when present, else ru_maxrss).
 EOF
 }
 
@@ -146,7 +146,7 @@ pinned_ref="$repo_root/reference/peggle_evolved"
 project="$repo_root/julia/PeggleSim"
 shot_bench="$repo_root/julia/PeggleSim/bin/shot_bench.jl"
 comparator="$repo_root/scripts/compare_m3_sweeps.py"
-process_wrap="$repo_root/scripts/bench_process.py"
+process_wrap="$repo_root/scripts/bench_process.jl"
 report_py="$repo_root/scripts/bench_m4_report.py"
 julia_bin="${JULIA:-julia}"
 host_label="$(hostname -s 2>/dev/null || echo unknown)"
@@ -536,7 +536,7 @@ run_measured() { # time_json label command...
   local time_json="$1"
   local label="$2"
   shift 2
-  python3 "$process_wrap" --out "$time_json" --label "$label" -- "$@"
+  "$julia_bin" --project="$project" "$process_wrap" --out "$time_json" --label "$label" -- "$@"
 }
 
 journal_add() {

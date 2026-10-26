@@ -11,8 +11,12 @@ import csv
 import hashlib
 import json
 import math
+import os
+import platform
 from pathlib import Path
+import re
 import statistics
+import subprocess
 import tarfile
 from typing import Any, Dict, List, Optional, Tuple, Union
 
@@ -27,7 +31,7 @@ HARNESS_DEFAULT_FILES = [
     "julia/PeggleSim/Manifest.toml",
     "julia/PeggleSim/bin/campaign.jl",
     "julia/PeggleSim/src/campaign.jl",
-    "scripts/sync_campaign_config.py",
+    "scripts/sync_campaign_config.jl",
 ]
 
 INDEX_CSV_COLUMNS = [
@@ -98,13 +102,14 @@ MATCHES_CSV_COLUMNS = [
 
 
 # ==============================================================================
-# Canonical JSON (RFC 8785) & Hashing
+# Project Canonical JSON & Hashing
 # ==============================================================================
 
 def canonical_json(val: Any) -> str:
-    """Encode an object into RFC 8785 canonical JSON string.
+    """Encode an object using the project canonical JSON convention.
 
     Compatible with tools/canonical_json.lua and PeggleSim.canonical_json.
+    This is not RFC 8785: negative zero and %.17g formatting are preserved.
     - Dict keys sorted lexicographically (Unicode code point order).
     - Array order preserved.
     - Integral numbers with |v| < 2^53 emitted as integers without decimal point.
@@ -212,7 +217,7 @@ def compute_harness_fingerprint(
 def save_canonical_gameplay_history(
     histories_dir: Path, games: list
 ) -> Tuple[str, Path]:
-    """Serialize games list into RFC 8785 canonical JSON and write to <sha256>.json.
+    """Serialize games using project canonical JSON and write to <sha256>.json.
 
     Returns (gameplay_sha256, path_to_history_file).
     """
@@ -341,6 +346,29 @@ def generate_run_readme(
         worker_groups.setdefault(w, []).append(r)
 
     sorted_workers = sorted(worker_groups.keys())
+    repeat_indices = sorted({int(r["repeat_index"]) for r in trials_rows})
+    repeat_header = "| Workers | " + " | ".join(f"Repeat {r} (s)" for r in repeat_indices) + " |"
+    repeat_separator = "| ---: |" + " ---: |" * len(repeat_indices)
+    repeat_counts = {len(rows) for rows in worker_groups.values()}
+    repetitions = (f"{next(iter(repeat_counts))} repetition(s) per worker count"
+                   if len(repeat_counts) == 1 else "the available repetitions per worker count")
+    completion_summary = ("all completed" if matches_rows and
+                          all(str(m.get("completed", "")).lower() == "true" for m in matches_rows)
+                          else "completion status recorded below")
+
+    def artifact_link(name: str) -> str:
+        item = manifest.get("artifacts", {}).get(name, {})
+        location = item.get("uri") or item.get("path")
+        if not location:
+            return "unavailable"
+        if "://" in location or location.startswith("/"):
+            target = location
+        else:
+            # Manifest artifact paths are repository-relative; README lives at
+            # results/benchmarks/runs/<id>/README.md.
+            import os
+            target = os.path.relpath(location, f"results/benchmarks/runs/{run_id}")
+        return f"[`{location}`](<{target}>)"
 
     # Baseline wall time for worker 1
     w1_wall_median = 0.0
@@ -362,19 +390,18 @@ def generate_run_readme(
         wall_med = statistics.median(walls)
         cands_med = statistics.median(cands_sec)
         matches_hr_med = statistics.median(matches_hr)
-        speedup = (w1_wall_median / wall_med) if wall_med > 0 and w1_wall_median > 0 else 1.0
-        efficiency = (speedup / w) * 100.0
+        speedup = (w1_wall_median / wall_med) if wall_med > 0 and w1_wall_median > 0 else None
+        speedup_text = f"{speedup:.2f}×" if speedup is not None else "N/A"
+        efficiency_text = f"{speedup / w * 100.0:.1f}%" if speedup is not None else "N/A"
 
         scaling_rows.append(
-            f"| {w} | {wall_med:.3f} | {matches_hr_med:.1f} | {cands_med:,.1f} | {speedup:.2f}× | {efficiency:.1f}% |"
+            f"| {w} | {wall_med:.3f} | {matches_hr_med:.1f} | {cands_med:,.1f} | {speedup_text} | {efficiency_text} |"
         )
 
-        # Repeats (sort by repeat_index)
-        sorted_by_repeat = sorted(rows, key=lambda x: int(x["repeat_index"]))
-        r_walls = [f"{float(r['wall_seconds']):.3f}" for r in sorted_by_repeat]
-        while len(r_walls) < 3:
-            r_walls.append("-")
-        repeat_rows.append(f"| {w} | {r_walls[0]} | {r_walls[1]} | {r_walls[2]} |")
+        walls_by_repeat = {int(r["repeat_index"]): float(r["wall_seconds"]) for r in rows}
+        repeat_values = [f"{walls_by_repeat[r]:.3f}" if r in walls_by_repeat else "-"
+                         for r in repeat_indices]
+        repeat_rows.append(f"| {w} | " + " | ".join(repeat_values) + " |")
 
         # Latencies
         mean_dec = statistics.median(float(r["decision_mean_seconds"]) for r in rows)
@@ -454,7 +481,7 @@ def generate_run_readme(
 
 ## Worker Scaling
 
-Summary metrics (medians across 3 repetitions):
+Summary metrics (medians across {repetitions}):
 
 | Workers | Campaign wall (s) | Completed matches/hour | Candidates/second | Speedup | Efficiency |
 | ---: | ---: | ---: | ---: | ---: | ---: |
@@ -462,8 +489,8 @@ Summary metrics (medians across 3 repetitions):
 
 ### Wall Time by Repeat
 
-| Workers | Repeat 1 (s) | Repeat 2 (s) | Repeat 3 (s) |
-| ---: | ---: | ---: | ---: |
+{repeat_header}
+{repeat_separator}
 {chr(10).join(repeat_rows)}
 
 ### Decision Latencies
@@ -484,7 +511,7 @@ Values are summed worker wall durations across all matches:
 
 ## Match Results
 
-Seeded matches ({workload.get('games', 8)} matches per campaign, {len(trials_rows)} trials, all completed):
+Seeded matches ({workload.get('games', 8)} matches per campaign, {len(trials_rows)} trials, {completion_summary}):
 
 | Match | Player 1 score | Player 2 score | Winner | Turns | Termination |
 | --- | ---: | ---: | ---: | ---: | --- |
@@ -502,7 +529,212 @@ Seeded matches ({workload.get('games', 8)} matches per campaign, {len(trials_row
 {importer_section}
 ## Artifacts
 
-- Canonical gameplay history: [`{manifest.get('artifacts', {}).get('canonical_gameplay_history', {}).get('path')}`](../../{manifest.get('artifacts', {}).get('canonical_gameplay_history', {}).get('path')})
-- Full archive bundle: [`{manifest.get('artifacts', {}).get('archive_bundle', {}).get('path')}`](../../{manifest.get('artifacts', {}).get('archive_bundle', {}).get('path')})
+- Canonical gameplay history: {artifact_link('canonical_gameplay_history')}
+- Full archive bundle: {artifact_link('archive_bundle')}
 """
     return readme
+
+
+# ==============================================================================
+# Harness execution helpers
+#
+# These live here (rather than in the Julia runner) only for the remaining
+# Python analysis scripts: import_legacy_benchmark.py and
+# run_campaign_diagnostics.py. The benchmark execution path itself is
+# scripts/run_campaign_benchmark.jl, which has its own Julia implementation.
+# ==============================================================================
+
+def get_git_info(root_dir: Path) -> Tuple[str, bool, str]:
+    """Return (git_revision, git_dirty, git_status_str)."""
+    try:
+        rev = subprocess.check_output(
+            ["git", "-C", str(root_dir), "rev-parse", "HEAD"],
+            stderr=subprocess.DEVNULL,
+            text=True,
+        ).strip()
+    except Exception:
+        rev = "unknown"
+
+    try:
+        status = subprocess.check_output(
+            ["git", "-C", str(root_dir), "status", "--short"],
+            stderr=subprocess.DEVNULL,
+            text=True,
+        )
+        is_dirty = bool(status.strip())
+    except Exception as exc:
+        raise RuntimeError("Cannot inspect source Git status") from exc
+
+    return rev, is_dirty, status
+
+
+def reserve_run(benchmarks_dir: Path, run_id: str) -> Path:
+    """Reserve an ID before writing evidence; existing attempts are immutable."""
+    if not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9_.-]*", run_id):
+        raise ValueError("run_id must be a single safe path component")
+    staging = benchmarks_dir / ".staging" / run_id
+    for path in (staging, benchmarks_dir / "runs" / run_id,
+                 benchmarks_dir / "artifacts" / f"{run_id}.tar.gz"):
+        if path.exists():
+            raise FileExistsError(f"Run ID already exists: {path}; use a new run ID")
+    staging.parent.mkdir(parents=True, exist_ok=True)
+    staging.mkdir()  # exclusive reservation also protects concurrent invocations
+    return staging
+
+
+def create_archive_exclusive(path: Path, items: List[Tuple[Path, str]]) -> Tuple[str, int]:
+    """Publish a complete archive without replacing an existing destination."""
+    path.parent.mkdir(parents=True, exist_ok=True)
+    temporary = path.with_name(path.name + ".partial")
+    with temporary.open("xb"):
+        pass
+    digest, size = create_artifact_archive(temporary, items)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    os.link(temporary, path)  # fails atomically if the final archive already exists
+    temporary.unlink()
+    return digest, size
+
+
+def harness_files(root_dir: Path) -> List[str]:
+    """Source files that define the current (Julia) execution harness."""
+    paths = ["campaigns/ribbon/config.source.lua", "campaigns/ribbon/game.source.lua",
+             "julia/PeggleSim/Manifest.toml", "julia/PeggleSim/Project.toml",
+             "scripts/sync_campaign_config.jl", "scripts/run_campaign_benchmark.jl",
+             "scripts/bench_process.jl", "scripts/verify_reference.sh",
+             "scripts/benchmark_schema.py",
+             "tools/capture_match_rules.lua", "tools/canonical_json.lua",
+             "fixtures/matches/rules.v1.json"]
+    for directory, pattern in (("julia/PeggleSim/src", "*.jl"),
+                               ("julia/PeggleSim/bin", "*.jl"),
+                               ("scripts/benchmark", "*.jl")):
+        paths.extend(str(p.relative_to(root_dir)) for p in (root_dir / directory).rglob(pattern))
+    if (root_dir / "native").exists():
+        paths.extend(str(p.relative_to(root_dir)) for p in (root_dir / "native").rglob("*")
+                     if p.is_file() and p.suffix in {".c", ".h", ".toml"})
+    return sorted(set(paths))
+
+
+def capture_source_snapshot(root_dir: Path, staging_dir: Path,
+                            extra_paths: List[Path] | None = None) -> Tuple[Path, Dict[str, str]]:
+    """Retain tracked binary changes and every relevant untracked source file."""
+    patch = subprocess.check_output(["git", "-C", str(root_dir), "diff", "--binary", "HEAD"])
+    patch_path = staging_dir / "git_diff.patch"
+    patch_path.write_bytes(patch)
+    paths = set(harness_files(root_dir))
+    paths.update(str(p.resolve().relative_to(root_dir)) for p in extra_paths or [])
+    untracked = subprocess.check_output(["git", "-C", str(root_dir), "ls-files", "--others",
+                                         "--exclude-standard", "-z"])
+    for name in untracked.decode().split("\0"):
+        if name and name.split("/", 1)[0] in {"julia", "scripts", "tools", "campaigns", "fixtures", "native"}:
+            paths.add(name)
+    hashes = {name: sha256_file(root_dir / name) for name in sorted(paths)
+              if (root_dir / name).is_file()}
+    status_path = staging_dir / "git_status.txt"
+    status_path.write_bytes(subprocess.check_output(["git", "-C", str(root_dir), "status", "--porcelain"]))
+    inventory = staging_dir / "source_files.json"
+    save_manifest(inventory, {"files": hashes, "git_diff_sha256": sha256_file(patch_path),
+                              "restore": "Checkout source.git_revision, apply git_diff.patch with git apply --binary, then overlay source/."})
+    snapshot = staging_dir / "source_snapshot.tar.gz"
+    create_artifact_archive(snapshot, [(root_dir / name, f"source/{name}") for name in hashes] +
+                            [(patch_path, patch_path.name), (status_path, status_path.name), (inventory, inventory.name)])
+    return snapshot, hashes
+
+
+def collect_host_metadata() -> Dict[str, Any]:
+    """Collect comprehensive host environment metadata."""
+    uname = os.uname()
+    host_id = uname.nodename
+    machine = platform.machine()
+    kernel = uname.sysname
+
+    os_release = ""
+    os_release_path = Path("/etc/os-release")
+    if os_release_path.exists():
+        os_release = os_release_path.read_text(encoding="utf-8")
+
+    cpu_model = "unknown"
+    physical_cores = os.cpu_count() or 1
+    if Path("/proc/cpuinfo").exists():
+        cpuinfo_text = Path("/proc/cpuinfo").read_text(encoding="utf-8")
+        core_ids = set()
+        for line in cpuinfo_text.splitlines():
+            if line.startswith("model name") and cpu_model == "unknown":
+                parts = line.split(":", 1)
+                if len(parts) == 2:
+                    cpu_model = parts[1].strip()
+            if line.startswith("core id"):
+                parts = line.split(":", 1)
+                if len(parts) == 2:
+                    core_ids.add(parts[1].strip())
+        if core_ids:
+            physical_cores = len(core_ids)
+
+    try:
+        total_memory_bytes = os.sysconf("SC_PAGE_SIZE") * os.sysconf("SC_PHYS_PAGES")
+    except Exception:
+        total_memory_bytes = 0
+
+    governors = []
+    try:
+        for gov_path in Path("/sys/devices/system/cpu").glob("cpu*/cpufreq/scaling_governor"):
+            val = gov_path.read_text(encoding="utf-8").strip()
+            if val and val not in governors:
+                governors.append(val)
+    except Exception:
+        pass
+    if not governors:
+        governors = ["unknown"]
+
+    try:
+        allowed_cpus = sorted(list(os.sched_getaffinity(0)))
+    except Exception:
+        allowed_cpus = list(range(os.cpu_count() or 1))
+
+    cgroup_cpuset = ""
+    for cpuset_path in [Path("/sys/fs/cgroup/cpuset.cpus"), Path("/sys/fs/cgroup/cpuset/cpuset.cpus")]:
+        if cpuset_path.exists():
+            try:
+                cgroup_cpuset = cpuset_path.read_text(encoding="utf-8").strip()
+                break
+            except Exception:
+                pass
+    if not cgroup_cpuset and allowed_cpus:
+        cgroup_cpuset = f"{min(allowed_cpus)}-{max(allowed_cpus)}"
+
+    lscpu_str = ""
+    try:
+        lscpu_str = subprocess.check_output(["lscpu"], stderr=subprocess.DEVNULL, text=True)
+    except Exception:
+        pass
+
+    return {
+        "host_id": host_id,
+        "machine": machine,
+        "kernel": kernel,
+        "os_release": os_release,
+        "cpu_model": cpu_model,
+        "cpu_family": platform.processor() or "znver2",
+        "physical_cores": physical_cores,
+        "cpu_threads": os.cpu_count() or physical_cores,
+        "total_memory_bytes": total_memory_bytes,
+        "cpu_governors": governors,
+        "allowed_cpus": allowed_cpus,
+        "cgroup_cpuset": cgroup_cpuset,
+        "lscpu": lscpu_str,
+    }
+
+
+def extract_rss_bytes(process_memory: List[str]) -> str:
+    """Extract VmRSS in bytes from /proc/self/status lines."""
+    if not process_memory:
+        return ""
+    for line in process_memory:
+        if line.startswith("VmRSS:"):
+            parts = line.split()
+            if len(parts) >= 2:
+                try:
+                    kb = int(parts[1])
+                    return str(kb * 1024)
+                except ValueError:
+                    pass
+    return ""

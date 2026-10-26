@@ -106,6 +106,12 @@ using PeggleSim
         other = PeggleSim.CampaignOptions(games=2,workers=workers,max_turns=2)
         run = PeggleSim.run_campaign(level,config,other;parallel=true)
         @test run.games == baseline.games
+        uninstrumented = PeggleSim.run_campaign(level,config,other;
+            parallel=true, phase_instrumentation=false)
+        @test uninstrumented.games == baseline.games
+        @test all(t -> t.phases === nothing, uninstrumented.timings)
+        @test [t.candidates for t in uninstrumented.timings] == [t.candidates for t in run.timings]
+        @test all(t -> 0 <= t.setup_seconds < 60, uninstrumented.timings)
     end
     @test all(g -> [d["player"] for d in g["decisions"]] == [1,2],baseline.games)
     @test length(unique(vcat([g["bot_seeds"] for g in baseline.games]...))) == 4

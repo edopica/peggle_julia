@@ -1,4 +1,4 @@
-.PHONY: help verify export fixtures fixture-list check check-all list self-check quick baseline test julia-test julia-parity julia-bench capture-m2 capture-m2-check math-census math-census-check core-math-build core-math-verify wpd-math wpd-state-capture wpd-state-compare wpd-state wpd-trace wpd-compare-hosts wpd-perf wpd-parity m3-trace m3-mustache m3-sweep m3-bench m4-parity m4-replay m4-bench
+.PHONY: help verify export fixtures fixture-list check check-all list self-check quick baseline test julia-test julia-scripts-test julia-scripts-integration julia-parity julia-bench capture-m2 capture-m2-check math-census math-census-check core-math-build core-math-verify wpd-math wpd-state-capture wpd-state-compare wpd-state wpd-trace wpd-compare-hosts wpd-perf wpd-parity m3-trace m3-mustache m3-sweep m3-bench m4-parity m4-replay m4-bench
 
 JULIA = julia --project=julia/PeggleSim
 
@@ -16,6 +16,8 @@ help:
 	@echo "  baseline     full-grid M0 baseline (long; writes results/raw/)"
 	@echo "  test         run the reference Lua test suite (pinned tree)"
 	@echo "  julia-test   run the Julia package test suite"
+	@echo "  julia-scripts-test run the Julia benchmark-execution harness tests"
+	@echo "  julia-scripts-integration run one real end-to-end benchmark smoke (~30 s)"
 	@echo "  julia-parity recompute the cross-machine parity manifest"
 	@echo "  julia-bench  checkpoint/reset benchmark (writes results/)"
 	@echo "  capture-m2   capture RNG/peg-color/checkpoint fixtures (needs LÖVE)"
@@ -68,6 +70,12 @@ test:
 
 julia-test:
 	$(JULIA) -e 'using Pkg; Pkg.test()'
+
+julia-scripts-test:
+	$(JULIA) scripts/tests/runtests.jl
+
+julia-scripts-integration:
+	$(JULIA) scripts/tests/integration_runner.jl
 
 julia-parity:
 	$(JULIA) julia/PeggleSim/bin/parity_emit.jl

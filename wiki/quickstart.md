@@ -38,9 +38,11 @@ claimed.
 
 - LuaJIT and LÖVE 11.x for the baseline harness (LÖVE needs a display, or
   `xvfb-run` on headless servers; `scripts/love.sh` handles both).
-- Python 3 for SVG previews and schema validation.
-- Julia 1.12.6 for the `julia/PeggleSim` package (M2/M3); the pinned
-  environment is reproduced with `julia --project=julia/PeggleSim -e 'using Pkg; Pkg.instantiate()'`.
+- Python 3 for the remaining analysis/report tools (SVG previews, schema
+  validation, comparisons). Benchmark execution itself is Julia.
+- Julia 1.12.6 for the `julia/PeggleSim` package (M2/M3/M4) and for the
+  benchmark-execution harness; the pinned environment is reproduced with
+  `julia --project=julia/PeggleSim -e 'using Pkg; Pkg.instantiate()'`.
   The Lua checks do not need Julia.
 - `make verify`, `make check`, and `make test` need neither a display nor
   LÖVE (fixture capture does).
@@ -65,6 +67,7 @@ M2 Julia targets:
 
 ```bash
 make julia-test          # run the Julia package test suite (pinned env)
+make julia-scripts-test  # run the Julia benchmark-execution harness tests
 make julia-parity        # recompute results/parity/local.json
 make julia-bench         # checkpoint/reset benchmark (writing results/)
 make capture-m2          # capture RNG/peg-color/checkpoint fixtures (needs LÖVE)
@@ -102,6 +105,21 @@ and acceptance records live under `tmp/core-math/` (see
 `wpef-acceptance.md`). They do not change the historical fixtures or the
 default `system_libm` backend.
 
+Benchmark execution harness (Julia):
+
+```bash
+julia --project=julia/PeggleSim scripts/run_campaign_benchmark.jl --help
+julia --project=julia/PeggleSim scripts/run_campaign_benchmark.jl --allow-dirty \
+  --worker-counts 1 --games 1 --repeats 1 --warmup none \
+  --benchmarks-dir tmp/benchmark-smoke
+julia --project=julia/PeggleSim scripts/sync_campaign_config.jl --check
+julia --project=julia/PeggleSim scripts/bench_process.jl --out tmp/m.json --label smoke -- julia -e 'println("ok")'
+make julia-scripts-test
+```
+
+See [benchmark result storage](context/benchmark-results.md) for the run
+contract, validation rules, and archival limitations.
+
 Focused commands:
 
 ```bash
@@ -129,6 +147,10 @@ This warms the simulation/output paths, measures the same eight matches at
 1/2/4/8 workers, verifies identical histories, and saves `results/campaign/1v1/`.
 See [workflow and contracts](context/bot-campaign.md) and
 [1v1 scaling baseline](benchmarks/1v1-campaign.md).
+See [benchmark result storage and validation](context/benchmark-results.md) for
+versioned run records, comparison rules, and archival limitations.
+See [campaign diagnostics](context/campaign-diagnostics.md) for warmed CPU and
+allocation profiles, GC totals, isolated memory measurements and paired phase-timer comparisons.
 
 ## Repository layout
 
@@ -144,7 +166,7 @@ See [workflow and contracts](context/bot-campaign.md) and
 | `schemas/` | Versioned interchange schemas and examples |
 | `interchange/` | Generated level/config artifacts, SVG previews, manifest |
 | `fixtures/` | Fixture catalog, expected records, gameplay traces, `rng/`, `checkpoints/`, `math_census/`, `mustache/` |
-| `scripts/` | Verification, export, fixture capture, previews, baseline runner, M2 captures, parity compare, M3 capture/compare/bench |
+| `scripts/` | Julia benchmark-execution harness (`run_campaign_benchmark.jl`, `bench_process.jl`, `sync_campaign_config.jl`, `benchmark/`), plus verification, export, fixture capture, previews, baseline runner, M2 captures, parity compare, M3/M4 capture/compare/bench |
 | `results/` | Baseline summary JSON (committed); `results/parity/`, M2 benchmark/census summaries, M3 benchmark/sweep reports; `results/raw/` per-candidate JSONL (gitignored) |
 | `tmp/` | Local scratch (gitignored) |
 
@@ -168,6 +190,7 @@ mirrors `../peggle_evolved/wiki/` so material can move between the projects.
 | `wiki/context/julia.md` | M2/M3 Julia package: pinned env, DetMath backends, RNG, state, checkpoint contract, shot engine, traces | current |
 | `wiki/context/m3-mustache.md` | M3 mustache corpus: 5 trace fixtures, capture and comparison runbook, full-grid agreement | current |
 | `wiki/context/m4-validation.md` | M4 correctness-breadth validation: corpus, method, results, divider fix, scenario decision | current |
+| `wiki/context/julia-benchmark-harness.md` | Julia benchmark-execution harness: scope, files, commands, parity evidence, remaining Python | current |
 | `wiki/context/ribbon-waves.md` | Screenshot-reconstructed `ribbon_waves` level: extraction, Lua level, 3-shot trace corpus, mask checker, Julia tests | current |
 | `wiki/benchmarks/` | Measured performance and parity results | current |
 | `wiki/benchmarks/baseline-metrics.md` | M0 Lua candidate-sweep baseline and continuing-metric protocol | current |
@@ -215,6 +238,7 @@ Conventions:
 | What do the interchange artifacts contain? | `wiki/context/interchange.md` |
 | Which reference fixtures exist and why? | `wiki/context/fixtures.md` |
 | How is the Julia side built? | `wiki/context/julia.md` |
+| How is a benchmark run executed and validated now? | `wiki/context/julia-benchmark-harness.md`, `wiki/context/benchmark-results.md` |
 | Which M3 fixtures exist, and how are they compared? | `wiki/context/m3-mustache.md` |
 | What M4 validated, and how it was closed? | `wiki/context/m4-validation.md` |
 | How do I collect the macOS/Windows qualification evidence? | `wiki/context/cross-platform-qualification.md` |

@@ -19,7 +19,7 @@ from the engine summaries:
   Julia latency ``max_ms`` is ``null`` (reported honestly, not estimated).
 
 Peak memory comes from the per-run measurement JSON written by
-``scripts/bench_process.py`` (GNU ``time -v`` when present, otherwise the
+``scripts/bench_process.jl`` (GNU ``time -v`` when present, otherwise the
 kernel's ru_maxrss high-water mark).  Diagnostic trace bytes/step come from
 the sum of the per-candidate trace file sizes divided by the traced rows'
 total steps.
@@ -852,7 +852,7 @@ def build_workload(wid, level, balls, group, records, out_dir, stride,
         "speedup_same_core": speedup,
         "allocations": allocations,
         "peak_memory": {
-            "method": ("per-process RSS from scripts/bench_process.py: GNU "
+            "method": ("per-process RSS from scripts/bench_process.jl: GNU "
                        "time -v when available, otherwise the kernel "
                        "ru_maxrss high-water mark; each run records "
                        "peak_memory_method"),
@@ -1083,7 +1083,7 @@ def main(argv=None):
          "--alloc adds an extra untimed serial pass so per-candidate bytes "
          "exclude JIT/library warmup."),
         ("Peak memory is whole-process RSS (runtime and JIT included) from "
-         "scripts/bench_process.py; for threads > 1 it is not a per-worker "
+         "scripts/bench_process.jl; for threads > 1 it is not a per-worker "
          "figure."),
         ("Julia per-candidate latency is derived by summing the reset/sim/"
          "extract phase stats; the summary carries mean/p50/p99 per phase but "
@@ -1143,9 +1143,9 @@ def main(argv=None):
             "allocation": ("Base.gc_bytes() delta around reset+launch+run+"
                            "extract per candidate on the serial path of the "
                            "t1 run"),
-            "peak_memory": ("scripts/bench_process.py per sweep process: GNU "
+            "peak_memory": ("scripts/bench_process.jl per sweep process: GNU "
                             "time -v Maximum resident set size when available, "
-                            "otherwise resource.getrusage(RUSAGE_CHILDREN)"
+                            "otherwise getrusage(RUSAGE_CHILDREN)"
                             ".ru_maxrss (kernel VmHWM of the one child)"),
             "diagnostic_overhead": ("one untraced and one traced single serial "
                                     "Julia t1 pass; trace bytes/step = sum of "

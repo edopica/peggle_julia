@@ -12,8 +12,10 @@ Usage:
 from __future__ import annotations
 
 import argparse
+import os
 from pathlib import Path
 import sys
+import tempfile
 from typing import Any, Dict, List
 
 from benchmark_schema import (
@@ -34,16 +36,22 @@ def generate_index(
 
     manifest_files = sorted(runs_dir.glob("*/manifest.json"))
     index_rows: List[Dict[str, Any]] = []
+    seen_ids: set[str] = set()
+    readmes: list[tuple[Path, str]] = []
 
     for manifest_path in manifest_files:
         run_dir = manifest_path.parent
         try:
             m = load_manifest(manifest_path)
         except Exception as e:
-            print(f"Warning: could not read {manifest_path}: {e}", file=sys.stderr)
-            continue
+            raise ValueError(f"Could not read {manifest_path}: {e}") from e
 
         run_id = m.get("run_id", run_dir.name)
+        if run_id in seen_ids:
+            raise ValueError(f"Duplicate run_id '{run_id}' in {manifest_path}")
+        seen_ids.add(run_id)
+        if run_id != run_dir.name:
+            raise ValueError(f"Run ID '{run_id}' does not match directory {run_dir.name}")
         benchmark = m.get("benchmark", "")
         timestamp = m.get("timestamp_utc", "")
         host = m.get("host", {})
@@ -78,12 +86,23 @@ def generate_index(
             matches_rows = read_csv_rows(matches_path) if matches_path.exists() else []
             readme_text = generate_run_readme(m, trials_rows, matches_rows)
             readme_path = run_dir / "README.md"
-            readme_path.write_text(readme_text, encoding="utf-8")
+            readmes.append((readme_path, readme_text))
 
     # Sort index by timestamp_utc ascending, then run_id
     index_rows.sort(key=lambda r: (r["timestamp_utc"], r["run_id"]))
 
-    write_csv_rows(out_path, INDEX_CSV_COLUMNS, index_rows)
+    # Preserve the previous index if scanning or writing the replacement fails.
+    out_path.parent.mkdir(parents=True, exist_ok=True)
+    fd, temporary = tempfile.mkstemp(prefix=f".{out_path.name}.", dir=out_path.parent)
+    os.close(fd)
+    temporary_path = Path(temporary)
+    try:
+        write_csv_rows(temporary_path, INDEX_CSV_COLUMNS, index_rows)
+        temporary_path.replace(out_path)
+    finally:
+        temporary_path.unlink(missing_ok=True)
+    for readme_path, readme_text in readmes:
+        readme_path.write_text(readme_text, encoding="utf-8")
     return index_rows
 
 

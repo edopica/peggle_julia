@@ -169,26 +169,28 @@ bot_seed(base::Int, game::Int) = Int(wang_hash64(UInt64(base) ⊻
     (UInt64(game) * UInt64(0x9e3779b97f4a7c15))) & UInt64(0x001fffffffffffff))
 
 function evaluate_candidates!(eng::ShotEngine, ckpt::Checkpoint,
-                              scores::Vector{Float64}, max_steps::Int)
+                              scores::Vector{Float64}, max_steps::Int,
+                              ::Val{Instrument} = Val(true)) where {Instrument}
     reset_ns = UInt64(0)
     simulation_ns = UInt64(0)
     incomplete = Int[]
     for i in 0:(length(scores)-1)
-        t = time_ns()
+        t = Instrument ? time_ns() : UInt64(0)
         reset_shot_engine!(eng, ckpt)
-        reset_ns += time_ns() - t
-        t = time_ns()
+        Instrument && (reset_ns += time_ns() - t)
+        t = Instrument ? time_ns() : UInt64(0)
         launch!(eng, i)
         run_shot!(eng; max_steps)
         scores[i+1] = get_turn_score(eng)
-        simulation_ns += time_ns() - t
+        Instrument && (simulation_ns += time_ns() - t)
         eng.shot_done || push!(incomplete, i)
     end
     return (; reset_ns, simulation_ns, incomplete)
 end
 
 function run_bot_game(initial::Checkpoint, level::LevelDefinition, config::SimConfig,
-                       o::CampaignOptions, game::Int)
+                       o::CampaignOptions, game::Int,
+                       instrumentation::Val{Instrument} = Val(true)) where {Instrument}
     setup_start = time_ns()
     seeds = o.mode === :solo ? [bot_seed(o.base_seed, game)] :
         [bot_seed(o.base_seed, 2 * (game - 1) + player) for player in 1:2]
@@ -209,17 +211,17 @@ function run_bot_game(initial::Checkpoint, level::LevelDefinition, config::SimCo
         start = time_ns()
         player = live.sim.match.current_player_index
         rng = rngs[player]
-        evaluated = evaluate_candidates!(candidate, ckpt, scores, o.max_steps)
+        evaluated = evaluate_candidates!(candidate, ckpt, scores, o.max_steps, instrumentation)
         candidates += length(scores)
-        phases["candidate_reset"] += evaluated.reset_ns / 1e9
-        phases["simulation"] += evaluated.simulation_ns / 1e9
+        Instrument && (phases["candidate_reset"] += evaluated.reset_ns / 1e9)
+        Instrument && (phases["simulation"] += evaluated.simulation_ns / 1e9)
         if !isempty(evaluated.incomplete)
             push!(decisions, Dict("turn" => turn, "player" => player, "incomplete_candidates" => evaluated.incomplete))
             reason = "candidate_step_limit"
             push!(latencies, (time_ns() - start) / 1e9)
             break
         end
-        t = time_ns()
+        t = Instrument ? time_ns() : UInt64(0)
         decision = select_sector_shot(scores, o.sector_size, rng)
         index = decision["intended_index"]::Int
         offset = execution_offset!(rng, index, o.epsilon, config.aim_discretization_steps)
@@ -227,8 +229,8 @@ function run_bot_game(initial::Checkpoint, level::LevelDefinition, config::SimCo
         decision["executed_index"] = index + offset
         decision["turn"] = turn
         decision["player"] = player
-        phases["selection"] += (time_ns() - t) / 1e9
-        t = time_ns()
+        Instrument && (phases["selection"] += (time_ns() - t) / 1e9)
+        t = Instrument ? time_ns() : UInt64(0)
         # Live is still the original decision state: evaluations touched only candidate.
         next_ball_id_before = live.sim.engine.next_ball_id
         live.sim.match.players[player].balls -= 1
@@ -256,11 +258,11 @@ function run_bot_game(initial::Checkpoint, level::LevelDefinition, config::SimCo
         decision["gameplay_rng_state"] = get_state(live.sim.rng)
         decision["bot_rng_state"] = get_state(rng)
         push!(decisions, decision)
-        phases["actual_shot"] += (time_ns() - t) / 1e9
+        Instrument && (phases["actual_shot"] += (time_ns() - t) / 1e9)
         if reason == "continue" && turn < o.max_turns
-            t = time_ns()
+            t = Instrument ? time_ns() : UInt64(0)
             ckpt = prepare_match_turn!(live, prov)
-            phases["checkpoint"] += (time_ns() - t) / 1e9
+            Instrument && (phases["checkpoint"] += (time_ns() - t) / 1e9)
         end
         push!(latencies, (time_ns() - start) / 1e9)
         reason == "continue" || break
@@ -279,11 +281,11 @@ function run_bot_game(initial::Checkpoint, level::LevelDefinition, config::SimCo
         "turns" => turns, "completed" => live.sim.match.game_over,
         "termination_reason" => reason, "remaining_balls" => live.sim.match.players[1].balls,
         "remaining_pegs" => length(live.sim.engine.pegs))
-    return (; result, timings = (; phases, setup_seconds, decision_seconds = latencies, candidates))
+    return (; result, timings = (; phases = Instrument ? phases : nothing, setup_seconds, decision_seconds = latencies, candidates))
 end
 
 function run_campaign(level::LevelDefinition, config::SimConfig, o::CampaignOptions;
-                      parallel::Bool = true)
+                      parallel::Bool = true, phase_instrumentation::Bool = true)
     validate_campaign(o)
     workers = min(o.workers, o.games)
     parallel && Threads.nthreads() < workers && throw(ArgumentError("start Julia with at least $workers threads"))
@@ -297,12 +299,12 @@ function run_campaign(level::LevelDefinition, config::SimConfig, o::CampaignOpti
     if parallel
         @sync for worker in 1:workers
             Threads.@spawn for game in worker:workers:o.games
-                results[game] = run_bot_game(initial, level, config, o, game)
+                results[game] = run_bot_game(initial, level, config, o, game, Val(phase_instrumentation))
             end
         end
     else
         for game in 1:o.games
-            results[game] = run_bot_game(initial, level, config, o, game)
+            results[game] = run_bot_game(initial, level, config, o, game, Val(phase_instrumentation))
         end
     end
     return (; games = [r.result for r in results], timings = [r.timings for r in results])

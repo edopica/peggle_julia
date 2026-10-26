@@ -1,0 +1,211 @@
+{
+  "schema_version": "optimization-review/1",
+  "date": "2026-10-25",
+  "kind": "reanalysis_of_existing_artifacts_no_new_benchmark",
+  "source_run_id": "20261025T121437Z_omarchy_e49038",
+  "source_git_revision": "b7b987a6d93d2b8c5e7bfcc769f37297816bedf5",
+  "source_git_dirty": true,
+  "gameplay_sha256": "34f5319d5a5bcfaec6a190178495c1fae33fa94088339156bdb6ced6c9b92503",
+  "input_files_sha256": {
+    "results/diagnostics/runs/20261025T121437Z_omarchy_e49038/manifest.json": "2769817a4da3e0fa27c10d6303184cf98caed0649f8607cdccb3c666ddda4570",
+    "results/diagnostics/runs/20261025T121437Z_omarchy_e49038/diagnostics.json": "7edd2cd13bb545c76332a82d0f237bc1c0380540a31ab4147cc02c9fff16dc4a",
+    "results/diagnostics/artifacts/20261025T121437Z_omarchy_e49038.tar.gz": "f2725603218901d664d81c94fd1614eeb00a6cc722f49a4edda1c4de3cc0cad1",
+    "notebooks/campaign_diagnostics.ipynb": "822993d5900d3981b88fc29bbc35d32be09c0923eda95ffc552c8cee4629eebb"
+  },
+  "engine_sources_match_measured_snapshot": true,
+  "engine_sources_sha256": {
+    "julia/PeggleSim/src/PeggleSim.jl": "1549b6979c15cf455d51091949b3ba7ad65980e06c6e8499e318b89114c95455",
+    "julia/PeggleSim/src/ball_state.jl": "8603dbd1650d4fc45db7364caf6e876c75d5d0d7b35b19f74f7972ae004ad605",
+    "julia/PeggleSim/src/bucket.jl": "dc56442152ea786f541c080490b379fe4c2916bff2739e808b8ef28061c5eb2e",
+    "julia/PeggleSim/src/campaign.jl": "9a453bc8a040d6c0e9a1e0a85f597fedcfdba92129aeb520e1193fc4e0e429eb",
+    "julia/PeggleSim/src/canonical.jl": "8c04f8ca91e8523e9cdcd61e1253a0466950e84c36abfd4d0cd5c3fdddbf6527",
+    "julia/PeggleSim/src/checkpoint.jl": "740a5977a4b6fcf4d0c1bd8df6e21699b807a654eb58744c6a9da728b158be5d",
+    "julia/PeggleSim/src/colorstate.jl": "0c043c19b3fd14191fb209867e5c28600f25332bfa3ab158ee564d03cdec3e5c",
+    "julia/PeggleSim/src/config.jl": "9f287ecdb14c223009a7476e1d4efa8e1cb8c845a2ece9801f028af26e0aa98e",
+    "julia/PeggleSim/src/contact_payloads.jl": "6522c2c9fd7c222c638e57e6810b91acf903ac6e0982d50bdbd107eb53b33f34",
+    "julia/PeggleSim/src/detmath.jl": "fa43d49ca6f78722eb1571e2d0ecb3f77f41331d409234b15d70045de4b74185",
+    "julia/PeggleSim/src/engine.jl": "62e7ddd9aa551d54ad5875a6d11f8f99067e2456b66e0878b0a44a9cca761b4b",
+    "julia/PeggleSim/src/event_fields.jl": "60d0ad622a2f457c08b9a0c7935148956ea128839f14f68b0c80820cd4400ed1",
+    "julia/PeggleSim/src/events.jl": "045a93ab320bc4a0a013ea9777275ea695354f270d119d06fb36112da29ec2f9",
+    "julia/PeggleSim/src/fever_buckets.jl": "72ec7fa0c1466d831d6c77d80c8c7824f8c696d3a1bfec953bcca4acee3d7431",
+    "julia/PeggleSim/src/impact_geometry.jl": "6a859247ac65880c401a0442ab91e7be0b83a6bf59d59fe677abd38f9ec3c52a",
+    "julia/PeggleSim/src/jsonio.jl": "0e4d0c80997de7de65622dad6efd491fe016240dec1c92c0cf7d284617960edb",
+    "julia/PeggleSim/src/level.jl": "7b56bdf87ad9c9e70323cdf5553762ae9fcfd01240e22881b91353f6922e9a9b",
+    "julia/PeggleSim/src/parity.jl": "3341728bbb8620cfb951c9a4fbe56ff83a84e074a3d593f917b43a7d07a63c96",
+    "julia/PeggleSim/src/physics.jl": "19163e50462215bbc9ecd1ec351f5b6c02f7cb17246d9f355d3b336d15d79431",
+    "julia/PeggleSim/src/powers.jl": "23c002f47559506cdfb2ce6f34a5d8538062e58b4b71ec3fd13aed0d159e75ff",
+    "julia/PeggleSim/src/rng.jl": "3d71e0f8d5a5340b89e96b57b302db8e2c9d4d469b9b8f783a3b37024cbdacc5",
+    "julia/PeggleSim/src/scratch.jl": "8223b04f09d72fc33d61e298e4e81f3f05f6088945593e6c3703474d586ed36c",
+    "julia/PeggleSim/src/slide_inversion.jl": "c458a89ab7d718fc57dc2391dc5be7eb5dad68e78766ce40aab79432c2eccfa3",
+    "julia/PeggleSim/src/snapshot.jl": "83644f0e3da51d6a7a9a2fa73cd37809d6b9b0f547c1d73765b586df0baf97ec",
+    "julia/PeggleSim/src/state.jl": "7951b92165e3426d5e5db01f86b8acca81bed12cf50daaca4531b9b546e400ee",
+    "julia/PeggleSim/src/style_shots.jl": "1297f6ef22185fec6cc0885ef77c6f27a5299f6dfea0d93144b044ed62631267",
+    "julia/PeggleSim/src/trace.jl": "ef67c1b55806a022a9cbddb490caf9645f393acc141616fd8d1dfa151c2cf76a"
+  },
+  "host": {
+    "cpu_model": "AMD Ryzen 5 4600H with Radeon Graphics",
+    "physical_cores": 6,
+    "logical_cpus": 12,
+    "numa_nodes_from_lscpu": 1
+  },
+  "cpu": {
+    "archive_member": "cpu-w1/profile-r1/cpu-stacks.jsonl",
+    "member_sha256": "e1068b3fa8d3cf99fa25376fb45b19e4d91619480511f10411f67edef151812e",
+    "total_primary_thread_samples": 13813,
+    "exclusive_categories": {
+      "broad_phase": 2756,
+      "campaign_and_reset": 1,
+      "engine_updates": 2446,
+      "gc": 23,
+      "precise_collision_and_physics": 5982,
+      "runtime_or_other": 19,
+      "scoring_and_events": 2586
+    },
+    "inclusive_project_function_samples": {
+      "check_annulars": 5167,
+      "broad_phase_pass": 2754,
+      "broad_phase_common": 2080,
+      "style_shots_process!": 2234,
+      "depenetrate": 1620,
+      "restore!": 103,
+      "save_previous_state": 522,
+      "det_sqrt": 1288,
+      "det_cos": 1008,
+      "det_sin": 700,
+      "det_atan2": 634
+    },
+    "selected_stack_sites": {
+      "style_scored_by_source_clear_line": {
+        "samples": 2023,
+        "percent_of_primary_thread_samples": 14.645623687830305
+      },
+      "broad_phase_sqrt_deepest_project_line": {
+        "samples": 1048,
+        "percent_of_primary_thread_samples": 7.587055672192862
+      }
+    },
+    "method": "Count each function at most once per stack, using notebook filter: frame contains PeggleSim; name is text before @. Site predicates refer to source snapshot paths and lines. Inclusive counts overlap; categories and source lines are sampling attribution, not CPU cycle counts."
+  },
+  "timing_uninstrumented": [
+    {
+      "workers": 1,
+      "trials": 3,
+      "wall_seconds_median": 149.513754799,
+      "wall_seconds_min": 146.919580945,
+      "wall_seconds_max": 149.873177753,
+      "allocated_mib_median": 2017.4167556762695,
+      "gc_seconds_median": 0.237463705,
+      "gc_wall_fraction_median": 0.001592261572591705
+    },
+    {
+      "workers": 2,
+      "trials": 3,
+      "wall_seconds_median": 80.787659375,
+      "wall_seconds_min": 80.663307705,
+      "wall_seconds_max": 81.47144402,
+      "allocated_mib_median": 2017.4446105957031,
+      "gc_seconds_median": 0.2305335,
+      "gc_wall_fraction_median": 0.0028296233456155204
+    },
+    {
+      "workers": 4,
+      "trials": 3,
+      "wall_seconds_median": 45.648244036,
+      "wall_seconds_min": 45.522397005,
+      "wall_seconds_max": 46.834765203,
+      "allocated_mib_median": 2017.4209823608398,
+      "gc_seconds_median": 0.257721994,
+      "gc_wall_fraction_median": 0.005549296196371219
+    },
+    {
+      "workers": 8,
+      "trials": 3,
+      "wall_seconds_median": 34.422002527,
+      "wall_seconds_min": 34.327630111,
+      "wall_seconds_max": 37.736927546,
+      "allocated_mib_median": 2017.3676528930664,
+      "gc_seconds_median": 0.413527295,
+      "gc_wall_fraction_median": 0.011919277783974933
+    }
+  ],
+  "timing_instrumented_one_worker_phases": [
+    {
+      "archive_member": "timing-w1/history-r1-true.json",
+      "repeat": 1,
+      "phase_seconds_sum_over_matches": {
+        "candidate_reset": 1.372970063,
+        "selection": 0.006916187,
+        "simulation": 146.40795806399998,
+        "checkpoint": 0.006923543,
+        "actual_shot": 0.151732657
+      },
+      "trial_wall_seconds": 147.979879962,
+      "candidate_reset_wall_fraction": 0.009278086070569642
+    },
+    {
+      "archive_member": "timing-w1/history-r2-true.json",
+      "repeat": 2,
+      "phase_seconds_sum_over_matches": {
+        "candidate_reset": 1.470589327,
+        "selection": 0.006633268,
+        "simulation": 148.529745281,
+        "checkpoint": 0.007244192,
+        "actual_shot": 0.15299811700000002
+      },
+      "trial_wall_seconds": 150.196349927,
+      "candidate_reset_wall_fraction": 0.00979111228545002
+    },
+    {
+      "archive_member": "timing-w1/history-r3-true.json",
+      "repeat": 3,
+      "phase_seconds_sum_over_matches": {
+        "candidate_reset": 1.399765317,
+        "selection": 0.006551904,
+        "simulation": 146.825555873,
+        "checkpoint": 0.010654504,
+        "actual_shot": 0.15416256400000003
+      },
+      "trial_wall_seconds": 148.427588947,
+      "candidate_reset_wall_fraction": 0.009430627600505073
+    }
+  ],
+  "allocations": {
+    "sample_rate": 0.01,
+    "sampled_events": 132009,
+    "sampled_bytes_total": 21019378,
+    "top_sampled_sites": [
+      {
+        "site": "Peg at level.jl:41 [inlined]",
+        "sampled_bytes": 16475200,
+        "percent_of_sampled_bytes": 78.38100632663821
+      },
+      {
+        "site": "restore!(sim::PeggleSim.SimState, ckpt::PeggleSim.Checkpoint) at checkpoint.jl:872",
+        "sampled_bytes": 2911228,
+        "percent_of_sampled_bytes": 13.85021003000184
+      },
+      {
+        "site": "FeverDivider at state.jl:46 [inlined]",
+        "sampled_bytes": 410736,
+        "percent_of_sampled_bytes": 1.9540825613393507
+      },
+      {
+        "site": "restore!(sim::PeggleSim.SimState, ckpt::PeggleSim.Checkpoint) at checkpoint.jl:902",
+        "sampled_bytes": 397440,
+        "percent_of_sampled_bytes": 1.8908266457741993
+      },
+      {
+        "site": "FeverBucketSpec at state.jl:40 [inlined]",
+        "sampled_bytes": 228768,
+        "percent_of_sampled_bytes": 1.0883671248502216
+      }
+    ]
+  },
+  "limitations": [
+    "No new simulation, CPU counter measurement, native build or comparative speed test was executed.",
+    "Single host and workload; CPU profile is one serial campaign on the primary thread.",
+    "Three timing repeats per instrumentation variant; SMT, frequency and thermal effects not isolated.",
+    "Allocation bytes are cumulative; RSS is not the hot working set.",
+    "A source-line sample is not a promise that eliminating a statement removes the same fraction of runtime."
+  ]
+}

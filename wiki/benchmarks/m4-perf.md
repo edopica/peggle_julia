@@ -237,8 +237,9 @@ These per-candidate bytes cover `reset + launch + run + extract` on the serial
 path with an extra untimed warmup pass, so they are dominated by `reset`
 (rebuilding the checkpoint's pegs) and are **not** the steady-state gate of
 §1.1 — that is §4. Peak RSS is whole-process (runtime + JIT + GC) from
-`scripts/bench_process.py`; Julia's larger figure is the runtime and JIT, not
-per-worker state, and for threads > 1 it is not a per-worker measure.
+`scripts/bench_process.py` (now ported to `scripts/bench_process.jl`; the
+measurement method is unchanged); Julia's larger figure is the runtime and JIT,
+not per-worker state, and for threads > 1 it is not a per-worker measure.
 
 Mean per-candidate allocation is informational, not the §1.1 gate; it fell on
 all seven workloads (e.g. `lines_rect_annular_multi3` 30,318 → 22,790

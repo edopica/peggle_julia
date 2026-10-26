@@ -13,6 +13,10 @@ results/m4/traces/
 tmp/
 *.log
 __pycache__/
+.venv/
 
 # Generated native build products (identity header, smoke test binary)
 native/build_generated/
+
+# Local scratch copies of external plans and screenshots
+temp/

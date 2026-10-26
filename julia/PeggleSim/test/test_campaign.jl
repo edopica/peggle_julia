@@ -57,6 +57,11 @@ end
     scores = zeros(1801)
     evaluation = PeggleSim.evaluate_candidates!(candidate, initial, scores, 1)
     @test !isempty(evaluation.incomplete)
+    untimed_scores = similar(scores)
+    untimed = PeggleSim.evaluate_candidates!(candidate, initial, untimed_scores, 1, Val(false))
+    @test untimed_scores == scores
+    @test untimed.incomplete == evaluation.incomplete
+    @test untimed.reset_ns == untimed.simulation_ns == 0
     @test before == PeggleSim.checkpoint_to_dict(initial)
     @test before == PeggleSim.checkpoint_to_dict(PeggleSim.capture_checkpoint(live.sim; provenance=prov))
     # Real complete shots on ribbon; deplete balls through the actual lifecycle.

@@ -101,10 +101,9 @@ function main(args)
             t = time_ns()
             run = PeggleSim.run_campaign(level, config, trial_options; parallel)
             simulation_end = time_ns()
+            identity_ok = expected === nothing || run.games == expected
             if expected === nothing
                 expected = run.games
-            else
-                run.games == expected || error("gameplay/history mismatch: repeat $repeat workers=$workers")
             end
             mode = parallel ? "parallel" : "sequential"
             prefix = splitext(basename(out))[1]
@@ -113,6 +112,7 @@ function main(args)
                 JSON.print(io, run, 2)
                 println(io)
             end
+            identity_ok || error("gameplay/history mismatch: repeat $repeat workers=$workers; differing history retained at $historypath")
             finish = time_ns()
             seconds = (finish - t) / 1e9
             candidates = sum(r.candidates for r in run.timings)
@@ -145,7 +145,7 @@ function main(args)
              joinpath(ROOT, "julia/PeggleSim/Manifest.toml"),
              joinpath(ROOT, "campaigns/ribbon/config.source.lua"),
              joinpath(ROOT, "campaigns/ribbon/game.source.lua"),
-             joinpath(ROOT, "scripts/sync_campaign_config.py")]),
+             joinpath(ROOT, "scripts/sync_campaign_config.jl")]),
         "timing_boundary" => "wall includes checkpoint/grid validation, worker and engine setup, all decisions, history identity verification and history JSON output/close; excludes process startup, one-time artifact load, GC before trial, warmup, final aggregate report write; load_seconds reported separately",
         "memory_boundary" => "process RSS sampled after history output; peak RSS is cumulative across warmup and all trials, not isolated per trial",
         "timestamp_utc" => strip(read(`date -u +%Y-%m-%dT%H:%M:%SZ`, String)),

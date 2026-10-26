@@ -22,8 +22,10 @@ from benchmark_schema import (
     PROTOCOL_VERSION,
     SCHEMA_VERSION,
     compute_harness_fingerprint,
+    create_archive_exclusive,
     create_artifact_archive,
     generate_run_readme,
+    reserve_run,
     save_canonical_gameplay_history,
     save_checks,
     save_manifest,
@@ -32,6 +34,7 @@ from benchmark_schema import (
     TRIALS_CSV_COLUMNS,
     MATCHES_CSV_COLUMNS,
 )
+from generate_benchmark_index import generate_index
 from generate_benchmark_index import generate_index
 from validate_benchmark import BenchmarkValidator
 
@@ -78,8 +81,8 @@ def import_legacy(legacy_baseline_path: Path, out_benchmarks_dir: Path, root_dir
     baseline_data = json.loads(legacy_baseline_path.read_text(encoding="utf-8"))
     env_data = json.loads(env_file.read_text(encoding="utf-8")) if env_file.exists() else {}
 
-    run_dir = out_benchmarks_dir / "runs" / RUN_ID
-    run_dir.mkdir(parents=True, exist_ok=True)
+    run_dir = reserve_run(out_benchmarks_dir, RUN_ID)
+    save_manifest(run_dir / "manifest.json", {"schema_version": SCHEMA_VERSION, "protocol_version": PROTOCOL_VERSION, "run_id": RUN_ID, "status": "interrupted", "timestamp_utc": datetime.now(timezone.utc).isoformat()})
     histories_dir = out_benchmarks_dir / "histories"
     artifacts_dir = out_benchmarks_dir / "artifacts"
     histories_dir.mkdir(parents=True, exist_ok=True)
@@ -132,15 +135,18 @@ def import_legacy(legacy_baseline_path: Path, out_benchmarks_dir: Path, root_dir
                 archive_items.append((vf, f"verification/{vf.name}"))
 
     archive_bundle_path = artifacts_dir / f"{RUN_ID}.tar.gz"
-    bundle_sha, bundle_size = create_artifact_archive(archive_bundle_path, archive_items)
+    bundle_sha, bundle_size = create_archive_exclusive(archive_bundle_path, archive_items)
     print(f"Created artifact archive bundle: {archive_bundle_path} ({bundle_size:,} bytes, SHA: {bundle_sha})")
 
     # 3. Calculate Harness Fingerprint
     recorded_source_hashes = baseline_data.get("source_sha256", {})
     fingerprint, harness_file_hashes = compute_harness_fingerprint(
         root_dir=root_dir,
+        files=sorted(recorded_source_hashes),
         precomputed_hashes=recorded_source_hashes,
     )
+    if not recorded_source_hashes:
+        raise ValueError("Legacy baseline has no recorded source hashes")
     print(f"Harness fingerprint: {fingerprint}")
 
     # 4. Importer Provenance
@@ -180,11 +186,12 @@ def import_legacy(legacy_baseline_path: Path, out_benchmarks_dir: Path, root_dir
         },
         "source": {
             "git_revision": base_env.get("git_revision", "e7070d95d087fedc80df467f6c75541e820dfba7"),
-            "git_dirty": True,
+            "git_dirty": bool(base_env.get("git_status", "").strip()),
             "git_status": base_env.get("git_status", ""),
             "harness_entry_point": "julia/PeggleSim/bin/campaign.jl",
             "harness_fingerprint": fingerprint,
             "harness_files": harness_file_hashes,
+            "provenance_gaps": ["Historical dirty source patch/untracked source snapshot was not retained; only recorded hashes are available"],
         },
         "workload": {
             "mode": baseline_data.get("options", {}).get("mode", "1v1"),
@@ -225,6 +232,7 @@ def import_legacy(legacy_baseline_path: Path, out_benchmarks_dir: Path, root_dir
         "importer": {
             "imported_at_utc": imported_at,
             "importer_git_revision": importer_rev,
+            "importer_source_sha256": sha256_file(Path(__file__)),
             "legacy_baseline_file": str(legacy_baseline_path.relative_to(root_dir)),
             "notes": (
                 "Imported from legacy 1v1 campaign baseline without rerunning. "
@@ -354,7 +362,7 @@ def import_legacy(legacy_baseline_path: Path, out_benchmarks_dir: Path, root_dir
         {
             "name": "current_config",
             "status": "passed",
-            "command": "python3 scripts/sync_campaign_config.py --check",
+            "command": "julia --project=julia/PeggleSim scripts/sync_campaign_config.jl --check",
             "evidence_path": "verification/config-check.txt",
             "evidence_sha256": sha256_file(verif_dir / "config-check.txt") if (verif_dir / "config-check.txt").exists() else None,
             "details": {"synchronized": True},
@@ -393,6 +401,21 @@ def import_legacy(legacy_baseline_path: Path, out_benchmarks_dir: Path, root_dir
         },
     ]
 
+    if not summary_verif_path.exists():
+        raise ValueError("Legacy verification summary is missing")
+    summary = json.loads(summary_verif_path.read_text())
+    summary_names = {"julia_tests": "julia", "lua_tests": "lua", "interchange_validation": "interchange",
+                     "current_config": "current_config", "match_rule_oracle": "match_rule_oracle",
+                     "reference_files": "reference"}
+    for check in checks_records:
+        summary_name = summary_names.get(check["name"])
+        if summary_name and summary_name not in summary:
+            check["status"] = "not_collected"
+        if check.get("evidence_path") and not check.get("evidence_sha256"):
+            check["status"] = "not_collected"
+        record = summary.get(summary_name, {})
+        if record.get("failed", 0) or record.get("passed") is False or record.get("recapture_identical") is False:
+            check["status"] = "failed"
     save_checks(run_dir / "checks.json", {"schema_version": SCHEMA_VERSION, "checks": checks_records})
     print(f"Wrote {len(checks_records)} checks to {run_dir / 'checks.json'}")
 
@@ -401,17 +424,20 @@ def import_legacy(legacy_baseline_path: Path, out_benchmarks_dir: Path, root_dir
     (run_dir / "README.md").write_text(readme_text, encoding="utf-8")
     print(f"Generated {run_dir / 'README.md'}")
 
-    # 9. Update index.csv
+    # Validate staging before publishing any finalized result or index row.
+    validator = BenchmarkValidator(run_dir, root_dir=root_dir)
+    if not validator.validate():
+        manifest["status"] = "failed"
+        save_manifest(run_dir / "manifest.json", manifest)
+        raise RuntimeError("Validation failed on imported run: " + "; ".join(validator.errors))
+    final_run_dir = out_benchmarks_dir / "runs" / RUN_ID
+    final_run_dir.parent.mkdir(parents=True, exist_ok=True)
+    if final_run_dir.exists():
+        raise FileExistsError(f"Run ID already exists: {final_run_dir}")
+    run_dir.rename(final_run_dir)
+    run_dir = final_run_dir
     index_path = out_benchmarks_dir / "index.csv"
     generate_index(out_benchmarks_dir / "runs", index_path, root_dir, update_readme=False)
-    print(f"Updated index at {index_path}")
-
-    # 10. Validate with validate_benchmark.py
-    validator = BenchmarkValidator(run_dir, index_path=index_path, root_dir=root_dir)
-    if not validator.validate():
-        for err in validator.errors:
-            print(f"[ERROR] {err}", file=sys.stderr)
-        raise RuntimeError("Validation failed on imported run")
     print(f"Successfully validated imported benchmark run {RUN_ID}!")
 
     return run_dir

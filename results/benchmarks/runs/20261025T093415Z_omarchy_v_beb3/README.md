@@ -12,19 +12,19 @@
 
 ## Worker Scaling
 
-Summary metrics (medians across 3 repetitions):
+Summary metrics (medians across 1 repetition(s) per worker count):
 
 | Workers | Campaign wall (s) | Completed matches/hour | Candidates/second | Speedup | Efficiency |
 | ---: | ---: | ---: | ---: | ---: | ---: |
-| 2 | 40.138 | 358.8 | 1,525.6 | 1.00× | 50.0% |
-| 4 | 23.628 | 609.5 | 2,591.6 | 1.00× | 25.0% |
+| 2 | 40.138 | 358.8 | 1,525.6 | N/A | N/A |
+| 4 | 23.628 | 609.5 | 2,591.6 | N/A | N/A |
 
 ### Wall Time by Repeat
 
-| Workers | Repeat 1 (s) | Repeat 2 (s) | Repeat 3 (s) |
-| ---: | ---: | ---: | ---: |
-| 2 | 40.138 | - | - |
-| 4 | 23.628 | - | - |
+| Workers | Repeat 1 (s) |
+| ---: | ---: |
+| 2 | 40.138 |
+| 4 | 23.628 |
 
 ### Decision Latencies
 
@@ -68,5 +68,5 @@ Seeded matches (4 matches per campaign, 2 trials, all completed):
 
 ## Artifacts
 
-- Canonical gameplay history: [`results/benchmarks/histories/9eb49cf1041370a850d9572430405840eab482019331d62d6ba78653aad76519.json`](../../results/benchmarks/histories/9eb49cf1041370a850d9572430405840eab482019331d62d6ba78653aad76519.json)
-- Full archive bundle: [`results/benchmarks/artifacts/20261025T093415Z_omarchy_v_beb3.tar.gz`](../../results/benchmarks/artifacts/20261025T093415Z_omarchy_v_beb3.tar.gz)
+- Canonical gameplay history: [`results/benchmarks/histories/9eb49cf1041370a850d9572430405840eab482019331d62d6ba78653aad76519.json`](<../../histories/9eb49cf1041370a850d9572430405840eab482019331d62d6ba78653aad76519.json>)
+- Full archive bundle: [`results/benchmarks/artifacts/20261025T093415Z_omarchy_v_beb3.tar.gz`](<../../artifacts/20261025T093415Z_omarchy_v_beb3.tar.gz>)

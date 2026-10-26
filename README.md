@@ -27,15 +27,15 @@ and adds the first cross-engine benchmark. Start with the
 | `schemas/` | Versioned interchange schemas and examples |
 | `interchange/` | Generated level/config artifacts, SVG previews, manifest |
 | `fixtures/` | Fixture catalog, expected records, gameplay traces, `rng/`, `checkpoints/`, `math_census/`, `mustache/` |
-| `scripts/` | Reference verification, export, fixture capture, previews, baseline runner, M2 captures, M3 capture/compare/bench |
+| `scripts/` | Julia benchmark-execution harness plus reference verification, export, fixture capture, previews, baseline runner, M2 captures, M3/M4 capture/compare/bench |
 | `results/` | Baseline summaries, M2 benchmark/census/parity results, M3 benchmark/sweep reports; `results/raw/` is gitignored |
 
 ## Quickstart
 
-Requirements: LÖVE 11.x, LuaJIT, Python 3, and a display (`xvfb-run` for
-unattended runs). Verification, schema checks, and the test suite need no
-display. M2 and M3 additionally need Julia 1.12.6; the pinned environment is
-reproduced with
+Requirements: LÖVE 11.x, LuaJIT, Python 3 for analysis/SVG tooling, and a
+display (`xvfb-run` for unattended runs). Verification, schema checks, and the
+test suite need no display. M2/M3/M4 and the benchmark-execution harness need
+Julia 1.12.6; the pinned environment is reproduced with
 `julia --project=julia/PeggleSim -e 'using Pkg; Pkg.instantiate()'`.
 
 ```bash
@@ -50,6 +50,7 @@ make quick        # short sweep (every 20th index)
 make baseline     # full-grid baseline (long)
 make test         # run the reference test suite
 make julia-test   # run the Julia package test suite
+make julia-scripts-test # run the Julia benchmark-execution harness tests
 make julia-parity # recompute the cross-machine parity manifest
 make julia-bench  # checkpoint/reset benchmark
 make m3-trace     # Julia snapshot traces for the base mustache fixtures
