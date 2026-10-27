@@ -1,0 +1,57 @@
+{
+  "format": "peggle.static_query_optimization_comparison",
+  "date": "2026-10-27",
+  "host": "deathstar",
+  "optimization": "Reuse broad-phase static movement query per CCD window; prepare rectangle and annular bounding geometry; reuse rectangle radius during depenetration.",
+  "protocol": {
+    "games_per_variant": 10,
+    "workers": 1,
+    "julia_threads": 1,
+    "repeats": 1,
+    "warmup": "full",
+    "base_seed": 20261024,
+    "math_backend": "system_libm",
+    "julia_version": "1.12.6"
+  },
+  "results": {
+    "baseline": {
+      "run_id": "deathstar-20261027-scoring-candidate",
+      "wall_seconds": 180.028600735,
+      "candidates": 198110,
+      "completed_matches": 10,
+      "candidates_per_second": 1100.4362595230943,
+      "gameplay_sha256": "82b282ee176746817047e93d90755bedae81de07ed3b5ed876c9c336c8a96bb3"
+    },
+    "candidate": {
+      "run_id": "deathstar-20261027-static-query-candidate",
+      "wall_seconds": 145.948203187,
+      "candidates": 198110,
+      "completed_matches": 10,
+      "candidates_per_second": 1357.399376449783,
+      "gameplay_sha256": "82b282ee176746817047e93d90755bedae81de07ed3b5ed876c9c336c8a96bb3"
+    }
+  },
+  "comparison": {
+    "seconds_saved": 34.08039754800001,
+    "elapsed_reduction_percent": 18.93054626257189,
+    "throughput_increase_percent": 23.351022351630867,
+    "speedup": 1.2335102235163087,
+    "gameplay_byte_identical": true
+  },
+  "validation": "Remote full Julia suite, reference verification before and after, independent artifact validation and compatibility comparison passed; canonical histories compared byte-for-byte. Local qualification is retained in the evidence archive.",
+  "limitations": [
+    "One measured trial per version; no repetition-based uncertainty estimate.",
+    "Historical baseline measured earlier on the same host, rather than interleaved with candidate.",
+    "Historical baseline manifest records be7856a dirty; all 78 fingerprinted simulator/harness source hashes equal fd760fc HEAD."
+  ],
+  "evidence": {
+    "archive": "results/benchmarks/artifacts/deathstar-20261027-static-query-evidence.tar.gz",
+    "sha256": "af1ace196ebffc20ea0f5114e2272fe3d7411d828e0853941c8bdfdc0e45ab65",
+    "size_bytes": 1721210,
+    "extraction_validation_root": "remote/source/",
+    "baseline_run_relative_to_extraction_root": "tmp/scoring-benchmarks/runs/deathstar-20261027-scoring-candidate",
+    "candidate_run_relative_to_extraction_root": "tmp/static-query-benchmarks/runs/deathstar-20261027-static-query-candidate",
+    "remote_comparison": "remote/comparison.txt",
+    "local_qualification": "local-qualification/"
+  }
+}

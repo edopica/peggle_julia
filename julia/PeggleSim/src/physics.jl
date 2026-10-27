@@ -180,6 +180,14 @@ mutable struct BallFrameState
     vend_y::Float64
 end
 
+# Immutable, worker-local invariants for one CCD movement window. Keep the
+# reference subtraction even for zero velocity: signed zeros are observable.
+struct StaticCollisionQuery
+    rel_move_x::Float64
+    rel_move_y::Float64
+    rel_move_len::Float64
+end
+
 # The Lua file-level `physics_ctx` plus engine-local frame and graze pools.
 mutable struct PhysicsContext
     balls::Vector{BallState}
@@ -206,6 +214,7 @@ mutable struct PhysicsContext
     hit_overlap::Float64
     grazed::Vector{GrazedPeg}
     frame_pool::Vector{BallFrameState}
+    static_query::StaticCollisionQuery
 end
 
 function PhysicsContext(balls::Vector{BallState}, config::SimConfig,
@@ -213,7 +222,8 @@ function PhysicsContext(balls::Vector{BallState}, config::SimConfig,
     return PhysicsContext(
         balls, Dict{BallState,BallFrameState}(), journal, config, virtual_width,
         nothing, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0,
-        nothing, nothing, nothing, nothing, nothing, 0.0, GrazedPeg[], BallFrameState[])
+        nothing, nothing, nothing, nothing, nothing, 0.0, GrazedPeg[], BallFrameState[],
+        StaticCollisionQuery(0.0, 0.0, 0.0))
 end
 
 # Release borrowed entity references without discarding reusable capacity.
@@ -228,6 +238,7 @@ function reset_physics_context!(ctx::PhysicsContext, balls::Vector{BallState},
     empty!(ctx.grazed)
     ctx.ball = nothing
     ctx.total_dt = ctx.move_x = ctx.move_y = ctx.time_remaining = 0.0
+    ctx.static_query = StaticCollisionQuery(0.0, 0.0, 0.0)
     ctx.min_t = 1.0
     ctx.hit_nx = ctx.hit_ny = ctx.hit_overlap = 0.0
     ctx.hit_type = nothing
@@ -415,6 +426,17 @@ end
 # Broad phase and circle sweep (physics.lua lines 263-361)
 # ---------------------------------------------------------------------------
 
+# Rebuilt after every change to the ball movement or remaining time. The +0
+# velocity path also applies to fever dividers; moving and -0 velocities keep
+# the original per-object expression below.
+@inline function prepare_static_query!(ctx::PhysicsContext)::Nothing
+    rel_move_x = ctx.move_x - 0.0 * ctx.time_remaining
+    rel_move_y = ctx.move_y - 0.0 * ctx.time_remaining
+    rel_move_len = DetMath.det_sqrt(rel_move_x * rel_move_x + rel_move_y * rel_move_y)
+    ctx.static_query = StaticCollisionQuery(rel_move_x, rel_move_y, rel_move_len)
+    return nothing
+end
+
 # Shared broad-phase tail: derives the iteration-window-start transforms and
 # rejects when the moving-circle reach cannot touch the ball.
 function broad_phase_common(ctx::PhysicsContext, px::Float64, py::Float64,
@@ -427,13 +449,20 @@ function broad_phase_common(ctx::PhysicsContext, px::Float64, py::Float64,
     peg_iter_x = px - peg_vx * time_remaining
     peg_iter_y = py - peg_vy * time_remaining
 
-    rel_move_x = move_x - peg_vx * time_remaining
-    rel_move_y = move_y - peg_vy * time_remaining
+    if isequal(peg_vx, 0.0) && isequal(peg_vy, 0.0)
+        query = ctx.static_query
+        rel_move_x = query.rel_move_x
+        rel_move_y = query.rel_move_y
+        rel_move_len = query.rel_move_len
+    else
+        rel_move_x = move_x - peg_vx * time_remaining
+        rel_move_y = move_y - peg_vy * time_remaining
+        rel_move_len = DetMath.det_sqrt(rel_move_x * rel_move_x + rel_move_y * rel_move_y)
+    end
 
     dx = ball.x - peg_iter_x
     dy = ball.y - peg_iter_y
 
-    rel_move_len = DetMath.det_sqrt(rel_move_x * rel_move_x + rel_move_y * rel_move_y)
     reach = ball.radius + br + rel_move_len
 
     if dx * dx + dy * dy > reach * reach
@@ -443,24 +472,20 @@ function broad_phase_common(ctx::PhysicsContext, px::Float64, py::Float64,
             peg_iter_x = peg_iter_x, peg_iter_y = peg_iter_y)
 end
 
-# Peg path: `br = peg.bounding_radius`, computed and cached exactly like the
-# Lua function. The Lua `else return true` branch (unknown shape string)
-# cannot occur for the typed shape union.
-function broad_phase_pass(ctx::PhysicsContext, peg::Peg)
+# Constructor-prepared geometry survives reset through the immutable shape.
+# Retain lazy fallback for callers that explicitly invalidate the peg cache.
+@inline function prepared_bounding_radius(peg::Peg)::Float64
     br = peg.bounding_radius
     if br === nothing
-        shape = peg.shape
-        if shape isa CircleShape
-            br = shape.radius
-        elseif shape isa RectangleShape
-            br = DetMath.det_sqrt(shape.width * shape.width +
-                                  shape.height * shape.height) / 2
-        else
-            br = (shape::AnnularShape).r_out
-        end
+        br = peg_bounding_radius(peg.shape)
         peg.bounding_radius = br
     end
-    return broad_phase_common(ctx, peg.x, peg.y, peg.vx, peg.vy, br)
+    return br
+end
+
+function broad_phase_pass(ctx::PhysicsContext, peg::Peg)
+    return broad_phase_common(ctx, peg.x, peg.y, peg.vx, peg.vy,
+                              prepared_bounding_radius(peg))
 end
 
 # Fever-divider extras: no `shape` so Lua treats it as a circle with the raw
@@ -1183,15 +1208,7 @@ function depenetrate(ctx::PhysicsContext, pegs_list::Union{Nothing,Vector{Peg}},
     for peg in pegs_list
         dx = ball.x - peg.x
         dy = ball.y - peg.y
-        if shape == "circle"
-            br = circ_radius(peg)
-        elseif shape == "rectangle"
-            rshape = rect_shape(peg)
-            br = DetMath.det_sqrt(rshape.width * rshape.width +
-                                  rshape.height * rshape.height) / 2
-        else
-            br = annular_shape(peg).r_out
-        end
+        br = prepared_bounding_radius(peg)
         reach = ball.radius + br
         if dx * dx + dy * dy <= reach * reach
             # Lua `local nx, ny, overlap` are nil until a surface resolves.
@@ -1427,8 +1444,7 @@ function physics_update!(
             ctx.move_y = move_y
             ctx.time_remaining = time_remaining
 
-            move_len_sq = move_x * move_x + move_y * move_y
-            move_len = DetMath.det_sqrt(move_len_sq) # unused in the reference
+            prepare_static_query!(ctx)
 
             ctx.min_t = 1.0
             ctx.hit_nx, ctx.hit_ny = 0.0, 0.0

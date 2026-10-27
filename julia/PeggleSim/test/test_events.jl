@@ -282,7 +282,7 @@ using PeggleSim
         @test p.vx == 0.0 && p.vy == 0.0 && p.va == 0.0
         @test p.prev_x == 10.0 && p.prev_y == 20.0
         @test p.prev_angle == 0.0
-        @test p.bounding_radius === nothing
+        @test p.bounding_radius === 15.0
 
         rect = PeggleSim.RectangleShape(40.0, 20.0, 1.25)
         r = PeggleSim.Peg(2, 30.0, 40.0, 30.0, 40.0, rect, :green, true, 3, 2, nothing)
@@ -290,7 +290,8 @@ using PeggleSim
         @test r.angle == 1.25
         @test r.prev_angle == 1.25
         @test r.hit && r.hit_order == 3 && r.multiplier_at_hit == 2
-        @test r.bounding_radius === nothing
+        @test r.bounding_radius === PeggleSim.DetMath.det_sqrt(40.0 * 40.0 + 20.0 * 20.0) / 2
+        @test r.bounding_radius === rect.bounding_radius
 
         ann = PeggleSim.AnnularShape(10.0, 20.0, 0.0, 1.5, 8)
         a = PeggleSim.Peg(3, 50.0, 60.0, 50.0, 60.0, ann, :purple, false, 0, 0, nothing)
@@ -299,14 +300,21 @@ using PeggleSim
         @test a.prev_angle == 0.0
         @test a.vx == 0.0 && a.vy == 0.0 && a.va == 0.0
         @test a.prev_x == 50.0 && a.prev_y == 60.0
-        @test a.bounding_radius === nothing
+        @test a.bounding_radius === 20.0
 
         # Live fields are mutable and independent per instance.
         p.vx = 5.0
         p.bounding_radius = 15.0
         p.angle = 0.5
         @test p.vx == 5.0 && p.bounding_radius == 15.0 && p.angle == 0.5
-        @test a.vx == 0.0 && a.bounding_radius === nothing
+        @test a.vx == 0.0 && a.bounding_radius === 20.0
+
+        # New per-worker pegs reuse the immutable geometry across resets.
+        replacement = PeggleSim.Peg(2, 30.0, 40.0, 30.0, 40.0,
+                                   rect, :green, false, 0, 0, nothing)
+        r.bounding_radius = nothing
+        @test replacement.shape === rect
+        @test replacement.bounding_radius === rect.bounding_radius
     end
 
     @testset "BallState scored_fever default" begin

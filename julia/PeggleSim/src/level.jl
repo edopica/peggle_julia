@@ -15,7 +15,17 @@ struct RectangleShape <: AbstractPegShape
     width::Float64
     height::Float64
     angle::Float64
+    bounding_radius::Float64
+    function RectangleShape(width::Float64, height::Float64, angle::Float64)
+        # Shape geometry survives checkpoint reset; preserve the original
+        # broad-phase expression and deterministic math backend.
+        radius = DetMath.det_sqrt(width * width + height * height) / 2
+        return new(width, height, angle, radius)
+    end
 end
+
+RectangleShape(width::Real, height::Real, angle::Real) =
+    RectangleShape(Float64(width), Float64(height), Float64(angle))
 
 struct AnnularShape <: AbstractPegShape
     r_in::Float64
@@ -24,6 +34,10 @@ struct AnnularShape <: AbstractPegShape
     theta_end_abs::Float64
     segments::Int
 end
+
+@inline peg_bounding_radius(shape::CircleShape) = shape.radius
+@inline peg_bounding_radius(shape::RectangleShape) = shape.bounding_radius
+@inline peg_bounding_radius(shape::AnnularShape) = shape.r_out
 
 # Line metadata copied verbatim from the artifact. `id` is a level-authored
 # string identifier (the level schema requires a string and the captured
@@ -52,7 +66,7 @@ mutable struct Peg
     # Live shot-time fields (M3). Static levels keep vx=vy=va=0 and x/y/angle
     # equal to their previous values. `angle` for a rectangle starts at the
     # shape's authored angle; every other shape starts at 0. `bounding_radius`
-    # is the physics broad-phase cache (nothing until first computed).
+    # is prepared from immutable shape geometry, including after reset.
     base_angle::Float64
     angle::Float64
     vx::Float64
@@ -77,7 +91,7 @@ function Peg(id::Int, x::Float64, y::Float64, base_x::Float64, base_y::Float64,
         angle, angle,               # base_angle, angle
         0.0, 0.0, 0.0,              # vx, vy, va
         x, y, angle,                # prev_x, prev_y, prev_angle
-        nothing,                    # bounding_radius
+        peg_bounding_radius(shape), # bounding_radius
     )
 end
 

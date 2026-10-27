@@ -9,8 +9,9 @@ valutano l'integrazione Julia/C/Odin. La raccomandazione è mantenere Julia
 come ambiente principale e investigare **C per il primo kernel nativo**,
 confrontandolo con una versione Julia equivalente.
 
-Questa revisione non esegue nuovi benchmark e non dimostra un guadagno di un
-linguaggio sull'altro. Le nuove aggregazioni di misure già esistenti sono
+L'analisi originale del 25 ottobre non esegue nuovi benchmark e non dimostra
+un guadagno di un linguaggio sull'altro. Il seguito implementato e misurato
+il 27 ottobre per la query statica è registrato in §13.2. Le nuove aggregazioni di misure già esistenti sono
 registrate in [optimization-review-2026-10-25.json](../../results/analysis/optimization-review-2026-10-25.json).
 Non è una ricerca sulle offerte commerciali né una decisione di riscrivere il motore.
 
@@ -515,6 +516,28 @@ il reset ricrea gli oggetti, può essere preparato con la geometria. Anche
 
 **Giudizio.** Priorità alta in Julia. Un port letterale in C che ripeta le
 stesse radici per ogni peg non risolve il problema strutturale.
+
+**Implementazione del 27 ottobre 2026 (§17.1, punto 2).**
+`StaticCollisionQuery` conserva spostamento relativo e lunghezza per la
+finestra CCD corrente; viene ricostruita nel ciclo delle collisioni, dopo
+l'aggiornamento di movimento e tempo residuo. La query è privata del worker.
+Solo velocità traslazionali `+0.0` usano il percorso condiviso; velocità
+mobili e `-0.0` conservano il calcolo originale. Anche la preparazione usa
+`move - 0.0 * time_remaining`, senza eliminare la sottrazione. I divider
+statici riutilizzano la query, mentre collisioni tra palline e slicing
+rotazionale mantengono i propri percorsi.
+
+Il raggio dei rettangoli viene calcolato nel costruttore della forma
+immutabile con la stessa espressione e lo stesso backend; i peg ricreati
+dal reset lo riutilizzano. Broad phase e depenetrazione leggono il raggio
+preparato. Il formato serializzato dei checkpoint non cambia.
+
+La campagna Deathstar di dieci partite ha misurato 145,948 s contro i
+180,029 s del run salvato, con sorgenti del baseline equivalenti al commit
+corrente: tempo −18,93%, throughput +23,35%, storie canoniche byte-identiche.
+È un confronto tra due singoli trial, senza stima della variabilità.
+[Report e protocollo](../../results/analysis/static-query-optimization-2026-10-27.json);
+[verifiche e implementazione](../devlog/2026-10-27.md#shared-static-ccd-query-171-experiment-2).
 
 ### 13.3 Archi e rettangoli: geometria preparata e filtri conservativi
 
