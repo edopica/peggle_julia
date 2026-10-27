@@ -257,7 +257,8 @@ end
 function _style_process_event!(
     t::StyleShotTrackers,
     ev::GameEvent,
-    scored_by_source::Dict{Int,GameEvent},
+    scored_by_source::Dict{Int,Int},
+    derived::Vector{GameEvent},
     commands::GameplayCommands,
     pt_lucky::Float64,
     pt_off_wall::Float64,
@@ -348,7 +349,8 @@ function _style_process_event!(
         # run (even from the bounce itself) or extend an adjacent
         # consistent-direction run.
         if ev.fields.line_meta_id !== nothing && ev.fields.line_meta_gap == 0
-            scored = get(scored_by_source, ev.sequence, nothing)
+            scored_index = get(scored_by_source, ev.sequence, 0)
+            scored = scored_index == 0 ? nothing : derived[scored_index]
             if _style_did_bounce(ev)
                 _style_clear_ball_slide!(t, bid)
                 if scored !== nothing && scored.fields.line_meta_id !== nothing
@@ -364,7 +366,8 @@ function _style_process_event!(
 
         kind = ev.fields.contact_kind
         if kind == "sweep" || kind == "graze"
-            scored = get(scored_by_source, ev.sequence, nothing)
+            scored_index = get(scored_by_source, ev.sequence, 0)
+            scored = scored_index == 0 ? nothing : derived[scored_index]
             tab = _style_ensure_award_tab!(t, bid)
             ix = ev.fields.impact_x
             iy = ev.fields.impact_y
@@ -469,7 +472,7 @@ function style_shots_process!(
     commands::GameplayCommands,
     virtual_width::Float64,
     c::SimConfig,
-    scored_by_source::Dict{Int,GameEvent} = Dict{Int,GameEvent}(),
+    scored_by_source::Dict{Int,Int} = Dict{Int,Int}(),
 )::Nothing
     long_d = c.long_shot_distance
     super_d = c.super_long_shot_distance
@@ -481,25 +484,26 @@ function style_shots_process!(
     slide_min = c.slide_min_pegs
     pt_slide = c.slide_points
 
-    # Index peg_scored derived events by their source raw sequence.
-    empty!(scored_by_source)
-    for ev in journal.derived
+    # Indices borrow this step's journal; rebuild before any event lookup.
+    # Skip Dict's capacity-wide clearing work on steps with no scored events.
+    isempty(scored_by_source) || empty!(scored_by_source)
+    for (index, ev) in enumerate(journal.derived)
         if ev.type == "peg_scored"
             src = ev.fields.source_sequence
-            src !== nothing && (scored_by_source[Int(src)] = ev)
+            src !== nothing && (scored_by_source[Int(src)] = index)
         end
     end
 
     # Events:all() = raw first, then derived (borrowed journal order).
     for ev in journal.raw
         _style_process_event!(
-            t, ev, scored_by_source, commands,
+            t, ev, scored_by_source, journal.derived, commands,
             pt_lucky, pt_off_wall, pt_long, pt_super, pt_double,
             long_d, super_d, slide_min, pt_slide)
     end
     for ev in journal.derived
         _style_process_event!(
-            t, ev, scored_by_source, commands,
+            t, ev, scored_by_source, journal.derived, commands,
             pt_lucky, pt_off_wall, pt_long, pt_super, pt_double,
             long_d, super_d, slide_min, pt_slide)
     end

@@ -1,0 +1,56 @@
+{
+  "format": "peggle.scoring_optimization_comparison",
+  "date": "2026-10-27",
+  "host": "deathstar",
+  "optimization": "Guard empty scored_by_source clearing; replace GameEvent values with indices into current journal.",
+  "protocol": {
+    "games_per_variant": 10,
+    "workers": 1,
+    "julia_threads": 1,
+    "repeats": 1,
+    "warmup": "full",
+    "base_seed": 20261024,
+    "math_backend": "system_libm",
+    "julia_version": "1.12.6"
+  },
+  "results": {
+    "baseline": {
+      "run_id": "deathstar-20261027-scoring-baseline",
+      "wall_seconds": 211.167059375,
+      "candidates": 198110,
+      "completed_matches": 10,
+      "candidates_per_second": 938.1671582033413,
+      "gameplay_sha256": "82b282ee176746817047e93d90755bedae81de07ed3b5ed876c9c336c8a96bb3"
+    },
+    "candidate": {
+      "run_id": "deathstar-20261027-scoring-candidate",
+      "wall_seconds": 180.028600735,
+      "candidates": 198110,
+      "completed_matches": 10,
+      "candidates_per_second": 1100.4362595230943,
+      "gameplay_sha256": "82b282ee176746817047e93d90755bedae81de07ed3b5ed876c9c336c8a96bb3"
+    }
+  },
+  "comparison": {
+    "seconds_saved": 31.13845864000001,
+    "elapsed_reduction_percent": 14.745888270718844,
+    "throughput_increase_percent": 17.29639541321295,
+    "speedup": 1.1729639541321295,
+    "gameplay_byte_identical": true
+  },
+  "validation": "Both retrieved runs passed independent Python validation; candidate index also validated. Remote comparison verified byte-identical gameplay histories.",
+  "limitations": [
+    "One measured trial per variant; no repetition-based uncertainty estimate.",
+    "Baseline precedes candidate, with a gap due to results-indexing recovery.",
+    "Historical baseline attempt exited after successful artifact finalization because its results directory was outside the checkout; candidate resumed separately."
+  ],
+  "evidence": {
+    "archive": "results/benchmarks/artifacts/deathstar-20261027-scoring-paired-evidence.tar.gz",
+    "sha256": "bffb8d9f00e29ea75a80b61a33ba869db5ac5248f60588e3668881919ac317a6",
+    "size_bytes": 697507,
+    "extraction_validation_root": "candidate/",
+    "baseline_run_relative_to_extraction_root": "results/benchmarks/runs/deathstar-20261027-scoring-baseline",
+    "candidate_run_relative_to_extraction_root": "candidate/tmp/scoring-benchmarks/runs/deathstar-20261027-scoring-candidate",
+    "remote_comparison": "resume-01/comparison.txt"
+  }
+}

@@ -104,6 +104,41 @@ end
     super_d = Float64(c.super_long_shot_distance)
     d410 = long_d + 10.0
 
+    @testset "reused scoring index follows the current journal" begin
+        t = _style_trackers()
+        j, cmds = _style_begin(1)
+        scored_by_source = Dict{Int,Int}()
+        for step in 1:8
+            PeggleSim.reset_shot!(t)
+            PeggleSim.begin_step!(j, step, 1)
+            PeggleSim.begin_step!(cmds, step, 1)
+            _style_raw_wall!(j, 1)
+            source = _style_raw_contact!(j, 1, 100.0, 100.0, "purple")
+            PeggleSim.seal_raw!(j)
+            if step % 3 == 1
+                # Derived indices differ from event sequences, and the final
+                # score for a duplicate source must win (purple over blue).
+                PeggleSim.emit_derived!(j, "unrelated", Dict{String,Any}())
+                _style_scored!(j, source, 1, 100.0, 100.0, "blue"; peg_id = 10)
+                _style_scored!(j, source, 1, 100.0, 100.0, "purple"; peg_id = 11)
+            end
+            PeggleSim.style_shots_process!(t, j, cmds, c.virtual_width, c,
+                                          scored_by_source)
+            if step % 3 == 1
+                @test scored_by_source[source] == 3
+                @test length(cmds.commands) == 1
+                @test cmds.commands[1]["style"] == "off_the_wall"
+                @test cmds.commands[1]["peg_id"] == 11
+            else
+                # Raw sequences restart, so retaining an old derived index
+                # could award a stale score or access outside the new journal.
+                @test isempty(scored_by_source)
+                @test isempty(cmds.commands)
+            end
+            PeggleSim.finish_step!(j)
+        end
+    end
+
     @testset "long shot thresholds" begin
         # Just below the long threshold: no award, but the tracker keeps the
         # chain base (last_impact is set from the first contact).

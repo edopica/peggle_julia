@@ -139,7 +139,7 @@ end
 struct ShotScratch
     physics::PhysicsContext
     contacts::ContactReductionScratch
-    scored_by_source::Dict{Int,GameEvent}
+    scored_by_source::Dict{Int,Int}
     slide::SlideInversionScratch
     remaining_balls::Vector{BallState}
 end
@@ -234,7 +234,7 @@ function _fresh_shot_engine(sim::SimState, config::SimConfig, vw::Float64,
     journal = GameplayJournal()
     scratch = ShotScratch(
         PhysicsContext(sim.engine.balls, config, vw, journal),
-        ContactReductionScratch(), Dict{Int,GameEvent}(),
+        ContactReductionScratch(), Dict{Int,Int}(),
         SlideInversionScratch(), BallState[])
     eng = ShotEngine(
         sim, config, vw, vh,
@@ -280,7 +280,7 @@ function reset_shot_engine!(eng::ShotEngine, ckpt::Checkpoint)::ShotEngine
     reset_physics_context!(eng.scratch.physics, eng.sim.engine.balls,
                            eng.config, eng.virtual_width, eng.journal)
     reset!(eng.scratch.contacts)
-    empty!(eng.scratch.scored_by_source)
+    isempty(eng.scratch.scored_by_source) || empty!(eng.scratch.scored_by_source)
     reset!(eng.scratch.slide)
     empty!(eng.scratch.remaining_balls)
     eng.accumulator = 0.0
