@@ -646,16 +646,17 @@ alle ottimizzazioni che preservano direttamente la pipeline.
 
 ### 13.6 Scheduling: rappresentare una lunga campagna sul server
 
-In [campaign.jl](../../julia/PeggleSim/src/campaign.jl), `run_campaign`
-crea un task per worker e assegna le partite con
-`worker:workers:o.games`. Con otto partite e otto worker questo coincide
-con un task per partita; con molte partite è una ripartizione statica.
+Dal 28 ottobre, in [campaign.jl](../../julia/PeggleSim/src/campaign.jl),
+`run_campaign` crea un task persistente per worker che consuma una coda FIFO
+condivisa di ID partita. Quando termina una partita, prende il prossimo ID
+disponibile. Questo sostituisce la ripartizione statica
+`worker:workers:o.games`; con otto partite e otto worker resta una partita
+per worker. Seed e risultati dipendono dagli ID, non dall'ordine di esecuzione.
 Ogni partita crea un motore live e uno candidate, riutilizzati nei turni
 di quella partita. Non esiste ancora un pool di motori riusato tra partite.
 
-Per il costo di una campagna lunga, confrontare prima molte più partite
-dei worker e una coda dinamica di partite con seed assegnati agli ID prima
-dello scheduling. Conservare gli output nell'ordine degli ID. Con tante
+Per il costo di una campagna lunga, misurare molte più partite dei worker
+con questa coda dinamica. Gli output conservano l'ordine degli ID. Con tante
 partite indipendenti si può mantenere occupata la macchina senza introdurre
 parallelismo dentro ogni decisione.
 

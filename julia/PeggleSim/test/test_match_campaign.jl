@@ -98,22 +98,32 @@ using PeggleSim
     end
     @test eng.sim.match.game_over
     @test players == [1,2,1,2]
-    # Same two real decisions, including both players' bot streams, at every
-    # available requested worker count. Tests also run on single-thread Julia.
-    o = PeggleSim.CampaignOptions(games=2,workers=1,max_turns=2)
+    # More matches than workers, with a partial final batch: consumers must
+    # drain the queue exactly once and preserve ID order and both bot streams.
+    # Tests also run on single-thread Julia.
+    o = PeggleSim.CampaignOptions(games=5,workers=1,max_turns=2)
     baseline = PeggleSim.run_campaign(level,config,o;parallel=false)
-    for workers in unique([1,min(2,Threads.nthreads())])
-        other = PeggleSim.CampaignOptions(games=2,workers=workers,max_turns=2)
+    @test all(t -> t.worker_index == 1, baseline.timings)
+    for workers in unique([1,min(2,Threads.nthreads()),min(3,Threads.nthreads())])
+        other = PeggleSim.CampaignOptions(games=5,workers=workers,max_turns=2)
         run = PeggleSim.run_campaign(level,config,other;parallel=true)
         @test run.games == baseline.games
+        @test [g["game"] for g in run.games] == collect(1:5)
+        @test length(run.timings) == 5
+        @test all(t -> 1 <= t.worker_index <= workers, run.timings)
         uninstrumented = PeggleSim.run_campaign(level,config,other;
             parallel=true, phase_instrumentation=false)
         @test uninstrumented.games == baseline.games
         @test all(t -> t.phases === nothing, uninstrumented.timings)
+        @test all(t -> 1 <= t.worker_index <= workers, uninstrumented.timings)
         @test [t.candidates for t in uninstrumented.timings] == [t.candidates for t in run.timings]
         @test all(t -> 0 <= t.setup_seconds < 60, uninstrumented.timings)
     end
     @test all(g -> [d["player"] for d in g["decisions"]] == [1,2],baseline.games)
-    @test length(unique(vcat([g["bot_seeds"] for g in baseline.games]...))) == 4
+    @test length(unique(vcat([g["bot_seeds"] for g in baseline.games]...))) == 10
     @test all(g -> !g["completed"] && g["termination_reason"]=="turn_limit", baseline.games)
+    # Requested concurrency may exceed the queue length.
+    short = PeggleSim.CampaignOptions(games=1,workers=Threads.nthreads()+1,max_steps=1)
+    @test PeggleSim.run_campaign(level,config,short;parallel=true).games ==
+        PeggleSim.run_campaign(level,config,short;parallel=false).games
 end

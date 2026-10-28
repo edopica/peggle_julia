@@ -595,7 +595,9 @@ function main(args::Vector{String} = ARGS)::Int
             game = g_list[m_idx]
             tm = tm_list[m_idx]
             match_id = _as_int(game["game"])
-            worker_idx = ((match_id - 1) % w) + 1
+            # Dynamic campaigns record the logical consumer, which cannot be
+            # inferred from match ID. Retain the old rule for legacy histories.
+            worker_idx = _as_int(get(tm, "worker_index", ((match_id - 1) % w) + 1))
             turns = _as_int(game["turns"])
             cands = _as_int(tm["candidates"])
             match_wall = _as_float(tm["setup_seconds"]) +

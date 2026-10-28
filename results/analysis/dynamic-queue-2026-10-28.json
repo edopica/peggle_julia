@@ -1,0 +1,85 @@
+{
+  "format": "peggle.dynamic_queue_campaign",
+  "date": "2026-10-28",
+  "host": "deathstar",
+  "optimization": "Persistent worker tasks consume a shared FIFO queue of complete matches; record actual logical worker IDs.",
+  "source": {
+    "base_revision": "13743974222bda788b46f878b36eabbb1eeb0803",
+    "patch": "source.patch in evidence archive",
+    "run_kind": "exploratory"
+  },
+  "protocol": {
+    "games": 10,
+    "workers": 8,
+    "julia_threads": 8,
+    "repeats": 1,
+    "warmup": "fast",
+    "warmup_games": 10,
+    "base_seed": 20261024,
+    "math_backend": "system_libm",
+    "julia_version": "1.12.6",
+    "baseline_rerun": false
+  },
+  "results": {
+    "run_id": "deathstar-20261028-dynamic-queue-10matches-02",
+    "wall_seconds": 33.94097916,
+    "campaign_setup_and_simulation_seconds": 33.740285359,
+    "completed_matches": 10,
+    "candidates": 198110,
+    "candidates_per_second": 5836.897016615121,
+    "completed_matches_per_hour": 1060.6647448293593,
+    "gameplay_sha256": "82b282ee176746817047e93d90755bedae81de07ed3b5ed876c9c336c8a96bb3",
+    "games_by_worker": {
+      "1": [
+        6
+      ],
+      "2": [
+        8
+      ],
+      "3": [
+        7
+      ],
+      "4": [
+        5,
+        9
+      ],
+      "5": [
+        3,
+        10
+      ],
+      "6": [
+        1
+      ],
+      "7": [
+        4
+      ],
+      "8": [
+        2
+      ]
+    }
+  },
+  "validation": {
+    "local_simulator_checks_passed": 14138,
+    "remote_simulator_checks_passed": 14138,
+    "harness_checks_passed": 246,
+    "reference_before_and_after": true,
+    "remote_artifact_validator": true,
+    "local_artifact_validator": true,
+    "actual_worker_ids_match_raw_timings": true,
+    "gameplay_byte_identical_to_retained_history": true,
+    "retained_history_run_id": "deathstar-20261027-static-query-candidate"
+  },
+  "limitations": [
+    "One measured trial; no repetition-based uncertainty estimate or speedup claim.",
+    "Eight unrelated single-thread Julia jobs were active at preflight; host and process snapshots retained.",
+    "Ten matches on eight workers exercise queue reuse but do not establish sustained saturation or SMT scaling."
+  ],
+  "evidence": {
+    "archive": "results/benchmarks/artifacts/deathstar-20261028-dynamic-queue-evidence.tar.gz",
+    "sha256": "63110982678c55fe9c9d82f24d0a9ade99e73892d41e8968b026e170fb9cddb8",
+    "size_bytes": 580002,
+    "extraction_validation_root": "source/",
+    "run_relative_to_extraction_root": "tmp/dynamic-queue-benchmarks/runs/deathstar-20261028-dynamic-queue-10matches-02",
+    "remote_job": "~/projects/peggle-benchmarks/dynamic-queue-20261028-02/"
+  }
+}

@@ -126,8 +126,14 @@ and UI waiting time are excluded. Solo uses free-ball catches without catch
 bonus or no-red penalties, and finishes on red clearance or one player's ball
 exhaustion.
 
-One persistent task per worker owns the matches assigned to it. At eight workers
-there is one task per match; at lower counts workers process strided match IDs.
+One persistent task per worker consumes a shared FIFO queue of match IDs. A
+worker finishing a match takes the next available ID, so it can continue while
+other workers are still processing longer matches. The queue is filled and
+closed before consumers start; results retain match-ID order, and seeds remain
+derived from match IDs. At eight matches and eight workers there is one match
+per worker; larger batches are assigned dynamically rather than by strided IDs.
+Each timing record includes the actual logical `worker_index`; the benchmark
+copies it into `matches.csv` rather than inferring it from match IDs.
 Each match has private live/candidate engines, buffers and RNGs. Candidate reset
 copies the decision checkpoint; evaluations cannot mutate live state or the
 shared match catch counter. Execute the noisy actual shot on the original live

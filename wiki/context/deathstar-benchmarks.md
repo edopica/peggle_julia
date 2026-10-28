@@ -81,3 +81,23 @@ Tomorrow, retrieve the run, archive, history, index, and job logs together.
 Check validation and completion counts before comparing medians, spread,
 throughput, speedup, and efficiency with the previous host. Remote storage
 alone is not an external durable archive; see [result storage](benchmark-results.md).
+
+## 2026-10-28 dynamic match queue
+
+The completed isolated job is `~/projects/peggle-benchmarks/dynamic-queue-20261028-02/`.
+It used current commit `1374397` plus the retained dynamic-queue patch, ten
+ribbon 1v1 matches, eight workers/threads, one trial, seed 20261024, 1,801 aims,
+Julia 1.12.6 and `system_libm`. `--warmup fast` ran ten concurrent unmeasured
+matches; no baseline was rerun. The remote simulator suite passed 14,138 checks.
+
+All ten measured matches completed in 33.941 seconds, evaluating 198,110
+candidates. Histories are byte-identical to the saved static-query campaign.
+Independent artifact validation passed remotely and after local retrieval.
+Eight unrelated single-thread Julia jobs were active at preflight; snapshots
+are retained. This single trial does not establish a scheduler speedup or
+sustained saturation. Actual logical worker IDs are recorded in `matches.csv`.
+
+See the [numeric report](../../results/analysis/dynamic-queue-2026-10-28.json)
+and [retained evidence](../../results/benchmarks/artifacts/deathstar-20261028-dynamic-queue-evidence.tar.gz).
+The first preflight attempt at `dynamic-queue-20261028/` was superseded before
+measurement to correct worker-ID reporting and remains intact.

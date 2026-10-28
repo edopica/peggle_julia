@@ -297,14 +297,26 @@ function run_campaign(level::LevelDefinition, config::SimConfig, o::CampaignOpti
     initial = build_checkpoint(level, config; mode = o.mode, provenance)
     results = Vector{Any}(undef, o.games)
     if parallel
+        # Fill and close before starting consumers: no producer can be left
+        # blocked if a match throws. Each ID is claimed once; RNG identity and
+        # output order still depend on the game ID, never on the worker.
+        pending = Channel{Int}(o.games)
+        for game in 1:o.games
+            put!(pending, game)
+        end
+        close(pending)
         @sync for worker in 1:workers
-            Threads.@spawn for game in worker:workers:o.games
-                results[game] = run_bot_game(initial, level, config, o, game, Val(phase_instrumentation))
+            Threads.@spawn begin
+                for game in pending
+                    run = run_bot_game(initial, level, config, o, game, Val(phase_instrumentation))
+                    results[game] = (; run.result, timings = (; run.timings..., worker_index = worker))
+                end
             end
         end
     else
         for game in 1:o.games
-            results[game] = run_bot_game(initial, level, config, o, game, Val(phase_instrumentation))
+            run = run_bot_game(initial, level, config, o, game, Val(phase_instrumentation))
+            results[game] = (; run.result, timings = (; run.timings..., worker_index = 1))
         end
     end
     return (; games = [r.result for r in results], timings = [r.timings for r in results])
