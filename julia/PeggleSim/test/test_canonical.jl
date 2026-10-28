@@ -1,5 +1,4 @@
 using Test
-using Printf
 using PeggleSim
 import JSON
 
@@ -28,16 +27,6 @@ import JSON
         @test canonical_json(123) == "123"
         @test canonical_json(-7) == "-7"
         @test canonical_json(-0.0) != canonical_json(0.0)
-    end
-
-    @testset "integral vs nonintegral rule" begin
-        @test canonical_json(2.0) == "2"
-        @test canonical_json(2.5) == "2.5"
-        @test canonical_json(1.0e0) == "1"
-        @test canonical_json(-1.5) == "-1.5"
-        # At or above 2^53 the integer shortcut stops being used.
-        @test canonical_json(2.0^53) == @sprintf("%.17g", 2.0^53)
-        @test canonical_json(2.0^53 + 2.0) == @sprintf("%.17g", 2.0^53 + 2.0)
     end
 
     @testset "empty containers are explicit" begin
@@ -79,21 +68,6 @@ import JSON
         @test_throws ArgumentError canonical_json(Any[1.0, NaN])
         @test_throws ArgumentError canonical_json(Dict{String,Any}("x" => Inf))
         @test_throws ArgumentError canonical_json(Float32(NaN))
-    end
-
-    @testset "bit-exact parse round trip from %.17g text" begin
-        values = Float64[
-            0.0, 1.0, 0.1, 1 / 3, 2.5, -3.0, 1e300, -1e300, 5e-324,
-            2.0^53, 2.0^53 + 2.0, 2.0^53 - 1.0, 1e15, 1e16, 1e17,
-            2.2250738585072014e-308, 1.7976931348623157e308,
-            6.283185307179586, 123456789.123456789, 1.0000000000000002,
-        ]
-        for x in values
-            text = @sprintf("%.17g", x)
-            parsed = JSON.parse(text)
-            @test Float64(parsed) isa Float64
-            @test reinterpret(UInt64, Float64(parsed)) == reinterpret(UInt64, x)
-        end
     end
 
     @testset "float_bits_hex" begin

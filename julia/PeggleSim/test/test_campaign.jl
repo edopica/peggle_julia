@@ -115,12 +115,6 @@ end
     parallel = PeggleSim.run_campaign(level, config, o; parallel=true)
     @test serial.games == parallel.games
     @test all(g -> !g["completed"] && g["turns"] == 0 && g["termination_reason"] == "candidate_step_limit", serial.games)
-    # Exercise actual selections and noisy executions, rather than only capped sweeps.
-    actual = PeggleSim.CampaignOptions(mode=:solo, games=3, max_turns=1, workers=min(3,Threads.nthreads()))
-    serial_actual = PeggleSim.run_campaign(level, config, actual; parallel=false)
-    parallel_actual = PeggleSim.run_campaign(level, config, actual; parallel=true)
-    @test serial_actual.games == parallel_actual.games
-    @test all(g -> g["turns"] == 1 && !isempty(g["decisions"][1]["sectors"]), serial_actual.games)
-    @test all(g -> !g["completed"] && g["termination_reason"] == "turn_limit", serial_actual.games)
+    # Complete selections and noisy executions are covered by the 1v1 scheduler test.
     @test_throws ArgumentError PeggleSim.finish_solo_turn!(candidate)
 end

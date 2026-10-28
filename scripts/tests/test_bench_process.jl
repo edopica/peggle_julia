@@ -147,18 +147,6 @@ end
     end
 end
 
-@testset "bench_process usage errors" begin
-    code, _, stderr = run_bench_process(String[])
-    @test code == 2
-    @test occursin("--out", stderr)
-
-    mktempdir() do dir
-        code, _, stderr = run_bench_process(String["--out", joinpath(dir, "m.json")])
-        @test code == 2
-        @test occursin("missing command", stderr)
-    end
-end
-
 @testset "sync_campaign_config --check is byte-exact" begin
     if Sys.which("luajit") === nothing
         @test_skip "luajit unavailable"

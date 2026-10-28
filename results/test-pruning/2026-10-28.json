@@ -1,0 +1,41 @@
+{
+  "date": "2026-10-28",
+  "julia_version": "1.12.6",
+  "measurement_note": "Local indicative timings including compilation. Independent baseline/pruned and harness processes overlapped; these are not isolated performance benchmarks.",
+  "test_source": {
+    "lines_added": 17,
+    "lines_removed": 1046
+  },
+  "simulator": {
+    "before": {
+      "passed_assertions": 80434,
+      "elapsed_seconds": 218.4
+    },
+    "after": {
+      "passed_assertions": 41474,
+      "elapsed_seconds": 121.0
+    },
+    "command": "julia --project=julia/PeggleSim -e 'using Test, PeggleSim; @testset \"suite\" begin; for f in sort(filter(f -> startswith(f, \"test_\") && endswith(f, \".jl\"), readdir(\"julia/PeggleSim/test\"))); include(joinpath(\"julia/PeggleSim/test\", f)); end; end'",
+    "baseline_note": "Original test source was cached before edits and evaluated with include_string using its original absolute filename."
+  },
+  "benchmark_harness": {
+    "before": {
+      "passed_assertions": 246,
+      "elapsed_seconds": 105.3
+    },
+    "after": {
+      "passed_assertions": 219,
+      "elapsed_seconds": 59.4
+    },
+    "command": "julia --project=julia/PeggleSim scripts/tests/runtests.jl"
+  },
+  "threaded_campaign": {
+    "command": "julia --project=julia/PeggleSim -t 3 julia/PeggleSim/test/test_match_campaign.jl",
+    "passed_assertions": 133,
+    "elapsed_seconds": 67.6
+  },
+  "reference_verification": {
+    "command": "make verify",
+    "matching_files": 133
+  }
+}

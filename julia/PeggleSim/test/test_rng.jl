@@ -4,7 +4,6 @@ using PeggleSim
 
 const RNG_FIXTURE_DIR =
     normpath(joinpath(@__DIR__, "..", "..", "..", "fixtures", "rng"))
-const REPO_ROOT = normpath(joinpath(@__DIR__, "..", "..", ".."))
 
 # Apply one fixture operation to a generator and return the raw results.
 function _apply_rng_op!(r::LoveRandom, op::AbstractDict)
@@ -273,110 +272,5 @@ end
         end
     end
 
-    @testset "peg_colors fixture" begin
-        path = joinpath(RNG_FIXTURE_DIR, "peg_colors.v1.json")
-        needed = (:load_level, :load_config, :init_colors!, :assign_next_purple_pegs!)
-        missing_modules = [n for n in needed if !isdefined(PeggleSim, n)]
-        if !isfile(path)
-            println("test_rng: fixture not present yet, skipping: ", path)
-            @test_skip "peg_colors.v1.json not present"
-        elseif !isempty(missing_modules)
-            println(
-                "test_rng: peg_colors fixture present but these symbols are not ",
-                "implemented yet: ",
-                join(string.(missing_modules), ", "),
-            )
-            @test_skip "peg_colors requires the level/colorstate workstream"
-        else
-            doc = load_json(path)
-            @test startswith(as_string(doc["format"]), "peggle.peg_colors")
-            entries = haskey(doc, "levels") ? doc["levels"] : Any[doc]
-            config_path = joinpath(REPO_ROOT, "interchange", "config.v1.json")
-            @test isfile(config_path)
-            config = PeggleSim.load_config(config_path)
-            per_turn = as_int(config.purple_pegs_per_turn, "purple_pegs_per_turn")
 
-            for entry in entries
-                level_name = as_string(entry["level"], "level")
-                level_path = joinpath(
-                    REPO_ROOT, "interchange", "levels", level_name * ".v1.json")
-                @test isfile(level_path)
-                if !isfile(level_path)
-                    continue
-                end
-                if haskey(entry, "level_sha256") && isdefined(PeggleSim, :level_sha256)
-                    @test PeggleSim.level_sha256(level_path) ==
-                          as_string(entry["level_sha256"])
-                end
-                level = PeggleSim.load_level(level_path)
-                if haskey(entry, "type_counts")
-                    tc = as_object(entry["type_counts"], "type_counts")
-                    @test level.type_counts == (
-                        blue = as_int(tc["blue"]),
-                        green = as_int(tc["green"]),
-                        purple = as_int(tc["purple"]),
-                        red = as_int(tc["red"]),
-                    )
-                end
-
-                rng = LoveRandom(level.level_seed)
-                pegs = level.pegs
-                cs = PeggleSim.init_colors!(
-                    pegs, level.type_counts, level.level_seed, rng)
-                if haskey(entry, "rng_state_after_init")
-                    @test get_state(rng) == as_string(entry["rng_state_after_init"])
-                end
-                if haskey(entry, "peg_types")
-                    @test [string(p.peg_type) for p in pegs] ==
-                          [as_string(t) for t in entry["peg_types"]]
-                end
-                if haskey(entry, "queue_after_init")
-                    @test [Int(x) for x in cs.queue] ==
-                          [as_int(x) for x in entry["queue_after_init"]]
-                end
-
-                PeggleSim.assign_next_purple_pegs!(pegs, cs, per_turn)
-                if haskey(entry, "active_after_first_promotion")
-                    @test [Int(x) for x in cs.active] ==
-                          [as_int(x) for x in entry["active_after_first_promotion"]]
-                end
-                if haskey(entry, "peg_types_after_first_promotion")
-                    @test [string(p.peg_type) for p in pegs] ==
-                          [as_string(t) for t in entry["peg_types_after_first_promotion"]]
-                end
-                if haskey(entry, "rng_state_after_first_promotion")
-                    @test get_state(rng) ==
-                          as_string(entry["rng_state_after_first_promotion"])
-                end
-
-                # The captured rounds start from a fresh post-init state
-                # (round 1 records active_before = [] and the full queue),
-                # so replay them on a fresh init instead of continuing from
-                # the first promotion checked above.
-                rng = LoveRandom(level.level_seed)
-                cs = PeggleSim.init_colors!(
-                    pegs, level.type_counts, level.level_seed, rng)
-
-                by_id = Dict(p.id => p for p in pegs)
-                rounds = get(entry, "promotion_rounds", get(entry, "rounds", []))
-                for round in rounds
-                    for id in get(round, "mark_hit", [])
-                        by_id[as_int(id, "mark_hit")].hit = true
-                    end
-                    PeggleSim.assign_next_purple_pegs!(pegs, cs, per_turn)
-                    if haskey(round, "active")
-                        @test [Int(x) for x in cs.active] ==
-                              [as_int(x) for x in round["active"]]
-                    end
-                    if haskey(round, "queue")
-                        @test [Int(x) for x in cs.queue] ==
-                              [as_int(x) for x in round["queue"]]
-                    end
-                    if haskey(round, "rng_state")
-                        @test get_state(rng) == as_string(round["rng_state"])
-                    end
-                end
-            end
-        end
-    end
 end

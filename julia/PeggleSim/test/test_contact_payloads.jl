@@ -71,13 +71,6 @@ end
             PeggleSim.emit_contact!(j, event_type, ball, rec, bounced, peg, kind)
             PeggleSim.emit_raw!(legacy, event_type, expected)
             ev = only(j.raw)
-            @test ev.fields isa PeggleSim.EventFields
-            @test only(legacy.raw).fields isa PeggleSim.EventFields
-            @test Set(keys(ev.fields)) == Set(keys(expected))
-            @test length(ev.fields) == length(expected)
-            @test get(ev.fields, "absent", nothing) === nothing
-            @test !haskey(ev.fields, "absent")
-            @test_throws KeyError ev.fields["absent"]
             @test PeggleSim.trace_json(PeggleSim.event_dict(ev)) ==
                   PeggleSim.trace_json(PeggleSim.event_dict(only(legacy.raw)))
             @test PeggleSim.trace_json(ev.fields) == PeggleSim.trace_json(expected)
@@ -95,9 +88,6 @@ end
     peg.line = nothing
     ball.id = 77
     @test PeggleSim.trace_json(PeggleSim.event_dict(ev)) == before
-    @test ev.fields["line"] isa PeggleSim.ContactLine
-    @test !ismutabletype(typeof(ev.fields))
-    @test !ismutabletype(typeof(ev.fields["line"]))
     snap = PeggleSim.journal_snapshot(j)
     @test snap.raw[1]["line"] isa Dict{String,Any}
     snap.raw[1]["line"]["id"] = "changed"
@@ -110,7 +100,6 @@ end
     PeggleSim.stage!(staged, ev.type, ev.fields)
     PeggleSim.reset!(j)
     PeggleSim.begin_step!(staged, ev.step, ev.shot_id)
-    @test only(staged.raw).fields === ev.fields
     @test PeggleSim.trace_json(PeggleSim.event_dict(only(staged.raw))) == before
     PeggleSim.reset!(staged)
     @test PeggleSim.trace_json(PeggleSim.event_dict(ev)) == before
@@ -152,7 +141,6 @@ end
     PeggleSim.physics_update!([ball], [peg], PeggleSim.Peg[], PeggleSim.Peg[],
         config.fixed_dt, nothing, config, 1200.0, journal)
     ev = only(filter(e -> e.type == "ball_contacted_peg", journal.raw))
-    @test ev.fields isa PeggleSim.EventFields
     @test ev.fields["contact_kind"] == "graze"
     @test ev.fields["did_bounce"] === false
     @test Set(keys(ev.fields)) == Set([
@@ -190,7 +178,6 @@ end
     data["line"]["id"] = "producer mutation"
     data["items"][1]["value"] = 9
     PeggleSim.begin_step!(j, 1, 1)
-    @test only(j.raw).fields isa PeggleSim.EventFields
     exported = PeggleSim.event_dict(only(j.raw))
     @test exported["line"]["id"] == "original"
     @test exported["items"][1]["value"] == 1

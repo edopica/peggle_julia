@@ -1,7 +1,6 @@
 # Focused tests for the M3 event journal and command buffer (workstream A).
 # Mirrors the reference unit tests tests/test_gameplay_events.lua and
-# tests/test_gameplay_commands.lua for the exported-behaviour subset, plus the
-# Peg live-field and BallState.scored_fever defaults.
+# tests/test_gameplay_commands.lua for the exported-behaviour subset.
 
 using Test
 using PeggleSim
@@ -274,63 +273,5 @@ using PeggleSim
         @test isempty(c.commands) && isempty(c.applied)
     end
 
-    @testset "Peg live-field defaults" begin
-        circle = PeggleSim.CircleShape(15.0)
-        p = PeggleSim.Peg(1, 10.0, 20.0, 10.0, 20.0, circle, :blue, false, 0, 0, nothing)
-        @test p.base_angle == 0.0
-        @test p.angle == 0.0
-        @test p.vx == 0.0 && p.vy == 0.0 && p.va == 0.0
-        @test p.prev_x == 10.0 && p.prev_y == 20.0
-        @test p.prev_angle == 0.0
-        @test p.bounding_radius === 15.0
 
-        rect = PeggleSim.RectangleShape(40.0, 20.0, 1.25)
-        r = PeggleSim.Peg(2, 30.0, 40.0, 30.0, 40.0, rect, :green, true, 3, 2, nothing)
-        @test r.base_angle == 1.25
-        @test r.angle == 1.25
-        @test r.prev_angle == 1.25
-        @test r.hit && r.hit_order == 3 && r.multiplier_at_hit == 2
-        @test r.bounding_radius === PeggleSim.DetMath.det_sqrt(40.0 * 40.0 + 20.0 * 20.0) / 2
-        @test r.bounding_radius === rect.bounding_radius
-
-        ann = PeggleSim.AnnularShape(10.0, 20.0, 0.0, 1.5, 8)
-        a = PeggleSim.Peg(3, 50.0, 60.0, 50.0, 60.0, ann, :purple, false, 0, 0, nothing)
-        @test a.base_angle == 0.0
-        @test a.angle == 0.0
-        @test a.prev_angle == 0.0
-        @test a.vx == 0.0 && a.vy == 0.0 && a.va == 0.0
-        @test a.prev_x == 50.0 && a.prev_y == 60.0
-        @test a.bounding_radius === 20.0
-
-        # Live fields are mutable and independent per instance.
-        p.vx = 5.0
-        p.bounding_radius = 15.0
-        p.angle = 0.5
-        @test p.vx == 5.0 && p.bounding_radius == 15.0 && p.angle == 0.5
-        @test a.vx == 0.0 && a.bounding_radius === 20.0
-
-        # New per-worker pegs reuse the immutable geometry across resets.
-        replacement = PeggleSim.Peg(2, 30.0, 40.0, 30.0, 40.0,
-                                   rect, :green, false, 0, 0, nothing)
-        r.bounding_radius = nothing
-        @test replacement.shape === rect
-        @test replacement.bounding_radius === rect.bounding_radius
-    end
-
-    @testset "BallState scored_fever default" begin
-        b = PeggleSim.BallState(1, 10.0, 50.0, 8.0)
-        @test b.id == 1
-        @test b.x == 10.0 && b.y == 50.0
-        @test b.prev_x == 10.0 && b.prev_y == 50.0
-        @test b.vx == 0.0 && b.vy == 0.0
-        @test b.radius == 8.0
-        @test !b.launched
-        @test b.scored_fever === false
-
-        b.scored_fever = true
-        @test b.scored_fever
-
-        full = PeggleSim.BallState(2, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, true, true)
-        @test full.scored_fever
-    end
 end

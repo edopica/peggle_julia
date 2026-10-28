@@ -190,6 +190,7 @@ mirrors `../peggle_evolved/wiki/` so material can move between the projects.
 | `wiki/context/inventory.md` | Inventory of the existing Lua corpus, tools, and plumbing | current |
 | `wiki/context/interchange.md` | Versioned level/config/checkpoint/action/result formats, static subset, verification | current |
 | `wiki/context/fixtures.md` | Reference fixture matrix, capture protocol, the 42-case assessment | current |
+| `wiki/context/testing.md` | Test commands, selection criteria, and pruning rationale | current |
 | `wiki/context/julia.md` | M2/M3 Julia package: pinned env, DetMath backends, RNG, state, checkpoint contract, shot engine, traces | current |
 | `wiki/context/m3-mustache.md` | M3 mustache corpus: 5 trace fixtures, capture and comparison runbook, full-grid agreement | current |
 | `wiki/context/m4-validation.md` | M4 correctness-breadth validation: corpus, method, results, divider fix, scenario decision | current |

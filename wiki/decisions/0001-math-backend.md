@@ -33,7 +33,8 @@ the module constant `MATH_BACKEND`:
   parity manifest.
 
 The authoritative path never uses `@fastmath`, `@simd`, `@turbo`, `muladd`,
-or `fma`; a test scans the sources for all five. `lua_mod` is the floored
+or `fma`. The source-text scan was removed on 2026-10-28; the captured
+math census and trace parity remain the behavioral checks. `lua_mod` is the floored
 `a - floor(a/b)*b`, never C `fmod` or Julia `rem`.
 
 Measured openlibm divergence from the captured system-libm truth

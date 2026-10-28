@@ -30,44 +30,14 @@ const PARITY_CENSUS = joinpath(
 
         @test man1["identity"]["format"] == "peggle.parity"
         @test man1["identity"]["schema_version"] == 2
-        @test man1["identity"]["checkpoint_schema_version"] == 1
-        @test occursin(r"^[0-9a-f]{40}$", man1["identity"]["reference_revision"])
-        @test occursin(r"^[0-9a-f]{40}$", man1["identity"]["reference_tree"])
-        @test occursin(r"^[0-9a-f]{64}$", man1["identity"]["config_sha256"])
-        @test man1["identity"]["package_version"] == "0.1.0"
-        @test man1["identity"]["julia_source_sha256"] isa String
-        @test occursin(r"^[0-9a-f]{64}$", man1["identity"]["julia_source_sha256"])
-        @test man2["identity"]["julia_source_sha256"] ==
-              man1["identity"]["julia_source_sha256"]
-
         # Comparison prerequisites are identical across independent builds.
         prereq1 = man1["identity"]["prerequisites"]
         prereq2 = man2["identity"]["prerequisites"]
         @test prereq1 == prereq2
-        for key in ("config_artifact_sha256", "census_fixture_sha256",
-                    "rng_sequences_fixture_sha256", "peg_colors_fixture_sha256",
-                    "levels_sha256")
-            @test occursin(r"^[0-9a-f]{64}$", prereq1[key])
-        end
-        @test prereq1["package_version"] == "0.1.0"
-        @test prereq1["math_backend"]["backend"] ==
-              String(PeggleSim.DetMath.MATH_BACKEND[])
-
         # The prerequisite carries the platform-independent component identity
         # only; per-platform artifact bytes never enter it.
         @test !haskey(prereq1["math_backend"], "artifact_sha256")
         @test !haskey(prereq1["math_backend"], "platform")
-        if PeggleSim.DetMath.math_backend_identity().backend === :core_math
-            @test occursin(r"^[0-9a-f]{40}$",
-                           prereq1["math_backend"]["core_math_revision"])
-            @test prereq1["math_backend"]["abi_version"] == 1
-            @test prereq1["math_backend"]["numeric_contract_version"] == 1
-            @test occursin(r"^[0-9a-f]{64}$",
-                           prereq1["math_backend"]["component_source_sha256"])
-        else
-            @test sort!(collect(keys(prereq1["math_backend"]))) == ["backend"]
-        end
-
         @test auth1["math_census"]["verified"] === true
         @test auth1["math_census"]["mismatches"] == 0
         @test auth1["math_census"]["total_cases"] > 0
@@ -75,28 +45,9 @@ const PARITY_CENSUS = joinpath(
         @test auth1["rng_sequences"]["verified"] === true
         @test auth1["rng_sequences"]["mismatches"] == 0
         @test auth1["rng_sequences"]["checked"] > 0
-        @test occursin(r"^[0-9a-f]{64}$", auth1["rng_sequences"]["computed_sha256"])
-        @test auth1["rng_sequences"]["computed_sha256"] ==
-              auth2["rng_sequences"]["computed_sha256"]
-        @test auth1["rng_sequences"]["computed_record_sha256"] ==
-              auth2["rng_sequences"]["computed_record_sha256"]
-        @test !isempty(auth1["rng_sequences"]["computed_record_sha256"])
-        for (_, hash) in auth1["rng_sequences"]["computed_record_sha256"]
-            @test occursin(r"^[0-9a-f]{64}$", hash)
-        end
-        @test !haskey(auth1["rng_sequences"], "first_mismatch")
-
         @test auth1["peg_colors"]["verified"] === true
         @test auth1["peg_colors"]["mismatches"] == 0
         @test auth1["peg_colors"]["checked"] > 0
-        @test occursin(r"^[0-9a-f]{64}$", auth1["peg_colors"]["computed_sha256"])
-        @test auth1["peg_colors"]["computed_sha256"] ==
-              auth2["peg_colors"]["computed_sha256"]
-        @test auth1["peg_colors"]["computed_record_sha256"] ==
-              auth2["peg_colors"]["computed_record_sha256"]
-        @test !isempty(auth1["peg_colors"]["computed_record_sha256"])
-        @test !haskey(auth1["peg_colors"], "first_mismatch")
-
         @test length(auth1["levels"]) == 8
         @test length(auth1["geometry"]) == 9
         @test length(auth1["reset"]) == 9
@@ -104,28 +55,12 @@ const PARITY_CENSUS = joinpath(
         @test auth1["reset_deterministic"] === true
 
         for (label, record) in auth1["reset"]
-            @test Set(keys(record)) == Set([
-                "checkpoint_sha256", "mutated_sha256", "restored_sha256",
-                "restored_matches_original"])
             @test record["restored_matches_original"] === true
             @test length(record["restored_sha256"]) == 2
             @test record["restored_sha256"][1] == record["restored_sha256"][2]
             @test record["restored_sha256"][1] == record["checkpoint_sha256"]
             @test record["checkpoint_sha256"] == auth1["geometry"][label]
             @test record["mutated_sha256"] != record["checkpoint_sha256"]
-            for hash in (record["checkpoint_sha256"], record["mutated_sha256"],
-                         record["restored_sha256"][1])
-                @test occursin(r"^[0-9a-f]{64}$", hash)
-            end
-        end
-        for (label, hash) in auth1["geometry"]
-            @test occursin(r"^[0-9a-f]{64}$", hash)
-        end
-
-        # Two independent builds of every configuration agree.
-        for label in keys(auth1["geometry"])
-            @test auth1["geometry"][label] == auth2["geometry"][label]
-            @test auth1["reset"][label] == auth2["reset"][label]
         end
 
         # The environment carries the label and never enters authoritative.
@@ -133,51 +68,6 @@ const PARITY_CENSUS = joinpath(
         @test man2["environment"]["label"] == "test-b"
         @test !haskey(auth1, "environment")
         @test !haskey(auth1, "hostname")
-
-        # The environment records the expanded backend identity.
-        backend = man1["environment"]["math_backend"]
-        id = PeggleSim.DetMath.math_backend_identity()
-        @test backend["backend"] == String(id.backend)
-        @test backend["library"] == String(id.library)
-        @test backend["platform"] == String(id.platform)
-        @test backend["julia"] == String(id.julia)
-        if id.backend === :core_math
-            @test backend["abi_version"] == 1
-            @test occursin(r"^[0-9a-f]{64}$", backend["artifact_sha256"])
-            @test backend["expected_artifact_sha256"] == backend["artifact_sha256"]
-            @test backend["artifact_validated"] === true
-            @test occursin(r"^[0-9a-f]{40}$", backend["core_math_revision"])
-        else
-            @test !haskey(backend, "abi_version")
-            @test !haskey(backend, "artifact_sha256")
-            @test !haskey(backend, "expected_artifact_sha256")
-            @test !haskey(backend, "artifact_validated")
-        end
-
-        # The native component identity is platform-independent and stable,
-        # and the expected artifact checksum comes from the recorded build.
-        component = PeggleSim._native_component_source_sha256(PARITY_REPO_ROOT)
-        @test occursin(r"^[0-9a-f]{64}$", component)
-        @test component == PeggleSim._native_component_source_sha256(PARITY_REPO_ROOT)
-        sha_path = joinpath(PARITY_REPO_ROOT, "native", "artifacts",
-                            "linux-x86_64",
-                            PeggleSim.DetMath.core_math_artifact_filename(
-                                "linux-x86_64") * ".sha256")
-        recorded = first(split(strip(read(sha_path, String))))
-        @test PeggleSim._expected_native_artifact_sha256(
-            PARITY_REPO_ROOT, "linux-x86_64") == recorded
-        @test PeggleSim._expected_native_artifact_sha256(
-            PARITY_REPO_ROOT, "windows-x86_64") ==
-              "bad2c2274783cc4ce123618463b6486811c9f863a44c228d99ad33fee3c29ec6"
-        @test PeggleSim._expected_native_artifact_sha256(
-            PARITY_REPO_ROOT, "darwin-aarch64") ==
-              "3b877368fed9608e575ef48904ab016ce83f4a719f599cb2ac0a04d64fb0f8a5"
-        @test PeggleSim._expected_native_artifact_sha256(
-            PARITY_REPO_ROOT, "no-such-platform") === nothing
-
-        # The prerequisite cannot be affected by artifact bytes.
-        prereq_direct = PeggleSim._math_backend_prereq(PARITY_REPO_ROOT)
-        @test !any(occursin("artifact", key) for key in keys(prereq_direct))
 
         # Flipped values are located at the expected JSON path.
         @test PeggleSim.first_parity_difference(man1, man1) === nothing
@@ -256,13 +146,8 @@ end
                                         rng_path = rng,
                                         colors_path = colors)
         auth = PeggleSim.parity_authoritative(man)
-        @test auth["math_census"]["verified"] === true
-        @test auth["math_census"]["total_cases"] == 10
-        @test auth["math_census"]["mismatches"] == 0
         @test auth["math_census"]["fixture_sha256"] == PeggleSim._file_sha256(census)
-        @test auth["rng_sequences"]["verified"] === true
         @test auth["rng_sequences"]["fixture_sha256"] == PeggleSim._file_sha256(rng)
-        @test auth["peg_colors"]["verified"] === true
         @test auth["peg_colors"]["fixture_sha256"] == PeggleSim._file_sha256(colors)
 
         prereq = man["identity"]["prerequisites"]

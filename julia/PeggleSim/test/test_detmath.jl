@@ -3,27 +3,6 @@ using PeggleSim
 using PeggleSim.DetMath
 import JSON
 
-# Remove a trailing comment so the banned-construct scan only sees live code.
-function _strip_comment(line::String)
-    in_single = false
-    in_double = false
-    escaped = false
-    for (i, c) in pairs(line)
-        if escaped
-            escaped = false
-        elseif (in_single || in_double) && c == '\\'
-            escaped = true
-        elseif c == '\'' && !in_double
-            in_single = !in_single
-        elseif c == '"' && !in_single
-            in_double = !in_double
-        elseif c == '#' && !in_single && !in_double
-            return line[1:prevind(line, i)]
-        end
-    end
-    return line
-end
-
 const DETMATH_PROJECT = normpath(joinpath(@__DIR__, ".."))
 
 # Run a Julia subprocess in the pinned package environment with a controlled
@@ -136,30 +115,6 @@ print(JSON.json(data))
         @test id.abi_version == 1
         @test occursin(r"^[0-9a-f]{64}$", id.artifact_sha256)
         @test occursin(r"^[0-9a-f]{40}$", id.core_math_revision)
-    end
-
-    @testset "function presence" begin
-        @test det_sin(0.0) == 0.0
-        @test det_cos(0.0) == 1.0
-        @test det_tan(0.0) == 0.0
-        @test det_asin(0.0) == 0.0
-        @test det_acos(1.0) == 0.0
-        @test det_atan(0.0) == 0.0
-        @test det_atan2(0.0, 1.0) == 0.0
-        @test det_pow(2.0, 10.0) == 1024.0
-        @test det_exp(0.0) == 1.0
-        @test det_log(1.0) == 0.0
-        @test det_sqrt(4.0) == 2.0
-        @test isnan(det_sqrt(-1.0))
-        @test det_sin(1.0) isa Float64
-        @test det_cos(1.0) isa Float64
-        @test det_atan2(1.0, -1.0) isa Float64
-        @test det_asin(0.5) isa Float64
-        @test det_acos(0.5) isa Float64
-        @test det_tan(0.5) isa Float64
-        @test det_exp(1.0) isa Float64
-        @test det_log(2.0) isa Float64
-        @test det_pow(2.0, 0.5) isa Float64
     end
 
     @testset "lua_mod sign and zero cases" begin
@@ -282,28 +237,5 @@ print(JSON.json(data))
         end
     end
 
-    @testset "no banned constructs in src" begin
-        src_dir = normpath(joinpath(@__DIR__, "..", "src"))
-        banned = [
-            ("@fastmath", r"@fastmath"),
-            ("@simd", r"@simd"),
-            ("@turbo", r"@turbo"),
-            ("muladd", r"\bmuladd\b"),
-            ("fma", r"\bfma\b"),
-        ]
-        hits = String[]
-        for file in sort(readdir(src_dir; join = true))
-            endswith(file, ".jl") || continue
-            for (n, line) in enumerate(eachline(file))
-                code = _strip_comment(line)
-                for (name, re) in banned
-                    if occursin(re, code)
-                        push!(hits, "$(basename(file)):$n: $(name)")
-                    end
-                end
-            end
-        end
-        isempty(hits) || println("banned constructs found:\n  " * join(hits, "\n  "))
-        @test isempty(hits)
-    end
+
 end

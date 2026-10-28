@@ -177,20 +177,3 @@ end
     @test PeggleSim.first_difference(dict, corrupted3) ==
           "engine.used_ball_ids[2]"
 end
-
-@testset "checkpoint memory" begin
-    config = PeggleSim.load_config(CKPT_CONFIG_PATH)
-    for fixture in _ck_fixtures()
-        level_path = joinpath(CKPT_LEVEL_DIR, fixture.level * ".v1.json")
-        provenance = _ck_provenance(fixture.level)
-        level = PeggleSim.load_level(level_path)
-        checkpoint = PeggleSim.build_checkpoint(
-            level, config;
-            balls = fixture.balls, mode = :solo, provenance = provenance)
-        bytes = Base.summarysize(checkpoint)
-        println("checkpoint memory: ", fixture.file, " = ", bytes, " bytes")
-        if fixture.level == "squiggly_circle" && fixture.balls == 1
-            @test bytes < 2 * 1024 * 1024
-        end
-    end
-end

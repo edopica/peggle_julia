@@ -36,7 +36,7 @@ The former `scripts/run_campaign_benchmark.py`, `scripts/bench_process.py`,
 ## Commands
 
 ```bash
-# Fast contract tests (~90 s including five fresh Julia processes)
+# Harness contracts (including child-process measurement and input validation)
 make julia-scripts-test
 
 # One real end-to-end run in ignored scratch storage

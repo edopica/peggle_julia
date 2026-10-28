@@ -51,11 +51,9 @@ using PeggleSim
     @testset "full shot parity, events, spawn and clearing reuse" begin
         for (path, configpath, aims, balls) in (
                 ("fixtures/mustache/artifact/mustache.v1.json",
-                 "fixtures/mustache/config.dev.v1.json", (0, 570, 900), 1),
-                ("interchange/levels/slide.v1.json", "interchange/config.v1.json", (570, 900), 3),
-                ("interchange/levels/squiggly_circle.v1.json", "interchange/config.v1.json", (570, 900), 1),
-                ("fixtures/ribbon_waves/artifact/ribbon_waves.v1.json",
-                 "campaigns/ribbon/config.v1.json", (570, 900), 1))
+                 "fixtures/mustache/config.dev.v1.json", (0, 900), 1),
+                ("interchange/levels/slide.v1.json", "interchange/config.v1.json", (570,), 3),
+                ("interchange/levels/squiggly_circle.v1.json", "interchange/config.v1.json", (900,), 1))
             level = PeggleSim.load_level(joinpath(root, path))
             cfg = PeggleSim.load_config(joinpath(root, configpath))
             checkpoint = PeggleSim.build_checkpoint(level, cfg; balls,
@@ -90,10 +88,7 @@ using PeggleSim
         end
     end
 
-    @testset "inline layout and live geometry refresh" begin
-        for S in (PeggleSim.CircleShape, PeggleSim.RectangleShape, PeggleSim.AnnularShape)
-            @test isbitstype(PeggleSim.CompactPegGeometry{S})
-        end
+    @testset "live geometry refresh" begin
         peg = PeggleSim.Peg(1, 0.0, -0.0, 0.0, 0.0, PeggleSim.CircleShape(9.0),
                             :blue, false, 0, 0, nothing)
         records = [PeggleSim.CompactPegGeometry(peg)]

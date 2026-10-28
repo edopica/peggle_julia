@@ -92,7 +92,8 @@ JSON-ready view used by the parity `environment` section, the checkpoint
 benchmark, and the census summary.
 
 Rules for the authoritative path: no `@fastmath`, no `@simd`, no `@turbo`, no
-`muladd`, no `fma`. `test/test_detmath.jl` scans the sources for all five.
+`muladd`, no `fma`. The parity-manifest test checks every captured math
+census result bit-for-bit; gameplay traces check the resulting simulation.
 The backend policy and its measured divergence rates are recorded in
 `wiki/decisions/0001-math-backend.md` (amended for WP-C); the census is
 audited in `wiki/audits/m2-math-census.md`.
@@ -371,8 +372,8 @@ runbook.
 `test_events.jl`, `test_impact_geometry.jl`, `test_physics.jl`,
 `test_bucket.jl`, `test_fever.jl`, `test_powers.jl`, `test_style_shots.jl`,
 `test_ball_state.jl`, `test_slide_inversion.jl`, `test_engine.jl`,
-`test_snapshot.jl`, and `test_trace.jl`. `Pkg.test()` reports 4,722 pass / 0
-fail.
+`test_snapshot.jl`, and `test_trace.jl`. See [test selection](testing.md)
+for the retained coverage and the 2026-10-28 pruning rationale.
 
 - 5 mustache trace fixtures: the Lua snapshot-enabled corpus and the Julia
   traces are byte-identical. The comparison covers the full per-step state

@@ -38,8 +38,8 @@ three backends selected once, in `__init__`, from `PEGGLE_MATH_BACKEND`:
 `math_backend_identity()` reports the active backend, library, platform,
 native ABI/artifact identity when applicable, glibc version, and Julia version
 for cross-machine manifests. The deterministic path must not use `@fastmath`,
-`@simd`, `@turbo`, `muladd`, or `fma`; `test_detmath.jl` scans the sources for
-them.
+`@simd`, `@turbo`, `muladd`, or `fma`. Numerical parity is checked against
+the captured Lua math census and gameplay traces.
 
 ## Canonical JSON
 
