@@ -51,7 +51,7 @@ const REPO_ROOT = normpath(joinpath(@__DIR__, "..", "..", ".."))
 const DEFAULT_MAX_STEPS = 3600
 const DEFAULT_THREADS = Threads.nthreads()
 
-const FLAG_ARGS = Set(["--clearing", "--snapshots", "--sweep", "--verify-serial", "--alloc"])
+const FLAG_ARGS = Set(["--clearing", "--snapshots", "--sweep", "--verify-serial", "--alloc", "--prepared"])
 const VALUE_ARGS = Set([
     "--fixture", "--level", "--config", "--aim", "--balls", "--max-steps",
     "--indices", "--stride", "--threads", "--out", "--summary",
@@ -59,6 +59,7 @@ const VALUE_ARGS = Set([
 ])
 
 function usage()
+    println("  --prepared: use the internal prepared checkpoint and compact geometry")
     println("usage:")
     println("  shot_bench.jl --fixture ID --level PATH --config PATH --aim INDEX " *
             "[--balls N] [--clearing] [--max-steps N] [--snapshots] " *
@@ -163,6 +164,7 @@ function _run_traced_shot(ckpt, level, config, clearing::Bool, max_steps::Int,
     eng = PeggleSim.shot_engine(
         ckpt; callbacks = callbacks, config = config,
         virtual_width = level.virtual_width, virtual_height = level.virtual_height)
+    eng.static_geometry = ckpt isa PeggleSim.PreparedCheckpoint
     writer = PeggleSim.trace_open(trace_path; include_snapshot = include_snapshot)
     eng.trace = writer
     PeggleSim.launch!(eng, aim)
@@ -189,6 +191,7 @@ function run_trace(opts, flags)
     provenance = _checkpoint_provenance(level)
     ckpt = PeggleSim.build_checkpoint(
         level, config; balls = balls, mode = :solo, provenance = provenance)
+    "--prepared" in flags && (ckpt = PeggleSim.prepare_checkpoint(ckpt))
 
     _ensure_parent(trace_out)
     eng, writer = _run_traced_shot(
@@ -322,7 +325,7 @@ end
 function _evaluate!(eng, ckpt, index::Int, config, max_steps::Int;
                     trace_path::Union{Nothing,AbstractString} = nothing)
     t0 = time_ns()
-    PeggleSim.reset_shot_engine!(eng, ckpt)
+    PeggleSim.reset_shot_engine!(eng, ckpt; static_geometry = ckpt isa PeggleSim.PreparedCheckpoint)
     t1 = time_ns()
     writer = nothing
     if trace_path !== nothing
@@ -509,6 +512,7 @@ function run_sweep(opts, flags)
     provenance = _checkpoint_provenance(level)
     ckpt = PeggleSim.build_checkpoint(
         level, config; balls = balls, mode = :solo, provenance = provenance)
+    "--prepared" in flags && (ckpt = PeggleSim.prepare_checkpoint(ckpt))
     indices = _candidate_indices(opts, config)
     isempty(indices) && error("no candidates selected")
 

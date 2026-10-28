@@ -185,6 +185,8 @@ mirrors `../peggle_evolved/wiki/` so material can move between the projects.
 | `wiki/context/reference.md` | Frozen revision, config, candidate grid, decision boundary, action/result schemas | current |
 | `wiki/context/workload.md` | Representative workloads, seeds, phase definitions, measurement protocol, campaign sizing | current |
 | `wiki/context/optimization-strategy.md` | Italian discussion summary: memory layout, shared geometry, CPU caches, threading, SIMD, and throughput per euro | exploratory |
+| `wiki/context/prepared-checkpoint.md` | Prepared candidate resets, compact geometry caches, parity gates and comparison protocol | current |
+| `wiki/benchmarks/prepared-checkpoint.md` | Deathstar three-variant reset/geometry experiment, measured allocation and throughput | current |
 | `wiki/context/inventory.md` | Inventory of the existing Lua corpus, tools, and plumbing | current |
 | `wiki/context/interchange.md` | Versioned level/config/checkpoint/action/result formats, static subset, verification | current |
 | `wiki/context/fixtures.md` | Reference fixture matrix, capture protocol, the 42-case assessment | current |

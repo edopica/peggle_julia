@@ -1,0 +1,321 @@
+{
+  "format": "peggle.prepared_checkpoint_comparison.v1",
+  "date": "2026-10-28",
+  "host": "deathstar",
+  "source": {
+    "base_revision": "808724efbf71d3009339bbb0dae461f85fdf06ca",
+    "run_kind": "exploratory",
+    "fingerprints": "remote/source-hashes.json in evidence archive"
+  },
+  "implementation": "Owned prepared decision checkpoint, decoded RNG, per-engine peg/initial-ball pools, prepared ordered shape indices, inline per-shape numerical collision caches; closed static campaigns reuse prepared geometry and general callers retain per-frame refresh.",
+  "protocol": {
+    "julia_version": "1.12.6",
+    "cpu": "znver1",
+    "threads": 8,
+    "interactive_threads": 0,
+    "workers": 8,
+    "games": 10,
+    "repeats": 3,
+    "base_seed": 20261024,
+    "warmup": "one full ten-match campaign per variant",
+    "math_backend": {
+      "backend": "system_libm",
+      "julia": "1.12.6",
+      "platform": "linux-x86_64",
+      "library": "libm.so.6",
+      "glibc": "2.35"
+    },
+    "workload_sha256": "073b426e66c948895a73a5a45b96b4a5538332c8db2d5b1318f245f8ffe6f86e",
+    "config_sha256": "9de96e70851daa3d596c9cd3e28a1ad67705ec70e4afda5090e6868a2cad385c",
+    "method": "Same-process isolated modules; GC outside each measurement; Latin-square order; phase clocks enabled; equality and JSON output included; hashing and reset probes excluded; allocation and GC from @timed; RSS not attributed"
+  },
+  "workload": "Ten ribbon 1v1 matches; 1,801 aims per decision; 198,110 candidates per campaign; system_libm; eight workers; three repetitions per variant.",
+  "variants": {
+    "baseline": {
+      "median_seconds": 33.438175386,
+      "min_seconds": 33.359859233,
+      "max_seconds": 35.994472572,
+      "median_allocated_bytes": 2852403016.0,
+      "wall_seconds": [
+        33.359859233,
+        33.438175386,
+        35.994472572
+      ],
+      "allocated_bytes": [
+        2852691592,
+        2852403016,
+        2852341608
+      ],
+      "gc_seconds": [
+        0.438469297,
+        0.393459681,
+        0.442346565
+      ],
+      "compilation_seconds": [
+        0.01972833,
+        0.0,
+        0.0
+      ],
+      "summed_worker_reset_seconds": [
+        2.069469731,
+        1.890576108,
+        2.252621825
+      ],
+      "reset_probe": {
+        "preparation_seconds": 2.2e-07,
+        "resets_per_sample": 1801,
+        "reset_allocated_bytes": [
+          60196624,
+          60196624,
+          60196624,
+          60196624,
+          60196624
+        ],
+        "reset_seconds": [
+          0.01791985,
+          0.017261846,
+          0.017244312,
+          0.017527433,
+          0.017231638
+        ],
+        "stepping_allocated_bytes": [
+          0,
+          0,
+          0
+        ],
+        "snapshot_bytes": 25493,
+        "worker_bytes": 77166
+      }
+    },
+    "prepared": {
+      "median_seconds": 33.518365948,
+      "min_seconds": 32.159668564,
+      "max_seconds": 34.331772168,
+      "median_allocated_bytes": 216605792.0,
+      "wall_seconds": [
+        32.159668564,
+        33.518365948,
+        34.331772168
+      ],
+      "allocated_bytes": [
+        216764584,
+        216605792,
+        216522960
+      ],
+      "gc_seconds": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "compilation_seconds": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "summed_worker_reset_seconds": [
+        0.883213942,
+        0.9494133199999999,
+        1.000401918
+      ],
+      "reset_probe": {
+        "preparation_seconds": 0.000240488,
+        "resets_per_sample": 1801,
+        "reset_allocated_bytes": [
+          2622256,
+          2622256,
+          2622256,
+          2622256,
+          2622256
+        ],
+        "reset_seconds": [
+          0.009914321,
+          0.009897609,
+          0.009870507,
+          0.009897329,
+          0.00988822
+        ],
+        "stepping_allocated_bytes": [
+          0,
+          0,
+          0
+        ],
+        "snapshot_bytes": 44043,
+        "worker_bytes": 77324
+      }
+    },
+    "compact": {
+      "median_seconds": 32.292325477,
+      "min_seconds": 32.111855213,
+      "max_seconds": 34.851533163,
+      "median_allocated_bytes": 261379592.0,
+      "wall_seconds": [
+        32.111855213,
+        32.292325477,
+        34.851533163
+      ],
+      "allocated_bytes": [
+        261379592,
+        261212400,
+        261444632
+      ],
+      "gc_seconds": [
+        0.031859811,
+        0.044537854,
+        0.0
+      ],
+      "compilation_seconds": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "summed_worker_reset_seconds": [
+        1.0564059980000002,
+        1.019710185,
+        1.1410101229999998
+      ],
+      "reset_probe": {
+        "preparation_seconds": 0.000241761,
+        "resets_per_sample": 1801,
+        "reset_allocated_bytes": [
+          3025680,
+          3025680,
+          3025680,
+          3025680,
+          3025680
+        ],
+        "reset_seconds": [
+          0.010728524,
+          0.010729666,
+          0.01068484,
+          0.010685381,
+          0.010687396
+        ],
+        "stepping_allocated_bytes": [
+          0,
+          0,
+          0
+        ],
+        "snapshot_bytes": 44043,
+        "worker_bytes": 107468
+      }
+    }
+  },
+  "comparisons": {
+    "prepared_vs_baseline": {
+      "median_time_ratio": 1.0023981739755328,
+      "elapsed_reduction_percent": -0.2398173975532769,
+      "throughput_increase_percent": -0.23924364965884903,
+      "allocated_bytes_reduction_percent": 92.40619958733069,
+      "matched_repetition_speedups": [
+        1.0373197462098074,
+        0.9976075635034115,
+        1.048430369276124
+      ],
+      "matched_repetition_speedup_range": [
+        0.9976075635034115,
+        1.048430369276124
+      ]
+    },
+    "compact_vs_baseline": {
+      "median_time_ratio": 0.9657322836616334,
+      "elapsed_reduction_percent": 3.426771633836656,
+      "throughput_increase_percent": 3.5483660345741352,
+      "allocated_bytes_reduction_percent": 90.83651256383331,
+      "matched_repetition_speedups": [
+        1.0388642765023046,
+        1.0354836603457414,
+        1.03279452308897
+      ],
+      "matched_repetition_speedup_range": [
+        1.03279452308897,
+        1.0388642765023046
+      ]
+    },
+    "compact_vs_prepared": {
+      "median_time_ratio": 0.9634218305002675,
+      "elapsed_reduction_percent": 3.657816949973247,
+      "throughput_increase_percent": 3.796693031207199,
+      "allocated_bytes_reduction_percent": -20.67063839179333,
+      "matched_repetition_speedups": [
+        1.0014889625866477,
+        1.037966930312072,
+        0.9850864238147261
+      ],
+      "matched_repetition_speedup_range": [
+        0.9850864238147261,
+        1.037966930312072
+      ]
+    }
+  },
+  "checks": {
+    "source_hashes_unchanged": true,
+    "all_nine_histories_byte_identical": true,
+    "historical_gameplay_byte_identical": true,
+    "gameplay_sha256": "82b282ee176746817047e93d90755bedae81de07ed3b5ed876c9c336c8a96bb3"
+  },
+  "adoption": {
+    "campaign_default": "prepared checkpoint plus static compact geometry",
+    "rationale": "Combined variant beat baseline in each paired round and reduces total allocation. The geometry-only contribution remains unresolved."
+  },
+  "retrieval_validation": {
+    "remote_download_sha256_verified": true,
+    "archived_source_hashes_verified": true,
+    "local_julia_code_matches_measured_compact": true,
+    "nine_histories_byte_identical": true,
+    "complete_matches_per_trial": 10,
+    "candidates_per_trial": 198110,
+    "gameplay_sha256": "82b282ee176746817047e93d90755bedae81de07ed3b5ed876c9c336c8a96bb3"
+  },
+  "per_frame_refresh_experiment": {
+    "compact": {
+      "median_seconds": 34.231800652,
+      "min_seconds": 34.188177615,
+      "max_seconds": 34.574038159,
+      "median_allocated_bytes": 261334416.0
+    },
+    "baseline": {
+      "median_seconds": 33.133591036,
+      "min_seconds": 32.643273212,
+      "max_seconds": 33.305524435,
+      "median_allocated_bytes": 2852421176.0
+    },
+    "prepared": {
+      "median_seconds": 32.550451721,
+      "min_seconds": 31.984657162,
+      "max_seconds": 32.979390256,
+      "median_allocated_bytes": 216419512.0
+    }
+  },
+  "validation": {
+    "local_tests": 80453,
+    "remote_focused_tests": 66315,
+    "remote_first_experiment_full_tests": 58439,
+    "fixture_matches": 14,
+    "byte_identical_traces": 6,
+    "full_sweeps": 11,
+    "full_sweep_rows": 19811,
+    "serial_parallel_identity": true,
+    "strict_zero_allocation_probes": 5,
+    "reference_before_after": true,
+    "source_hashes_unchanged": true
+  },
+  "limitations": [
+    "Fixed ten-match historical batch, not sustained saturation, SMT or NUMA qualification.",
+    "Three repetitions per variant on one host; min/max and paired ratios describe this experiment, not an uncertainty interval across machines or workloads.",
+    "Isolated modules share one process and GC; RSS is not attributed per variant. Base.summarysize of snapshot/worker is retained graph size, not process RSS.",
+    "Preparation and reset copies are included in campaign time. The first experiment includes per-frame refresh; the final closed static campaign skips it. Reset probes exclude one-time preparation.",
+    "All variants slowed in the final repetition; order was balanced, but three repetitions do not isolate host drift. Paired combined/baseline speedups remain positive in all three rounds.",
+    "Compact geometry versus prepared reset alone has mixed paired outcomes; its independent throughput benefit is not established.",
+    "Prepared reset retains mutable Peg objects and rebuilds identity maps; this is not a full level-wide shared geometry/state rewrite.",
+    "A small residual first-trial compilation cost, if present, is reported per trial."
+  ],
+  "evidence": {
+    "archive": "results/benchmarks/artifacts/deathstar-20261028-prepared-checkpoint-evidence.tar.gz",
+    "sha256": "440164f7a72f2a2b5ee0da6d9bbc59e0a5cdb1ed2f003a2a64178d5f2edb863d",
+    "size_bytes": 16439784,
+    "remote_report": "remote/measurements/report.json",
+    "local_qualification": "local-qualification/qualification-summary.json",
+    "archive_readback_members_verified": 2925,
+    "remote_job": "~/projects/peggle-benchmarks/compact-checkpoint-20261028-02/"
+  }
+}

@@ -134,6 +134,46 @@ struct Checkpoint
     match::CheckpointMatch
 end
 
+# Internal decision snapshot. Preparing owns a copy, so later edits to the
+# interchange checkpoint cannot stale its decoded RNG or ordered geometry.
+struct PreparedCheckpoint
+    checkpoint::Checkpoint
+    rng::LoveRandom
+    geometry::PreparedGeometry
+    circle_indices::Vector{Int}
+    rectangle_indices::Vector{Int}
+    annular_indices::Vector{Int}
+end
+
+function prepare_checkpoint(ckpt::Checkpoint)::PreparedCheckpoint
+    owned = deepcopy(ckpt)
+    geometry = PreparedGeometry()
+    circles, rectangles, annulars = Int[], Int[], Int[]
+    for (i, p) in enumerate(owned.engine.pegs)
+        g = CompactPegGeometry(p.x, p.y, 0.0, 0.0, peg_bounding_radius(p.shape), p.shape)
+        if p.shape isa CircleShape
+            push!(geometry.circles, g)
+            push!(circles, i)
+        elseif p.shape isa RectangleShape
+            push!(geometry.rectangles, g)
+            push!(rectangles, i)
+        else
+            push!(geometry.annulars, g)
+            push!(annulars, i)
+        end
+    end
+    return PreparedCheckpoint(owned, _rng_from_checkpoint(owned), geometry,
+                              circles, rectangles, annulars)
+end
+
+# Kept outside the live lists: removal must not lose reusable objects.
+struct CheckpointRestoreScratch
+    pegs::Vector{Peg}
+    balls::Vector{BallState}
+end
+
+CheckpointRestoreScratch() = CheckpointRestoreScratch(Peg[], BallState[])
+
 # ---------------------------------------------------------------------------
 # Provenance normalization
 # ---------------------------------------------------------------------------
@@ -865,11 +905,59 @@ function _copy_nested_trackers!(dst::Dict{Int,Dict{String,V}}, src) where {V}
 end
 
 function restore!(sim::SimState, ckpt::Checkpoint)
+    return _restore_checkpoint!(sim, ckpt, nothing, nothing)
+end
+
+function restore!(sim::SimState, prepared::PreparedCheckpoint,
+                  scratch::CheckpointRestoreScratch)
+    return _restore_checkpoint!(sim, prepared.checkpoint, scratch, prepared.rng)
+end
+
+function _restore_peg!(dst::Peg, p::CheckpointPeg)
+    dst.id = p.id
+    dst.x = dst.prev_x = p.x
+    dst.y = dst.prev_y = p.y
+    dst.base_x = p.base_x
+    dst.base_y = p.base_y
+    dst.shape = p.shape
+    dst.peg_type = p.peg_type
+    dst.hit = p.hit
+    dst.hit_order = p.hit_order
+    dst.multiplier_at_hit = p.multiplier_at_hit
+    dst.line = p.line
+    angle = p.shape isa RectangleShape ? p.shape.angle : 0.0
+    dst.base_angle = dst.angle = dst.prev_angle = angle
+    dst.vx = dst.vy = dst.va = 0.0
+    dst.bounding_radius = peg_bounding_radius(p.shape)
+    return dst
+end
+
+function _restore_ball!(b::BallState, cb::CheckpointBall)
+    b.id = cb.id
+    b.x = cb.x
+    b.y = cb.y
+    b.prev_x = cb.prev_x
+    b.prev_y = cb.prev_y
+    b.vx = cb.vx
+    b.vy = cb.vy
+    b.radius = cb.radius
+    b.launched = cb.launched
+    b.scored_fever = false
+    return b
+end
+
+function _restore_checkpoint!(sim::SimState, ckpt::Checkpoint,
+                              scratch::Union{Nothing,CheckpointRestoreScratch},
+                              rng::Union{Nothing,LoveRandom})
     ce = ckpt.engine
 
     # RNG first so the color state can share the restored generator.
     sim.rng.seed = UInt64(ckpt.rng.seed)
-    set_state!(sim.rng, String(Base64.base64decode(ckpt.rng.state_b64)))
+    if rng === nothing
+        set_state!(sim.rng, String(Base64.base64decode(ckpt.rng.state_b64)))
+    else
+        restore!(sim.rng, rng)
+    end
 
     e = sim.engine
     e.step_id = ce.step_id
@@ -884,10 +972,15 @@ function restore!(sim::SimState, ckpt::Checkpoint)
     e.style_score = ce.style_score
 
     empty!(e.pegs)
-    for p in ce.pegs
-        push!(e.pegs, Peg(p.id, p.x, p.y, p.base_x, p.base_y, p.shape,
-                          p.peg_type, p.hit, p.hit_order, p.multiplier_at_hit,
-                          p.line))
+    for (i, p) in enumerate(ce.pegs)
+        if scratch === nothing || i > length(scratch.pegs)
+            peg = Peg(p.id, p.x, p.y, p.base_x, p.base_y, p.shape,
+                      p.peg_type, p.hit, p.hit_order, p.multiplier_at_hit, p.line)
+            scratch === nothing || push!(scratch.pegs, peg)
+        else
+            peg = _restore_peg!(scratch.pegs[i], p)
+        end
+        push!(e.pegs, peg)
     end
     empty!(e.peg_by_id)
     for p in e.pegs
@@ -895,8 +988,14 @@ function restore!(sim::SimState, ckpt::Checkpoint)
     end
 
     empty!(e.balls)
-    for cb in ce.balls
-        push!(e.balls, _sim_ball(cb))
+    for (i, cb) in enumerate(ce.balls)
+        if scratch === nothing || i > length(scratch.balls)
+            ball = _sim_ball(cb)
+            scratch === nothing || push!(scratch.balls, ball)
+        else
+            ball = _restore_ball!(scratch.balls[i], cb)
+        end
+        push!(e.balls, ball)
     end
     empty!(e.live_ball_ids)
     empty!(e.live_id_by_ball)

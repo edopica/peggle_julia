@@ -33,7 +33,7 @@
 #   julia --project=julia/PeggleSim julia/PeggleSim/bin/replay_fixtures.jl \
 #       [--expected-dir DIR] [--level-dir DIR] [--config PATH] \
 #       [--out PATH] [--trace-report PATH] [--trace-out-dir DIR] \
-#       [--only id1,id2] [--skip-traces]
+#       [--only id1,id2] [--skip-traces] [--prepared]
 #
 # Exit status: 0 iff every shot fixture matches on every compared field and
 # every traced fixture is byte-identical; 1 on any parity failure; 2 on a
@@ -46,7 +46,7 @@ using PeggleSim
 # and defeat _display_path below.
 const REPO_ROOT = dirname(dirname(dirname(@__DIR__)))
 
-const FLAG_ARGS = Set(["--skip-traces"])
+const FLAG_ARGS = Set(["--skip-traces", "--prepared"])
 const VALUE_ARGS = Set([
     "--expected-dir", "--level-dir", "--config", "--out", "--trace-report",
     "--trace-out-dir", "--only",
@@ -62,7 +62,7 @@ const RESULT_FIELDS = (
 function usage()
     println("usage: replay_fixtures.jl [--expected-dir DIR] [--level-dir DIR] " *
             "[--config PATH] [--out PATH] [--trace-report PATH] " *
-            "[--trace-out-dir DIR] [--only id1,id2] [--skip-traces]")
+            "[--trace-out-dir DIR] [--only id1,id2] [--skip-traces] [--prepared]")
 end
 
 function parse_args(argv)
@@ -254,7 +254,7 @@ function _run_shot(ckpt, level, config, clearing::Bool, max_steps::Int, aim::Int
         writer = PeggleSim.trace_open(trace_path; include_snapshot = false)
         eng.trace = writer
     end
-    PeggleSim.reset_shot_engine!(eng, ckpt)
+    PeggleSim.reset_shot_engine!(eng, ckpt; static_geometry = ckpt isa PeggleSim.PreparedCheckpoint)
     PeggleSim.launch!(eng, aim)
     PeggleSim.run_shot!(eng; max_steps = max_steps)
     if writer !== nothing
@@ -375,6 +375,7 @@ function run_replay(opts, flags)
         )
         ckpt = PeggleSim.build_checkpoint(
             level, config; balls = balls, mode = :solo, provenance = ckpt_provenance)
+        "--prepared" in flags && (ckpt = PeggleSim.prepare_checkpoint(ckpt))
 
         eng, _ = _run_shot(ckpt, level, config, clearing, max_steps, aim)
         untraced_summary = PeggleSim.shot_summary(eng)

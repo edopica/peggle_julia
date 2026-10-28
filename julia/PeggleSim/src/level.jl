@@ -107,6 +107,31 @@ struct LevelDefinition
     level_sha256::String
 end
 
+# Inline numerical records for the collision scans. Metadata and scoring
+# remain on the worker's Peg objects; ordinal i still means list position i.
+struct CompactPegGeometry{S<:AbstractPegShape}
+    x::Float64
+    y::Float64
+    vx::Float64
+    vy::Float64
+    bounding_radius::Float64
+    shape::S
+end
+
+CompactPegGeometry(p::Peg) = CompactPegGeometry(
+    p.x, p.y, p.vx, p.vy,
+    p.bounding_radius === nothing ? peg_bounding_radius(p.shape) : p.bounding_radius,
+    p.shape)
+
+struct PreparedGeometry
+    circles::Vector{CompactPegGeometry{CircleShape}}
+    rectangles::Vector{CompactPegGeometry{RectangleShape}}
+    annulars::Vector{CompactPegGeometry{AnnularShape}}
+end
+
+PreparedGeometry() = PreparedGeometry(CompactPegGeometry{CircleShape}[],
+    CompactPegGeometry{RectangleShape}[], CompactPegGeometry{AnnularShape}[])
+
 const LEVEL_TOP_LEVEL_KEYS = (
     "format", "schema_version", "name", "motion", "virtual_width",
     "virtual_height", "level_seed", "type_counts", "default_peg_type",

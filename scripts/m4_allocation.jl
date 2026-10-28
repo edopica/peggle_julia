@@ -336,7 +336,7 @@ end
 function _measure_reset!(eng, ckpt)
     GC.gc()
     b0 = Int64(Base.gc_bytes())
-    PeggleSim.reset_shot_engine!(eng, ckpt)
+    PeggleSim.reset_shot_engine!(eng, ckpt; static_geometry = ckpt isa PeggleSim.PreparedCheckpoint)
     b1 = Int64(Base.gc_bytes())
     return Int(b1 - b0)
 end
@@ -360,7 +360,7 @@ function _measure_run!(eng, max_steps::Int)
 end
 
 function _measure_steady!(eng, ckpt, aim::Int, max_steps::Int)
-    PeggleSim.reset_shot_engine!(eng, ckpt)
+    PeggleSim.reset_shot_engine!(eng, ckpt; static_geometry = ckpt isa PeggleSim.PreparedCheckpoint)
     PeggleSim.launch!(eng, aim)
     dt = eng.config.fixed_dt
     bytes = Vector{Int}(undef, max_steps)
@@ -561,7 +561,7 @@ function _aggregate_allocs(res)
 end
 
 function _profile_steady!(eng, ckpt, aim::Int, max_steps::Int)
-    PeggleSim.reset_shot_engine!(eng, ckpt)
+    PeggleSim.reset_shot_engine!(eng, ckpt; static_geometry = ckpt isa PeggleSim.PreparedCheckpoint)
     PeggleSim.launch!(eng, aim)
     dt = eng.config.fixed_dt
     bytes = Vector{Int}(undef, max_steps)
@@ -719,7 +719,7 @@ end
 
 function _warm!(eng, ckpt, aim::Int, warmups::Int, shots::Int)
     for _ in 1:warmups
-        PeggleSim.reset_shot_engine!(eng, ckpt)
+        PeggleSim.reset_shot_engine!(eng, ckpt; static_geometry = ckpt isa PeggleSim.PreparedCheckpoint)
         PeggleSim.launch!(eng, aim)
         PeggleSim.run_shot!(eng; max_steps = shots)
     end
@@ -739,6 +739,7 @@ function _measure_row(entry::CatalogEntry, aim::Int, opts)
             reference_tree = level.provenance.reference_tree,
             config_sha256 = level.provenance.config_sha256,
             level_sha256 = level.level_sha256))
+    opts["prepared"] && (ckpt = PeggleSim.prepare_checkpoint(ckpt))
 
     shots = opts["shots"]
     warmups = opts["warmups"]
@@ -760,7 +761,7 @@ function _measure_row(entry::CatalogEntry, aim::Int, opts)
     # stepwise pass, so its measured total should match engine A's.
     eng_b = _new_engine(level, config, ckpt)
     _warm!(eng_b, ckpt, aim, warmups, shots)
-    PeggleSim.reset_shot_engine!(eng_b, ckpt)
+    PeggleSim.reset_shot_engine!(eng_b, ckpt; static_geometry = ckpt isa PeggleSim.PreparedCheckpoint)
     PeggleSim.launch!(eng_b, aim)
     PeggleSim.run_shot!(eng_b; max_steps = shots)
     full = _profile_steady!(eng_b, ckpt, aim, shots)
@@ -824,6 +825,7 @@ end
 
 function _usage(io::IO = stdout)
     println(io, "usage: julia --project=julia/PeggleSim -t 1 scripts/m4_allocation.jl [options]")
+    println(io, "  --prepared     use prepared checkpoints and compact geometry")
     println(io, "  --workload ID   all, a catalog id, or comma-separated ids (default: all)")
     println(io, "  --aim N         aim index for every selected workload (default: catalog aims)")
     println(io, "  --threads N     must match the Julia thread count (default: current)")
@@ -859,6 +861,7 @@ function _parse_cli(argv)
         "out" => DEFAULT_OUT,
         "top" => DEFAULT_TOP,
         "print" => false,
+        "prepared" => false,
         "snapshot_note" => "",
     )
     i = 1
@@ -867,6 +870,8 @@ function _parse_cli(argv)
         if a in ("--help", "-h")
             _usage()
             exit(0)
+        elseif a == "--prepared"
+            opts["prepared"] = true
         elseif a == "--print"
             opts["print"] = true
         elseif a in ("--workload", "--aim", "--threads", "--shots", "--warmups",

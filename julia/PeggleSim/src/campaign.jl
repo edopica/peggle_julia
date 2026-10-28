@@ -174,9 +174,12 @@ function evaluate_candidates!(eng::ShotEngine, ckpt::Checkpoint,
     reset_ns = UInt64(0)
     simulation_ns = UInt64(0)
     incomplete = Int[]
+    prepared = prepare_checkpoint(ckpt)
     for i in 0:(length(scores)-1)
         t = Instrument ? time_ns() : UInt64(0)
-        reset_shot_engine!(eng, ckpt)
+        # The campaign owns these candidates: static artifacts, no circuits,
+        # and match callbacks that never modify peg geometry or velocity.
+        reset_shot_engine!(eng, prepared; static_geometry=true)
         Instrument && (reset_ns += time_ns() - t)
         t = Instrument ? time_ns() : UInt64(0)
         launch!(eng, i)

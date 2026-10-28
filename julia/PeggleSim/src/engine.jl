@@ -183,6 +183,9 @@ mutable struct ShotEngine
     spawn_pool::Vector{BallState}
     spawn_pool_n::Int
     scratch::ShotScratch
+    restore_scratch::CheckpointRestoreScratch
+    compact_geometry::Union{Nothing,PreparedGeometry}
+    static_geometry::Bool
 end
 
 # ---------------------------------------------------------------------------
@@ -249,6 +252,7 @@ function _fresh_shot_engine(sim::SimState, config::SimConfig, vw::Float64,
         Peg[], length(sim.engine.balls), Dict{String,Int}(), StyleInfo(),
         Peg[], BallState[], 0,
         scratch,
+        CheckpointRestoreScratch(), nothing, false,
     )
     _split_peg_lists!(eng)
     return eng
@@ -269,12 +273,49 @@ function shot_engine(ckpt::Checkpoint;
     return _fresh_shot_engine(sim_from_checkpoint(ckpt), config, vw, vh, callbacks)
 end
 
+function shot_engine(ckpt::PreparedCheckpoint; static_geometry::Bool = false, kwargs...)::ShotEngine
+    eng = shot_engine(ckpt.checkpoint; kwargs...)
+    return reset_shot_engine!(eng, ckpt; static_geometry)
+end
+
 # Restore an engine in place from a checkpoint (same identity namespace
 # semantics as Engine:applyReplayState/resetTurn: the checkpoint's
 # next_ball_id/used_ball_ids are authoritative).
-function reset_shot_engine!(eng::ShotEngine, ckpt::Checkpoint)::ShotEngine
-    restore!(eng.sim, ckpt)
-    _split_peg_lists!(eng)
+function reset_shot_engine!(eng::ShotEngine, ckpt::Union{Checkpoint,PreparedCheckpoint};
+                            compact::Bool = true, static_geometry::Bool = false)::ShotEngine
+    # Only closed static-level callers may promise no transform/shape/velocity
+    # changes between resets. General callers retain per-frame cache refresh.
+    eng.static_geometry = ckpt isa PreparedCheckpoint && compact && static_geometry
+    if ckpt isa PreparedCheckpoint
+        restore!(eng.sim, ckpt, eng.restore_scratch)
+        for (list, indices) in ((eng.circle_pegs, ckpt.circle_indices),
+                                (eng.rect_pegs, ckpt.rectangle_indices),
+                                (eng.annular_pegs, ckpt.annular_indices))
+            resize!(list, length(indices))
+            for i in eachindex(indices)
+                list[i] = eng.sim.engine.pegs[indices[i]]
+            end
+        end
+        if compact
+            geometry = eng.compact_geometry
+            if geometry === nothing
+                geometry = PreparedGeometry()
+                eng.compact_geometry = geometry
+            end
+            for (dst, src) in ((geometry.circles, ckpt.geometry.circles),
+                               (geometry.rectangles, ckpt.geometry.rectangles),
+                               (geometry.annulars, ckpt.geometry.annulars))
+                resize!(dst, length(src))
+                copyto!(dst, src)
+            end
+        else
+            eng.compact_geometry = nothing
+        end
+    else
+        restore!(eng.sim, ckpt)
+        _split_peg_lists!(eng)
+        eng.compact_geometry = nothing
+    end
     reset!(eng.journal)
     reset!(eng.commands)
     reset_physics_context!(eng.scratch.physics, eng.sim.engine.balls,
@@ -595,6 +636,14 @@ function remove_peg!(eng::ShotEngine, peg::Peg)::Nothing
     _remove_identity!(e.pegs, peg)
     on_peg_removed!(eng.sim.colors, peg)
     delete!(e.peg_by_id, peg.id)
+    geometry = eng.compact_geometry
+    if geometry !== nothing
+        list, records = peg.shape isa CircleShape ? (eng.circle_pegs, geometry.circles) :
+            peg.shape isa RectangleShape ? (eng.rect_pegs, geometry.rectangles) :
+            (eng.annular_pegs, geometry.annulars)
+        i = findfirst(p -> p === peg, list)
+        i === nothing || deleteat!(records, i)
+    end
     if peg.shape isa CircleShape
         _remove_identity!(eng.circle_pegs, peg)
     elseif peg.shape isa RectangleShape
@@ -947,7 +996,7 @@ function _step_body!(eng::ShotEngine, dt::Float64)::Nothing
     extras = e.is_fever ? e.fever_buckets.dividers : nothing
     physics_update!(e.balls, eng.circle_pegs, eng.rect_pegs, eng.annular_pegs,
                     dt, extras, eng.config, eng.virtual_width, eng.journal,
-                    eng.scratch.physics)
+                    eng.scratch.physics, eng.compact_geometry, eng.static_geometry)
 
     # (8) draw_path path_step stamping is presentation-only.
 

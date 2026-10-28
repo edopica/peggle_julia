@@ -495,6 +495,26 @@ function broad_phase_pass(ctx::PhysicsContext, div::FeverDivider)
     return broad_phase_common(ctx, div.x, div.y, 0.0, 0.0, div.radius)
 end
 
+@inline function broad_phase_pass(ctx::PhysicsContext, geometry::CompactPegGeometry)
+    return broad_phase_common(ctx, geometry.x, geometry.y, geometry.vx,
+                              geometry.vy, geometry.bounding_radius)
+end
+
+# Refresh once per frame, rather than per CCD window. This also keeps direct
+# callers' changes to transforms, velocities and shape/radius caches visible.
+function refresh_geometry!(records::Vector{CompactPegGeometry{S}}, pegs::Vector{Peg}) where {S}
+    resize!(records, length(pegs))
+    for i in eachindex(pegs)
+        p = pegs[i]
+        records[i] = CompactPegGeometry(p.x, p.y, p.vx, p.vy,
+                                       prepared_bounding_radius(p), p.shape::S)
+    end
+    return nothing
+end
+
+@inline scan_geometry(pegs, ::Nothing, i) = pegs[i]
+@inline scan_geometry(pegs, geometry::Vector, i) = geometry[i]
+
 # 2. Check Pegs and Extra Circles (Swept Circle-Circle)
 #
 # Lua passes `is_extra and nil or circ` as the hit peg. That and/or idiom
@@ -504,14 +524,15 @@ end
 # value Lua actually passes, not the apparent intent of the expression.
 function check_circles(ctx::PhysicsContext,
                        circles::Union{Nothing,Vector{Peg},Vector{FeverDivider}},
-                       is_extra::Bool)::Nothing
+                       is_extra::Bool, geometry = nothing)::Nothing
     ball = ctx.ball::BallState
     if circles === nothing
         return
     end
-    for (i, circ) in enumerate(circles)
-        bp = broad_phase_pass(ctx, circ)
+    for i in eachindex(circles)
+        bp = broad_phase_pass(ctx, scan_geometry(circles, geometry, i))
         if bp !== nothing
+            circ = circles[i]
             dx = bp.dx
             dy = bp.dy
             rel_move_x = bp.rel_move_x
@@ -870,15 +891,16 @@ end
 # Swept Circle-OBB (Oriented Bounding Box / Angled Rectangle) collision
 # detection and resolution.
 function check_rectangles(ctx::PhysicsContext,
-                          rects::Union{Nothing,Vector{Peg}})::Nothing
+                          rects::Union{Nothing,Vector{Peg}}, geometry = nothing)::Nothing
     ball = ctx.ball::BallState
     time_remaining = ctx.time_remaining
     if rects === nothing
         return
     end
-    for (i, peg) in enumerate(rects)
-        bp = broad_phase_pass(ctx, peg)
+    for i in eachindex(rects)
+        bp = broad_phase_pass(ctx, scan_geometry(rects, geometry, i))
         if bp !== nothing
+            peg = rects[i]
             rel_move_x = bp.rel_move_x
             rel_move_y = bp.rel_move_y
             peg_iter_x = bp.peg_iter_x
@@ -891,7 +913,7 @@ function check_rectangles(ctx::PhysicsContext,
             angle_iter = peg.angle - peg_va * time_remaining
 
             # In local space, the peg is an AABB centered at (0, 0)
-            shape = rect_shape(peg)
+            shape = geometry === nothing ? rect_shape(peg) : geometry[i].shape
             # Lua `peg.half_w and -peg.half_w or -peg.width / 2`: the level
             # model never authors half_w, so the width/2 path always applies.
             rx = -shape.width / 2
@@ -914,7 +936,7 @@ function check_rectangles(ctx::PhysicsContext,
 end
 
 function check_annulars(ctx::PhysicsContext,
-                        pegs_list::Union{Nothing,Vector{Peg}})::Nothing
+                        pegs_list::Union{Nothing,Vector{Peg}}, geometry = nothing)::Nothing
     ball = ctx.ball::BallState
     move_x = ctx.move_x
     move_y = ctx.move_y
@@ -922,9 +944,10 @@ function check_annulars(ctx::PhysicsContext,
     if pegs_list === nothing
         return
     end
-    for (i, peg) in enumerate(pegs_list)
-        bp = broad_phase_pass(ctx, peg)
+    for i in eachindex(pegs_list)
+        bp = broad_phase_pass(ctx, scan_geometry(pegs_list, geometry, i))
         if bp !== nothing
+            peg = pegs_list[i]
             rel_move_x = bp.rel_move_x
             rel_move_y = bp.rel_move_y
             peg_iter_x = bp.peg_iter_x
@@ -932,7 +955,7 @@ function check_annulars(ctx::PhysicsContext,
             peg_vx = peg.vx
             peg_vy = peg.vy
             peg_va = peg.va
-            shape = annular_shape(peg)
+            shape = geometry === nothing ? annular_shape(peg) : geometry[i].shape
 
             slices = rotation_slices(ctx, peg, peg_va)
             t_start_iter = shape.theta_start - peg_va * time_remaining
@@ -1390,8 +1413,15 @@ function physics_update!(
     virtual_width::Float64,
     journal::GameplayJournal,
     ctx::PhysicsContext = PhysicsContext(balls, config, virtual_width, journal),
+    geometry::Union{Nothing,PreparedGeometry} = nothing,
+    static_geometry::Bool = false,
 )::Nothing
     reset_physics_context!(ctx, balls, config, virtual_width, journal)
+    if geometry !== nothing && !static_geometry
+        refresh_geometry!(geometry.circles, circle_pegs)
+        refresh_geometry!(geometry.rectangles, rect_pegs)
+        refresh_geometry!(geometry.annulars, annular_pegs)
+    end
 
     # Per-frame ball bookkeeping for ball-ball collision reconstruction. A
     # launched ball not yet processed this frame is treated as starting at its
@@ -1492,9 +1522,9 @@ function physics_update!(
                 end
             end
 
-            check_circles(ctx, circle_pegs, false)
-            check_rectangles(ctx, rect_pegs)
-            check_annulars(ctx, annular_pegs)
+            check_circles(ctx, circle_pegs, false, geometry === nothing ? nothing : geometry.circles)
+            check_rectangles(ctx, rect_pegs, geometry === nothing ? nothing : geometry.rectangles)
+            check_annulars(ctx, annular_pegs, geometry === nothing ? nothing : geometry.annulars)
 
             check_circles(ctx, extras, true)
 

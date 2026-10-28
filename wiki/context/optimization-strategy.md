@@ -616,6 +616,25 @@ peg visitati, sopravvissuti al filtro, test precisi e costo della query.
 Per griglie/BVH includere deduplicazione e ricostruzione dell'ordine.
 Quando rimangono pochi peg, può vincere la lista compatta privata.
 
+**Implementazione del 28 ottobre 2026 (§17.1, punto 4).**
+Il checkpoint interno preparato decodifica l'RNG una volta per decisione;
+i worker riusano pool di peg e palline iniziali e ripristinano le liste
+ordinate per forma. Record numerici inline alimentano la scansione CCD.
+La campagna statica riusa la geometria preparata; i chiamanti generici
+mantengono il refresh per frame. Formato e hash del checkpoint esterno
+restano invariati. Non è ancora una separazione completa fra geometria
+condivisa per livello e stato dinamico indicizzato.
+
+Su Deathstar, tre ripetizioni intercalate di dieci match a otto worker
+hanno misurato una mediana di 32,292 s contro 33,438 s: tempo −3,43%,
+byte allocati −90,84%, storie canoniche byte-identiche. Il confronto
+con il solo reset preparato cambia segno fra le ripetizioni: il vantaggio
+indipendente del layout non è dimostrato. Il primo esperimento con refresh
+geometrico a ogni frame era più lento ed è conservato nell'evidenza.
+[Contratto](prepared-checkpoint.md),
+[misure e limiti](../benchmarks/prepared-checkpoint.md),
+[report numerico](../../results/analysis/prepared-checkpoint-2026-10-28.json).
+
 **Vincoli poco visibili ma decisivi:**
 
 - `register_hit!` usa priorità e **indice nella lista corrente per forma**
