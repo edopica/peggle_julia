@@ -86,6 +86,31 @@ def annular_path(peg):
     )
 
 
+def ribbon_path(peg, steps_per_part=16):
+    """Single outline of a ribbon peg (Ribbon.outline with no inset).
+
+    Walks the ordered annular pieces along the path: one side is traced
+    forward, the other backward, so internal piece seams are not drawn.
+    """
+    left, right = [], []
+    for part in peg["parts"]:
+        sign = part["path_direction"]
+        start = part["theta_start"] if sign == 1 else part["theta_end_abs"]
+        sweep = (part["theta_end_abs"] - part["theta_start"]) * sign
+        left_r = part["r_in"] if sign == 1 else part["r_out"]
+        right_r = part["r_out"] if sign == 1 else part["r_in"]
+        first = 0 if not left else 1
+        for j in range(first, steps_per_part + 1):
+            theta = start + sweep * j / steps_per_part
+            c, s_ = math.cos(theta), math.sin(theta)
+            left.append((part["x"] + left_r * c, part["y"] + left_r * s_))
+            right.append((part["x"] + right_r * c, part["y"] + right_r * s_))
+    points = left + right[::-1]
+    head = f"M {fmt(points[0][0])} {fmt(points[0][1])} "
+    body = " ".join(f"L {fmt(x)} {fmt(y)}" for x, y in points[1:])
+    return head + body + " Z"
+
+
 def render(artifact, colors, show_lines=True):
     width = artifact["virtual_width"]
     height = artifact["virtual_height"]
@@ -115,7 +140,7 @@ def render(artifact, colors, show_lines=True):
             line = peg.get("line")
             # Annular peg centers are arc centers, not surface positions, so a
             # centerline polyline is meaningless for annular lines.
-            if line is None or peg["shape"] == "annular":
+            if line is None or peg["shape"] in ("annular", "ribbon"):
                 continue
             groups.setdefault(line["id"], []).append(peg)
         for line_id, members in groups.items():
@@ -147,6 +172,8 @@ def render(artifact, colors, show_lines=True):
             lines.append(
                 f'<path d="{annular_path(peg)}" fill-rule="evenodd" {attrs}/>'
             )
+        elif shape == "ribbon":
+            lines.append(f'<path d="{ribbon_path(peg)}" {attrs}/>')
         else:
             raise ValueError(f"unknown peg shape {shape!r}")
 

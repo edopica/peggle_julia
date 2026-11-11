@@ -44,6 +44,7 @@ local Config = {
 	peg_radius = 10,
 	peg_rect_width = 30,
 	peg_rect_height = 12,
+	peg_border_color = "white", -- "black" or "white"; border is drawn inside the peg
 
 	-- Peg types: color shown when unlit, plus point value.
 	-- The total score is (sum of hit pegs' values) * (number of hit pegs).

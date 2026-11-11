@@ -36,7 +36,8 @@
         "oneOf": [
           { "$ref": "#/definitions/circlePeg" },
           { "$ref": "#/definitions/rectanglePeg" },
-          { "$ref": "#/definitions/annularPeg" }
+          { "$ref": "#/definitions/annularPeg" },
+          { "$ref": "#/definitions/ribbonPeg" }
         ]
       }
     },
@@ -114,6 +115,45 @@
         "theta_start": { "type": "number" },
         "theta_end_abs": { "type": "number" },
         "segments": { "type": "integer", "minimum": 4 },
+        "line": { "$ref": "#/definitions/line" }
+      }
+    },
+    "ribbonPart": {
+      "type": "object",
+      "required": [
+        "x", "y", "r_in", "r_out", "theta_start", "theta_end_abs",
+        "segments", "path_direction"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "x": { "type": "number" },
+        "y": { "type": "number" },
+        "r_in": { "type": "number", "minimum": 0 },
+        "r_out": { "type": "number", "minimum": 0 },
+        "theta_start": { "type": "number" },
+        "theta_end_abs": { "type": "number" },
+        "segments": { "type": "integer", "minimum": 4 },
+        "path_direction": { "enum": [-1, 1] }
+      }
+    },
+    "ribbonPeg": {
+      "type": "object",
+      "description": "One gameplay peg owning an ordered chain of annular collision pieces (dev-tree src/entities/ribbon.lua). x/y is the owner transform: the centroid of the two exposed end-cap corner pairs. Only the first piece's entry cap and the last piece's exit cap collide.",
+      "required": ["id", "shape", "type", "x", "y", "path_start", "path_end", "parts"],
+      "additionalProperties": false,
+      "properties": {
+        "id": { "type": "integer", "minimum": 1 },
+        "shape": { "enum": ["ribbon"] },
+        "type": { "enum": ["blue", "green", "purple", "red"] },
+        "x": { "type": "number" },
+        "y": { "type": "number" },
+        "path_start": { "type": "number", "minimum": 0 },
+        "path_end": { "type": "number", "minimum": 0 },
+        "parts": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "$ref": "#/definitions/ribbonPart" }
+        },
         "line": { "$ref": "#/definitions/line" }
       }
     }

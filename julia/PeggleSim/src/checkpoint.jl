@@ -25,7 +25,7 @@ struct CheckpointPeg
     y::Float64
     base_x::Float64
     base_y::Float64
-    shape::Union{CircleShape,RectangleShape,AnnularShape}
+    shape::PegShapeUnion
     line::Union{Nothing,LineMetadata}
     hit_order::Int
     multiplier_at_hit::Int
@@ -143,18 +143,33 @@ struct PreparedCheckpoint
     circle_indices::Vector{Int}
     rectangle_indices::Vector{Int}
     annular_indices::Vector{Int}
+    # Ribbon boards keep per-piece geometry that physics refreshes each step,
+    # so they never take the frozen static-geometry path.
+    has_ribbons::Bool
 end
 
 function prepare_checkpoint(ckpt::Checkpoint)::PreparedCheckpoint
     owned = deepcopy(ckpt)
     geometry = PreparedGeometry()
     circles, rectangles, annulars = Int[], Int[], Int[]
+    has_ribbons = false
     for (i, p) in enumerate(owned.engine.pegs)
-        g = CompactPegGeometry(p.x, p.y, 0.0, 0.0, peg_bounding_radius(p.shape), p.shape)
-        if p.shape isa CircleShape
+        shape = p.shape
+        if shape isa RibbonShape
+            # Annular records describe the collision pieces, in physics order.
+            has_ribbons = true
+            for part in shape.parts
+                push!(geometry.annulars, CompactPegGeometry(
+                    part.x, part.y, 0.0, 0.0, part.shape.r_out, part.shape))
+            end
+            push!(annulars, i)
+            continue
+        end
+        g = CompactPegGeometry(p.x, p.y, 0.0, 0.0, peg_bounding_radius(shape), shape)
+        if shape isa CircleShape
             push!(geometry.circles, g)
             push!(circles, i)
-        elseif p.shape isa RectangleShape
+        elseif shape isa RectangleShape
             push!(geometry.rectangles, g)
             push!(rectangles, i)
         else
@@ -163,7 +178,7 @@ function prepare_checkpoint(ckpt::Checkpoint)::PreparedCheckpoint
         end
     end
     return PreparedCheckpoint(owned, _rng_from_checkpoint(owned), geometry,
-                              circles, rectangles, annulars)
+                              circles, rectangles, annulars, has_ribbons)
 end
 
 # Kept outside the live lists: removal must not lose reusable objects.
@@ -262,6 +277,7 @@ function _shape_name(shape::AbstractPegShape)::String
     shape isa CircleShape && return "circle"
     shape isa RectangleShape && return "rectangle"
     shape isa AnnularShape && return "annular"
+    shape isa RibbonShape && return "ribbon"
     throw(ArgumentError("unknown peg shape type: $(typeof(shape))"))
 end
 
@@ -298,6 +314,17 @@ function _peg_to_dict(p::CheckpointPeg)::Dict{String,Any}
         d["theta_start"] = p.shape.theta_start
         d["theta_end_abs"] = p.shape.theta_end_abs
         d["segments"] = p.shape.segments
+    elseif p.shape isa RibbonShape
+        d["path_start"] = p.shape.path_start
+        d["path_end"] = p.shape.path_end
+        d["parts"] = Any[Dict{String,Any}(
+            "x" => q.x, "y" => q.y,
+            "r_in" => q.shape.r_in, "r_out" => q.shape.r_out,
+            "theta_start" => q.shape.theta_start,
+            "theta_end_abs" => q.shape.theta_end_abs,
+            "segments" => q.shape.segments,
+            "path_direction" => q.path_direction,
+        ) for q in p.shape.parts]
     end
     p.line !== nothing && (d["line"] = _line_to_dict(p.line))
     if p.hit
@@ -517,6 +544,10 @@ function _parse_checkpoint_peg(d::AbstractDict)::CheckpointPeg
             as_f64(d["theta_end_abs"], "peg.theta_end_abs"),
             as_int(d["segments"], "peg.segments"),
         )
+    elseif shape_name == "ribbon"
+        # Piece offsets are relative to the owner's authored (base) transform.
+        _parse_ribbon(d, "peg", as_f64(d["base_x"], "peg.base_x"),
+                      as_f64(d["base_y"], "peg.base_y"))
     else
         throw(ArgumentError("checkpoint: unknown peg shape '$(shape_name)'"))
     end
@@ -1061,8 +1092,9 @@ function build_checkpoint(
     balls::Int = 1,
     mode::Symbol = :solo,
     provenance,
+    color_seed::Integer = level.level_seed,
 )::Checkpoint
-    sim = build_sim_state(level, config; balls = balls, mode = mode)
+    sim = build_sim_state(level, config; balls = balls, mode = mode, color_seed = color_seed)
     return capture_checkpoint(sim; provenance = provenance)
 end
 

@@ -9,6 +9,6 @@ return {
     level = "ribbon_waves",
     balls = 1,
     group = "ribbon_waves",
-    note = "133 static pegs (53 circles r10 + 80 annular segments=16 in 5 zero-gap Lines.generate lines, exact terminal arcs steepen outward) on 702.27x613.18 world; full-physics benchmark",
+    note = "99 static gameplay pegs (53 circles r10 + 46 ribbon pegs = 138 annular collision pieces, segments=16, in 5 zero-gap seam-segmented Lines.generate ribbons) on 702.27x613.18 world; full-physics benchmark",
   },
 }

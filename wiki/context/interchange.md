@@ -101,6 +101,11 @@ Per-peg fields:
 - circle: `radius`
 - rectangle: `width`, `height`, `angle`
 - annular: `r_in`, `r_out`, `theta_start`, `theta_end_abs`, `segments`
+- ribbon (dev tree only, after the pin): `path_start`, `path_end`, and
+  `parts`, an ordered list of annular collision pieces
+  `{ x, y, r_in, r_out, theta_start, theta_end_abs, segments, path_direction }`;
+  peg `x`/`y` is the owner transform computed by `Ribbon.new`. See
+  [ribbon pegs](ribbon-pegs.md).
 - optional `line`: `{ id, index, count, closed, gap }` copied verbatim;
   this is the metadata slide inversion and slide-style recognition read.
 
@@ -108,7 +113,9 @@ Peg `type` is the *resolved render type*: unknown authored values (for
 example the numeric third argument in `circle_level.lua`) fall back through
 the engine's `typeDef` rule to `default_peg_type`. Runtime colors come from
 `PegColors.init(pegs, type_counts, level_seed)` and are not part of the
-level artifact.
+level artifact. Imported screenshot levels still reproduce their authored
+colors under `level_seed`, through peg order. Julia campaigns therefore draw a
+per-match seed instead (see [bot campaign](bot-campaign.md)).
 
 ### Static subset and motion rejection
 

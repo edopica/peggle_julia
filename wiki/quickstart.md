@@ -124,6 +124,8 @@ contract, validation rules, and archival limitations.
 Focused commands:
 
 ```bash
+scripts/capture_imported_levels.sh --check   # imported b1/b2/g1/m1/m2 corpus (dev tree)
+scripts/capture_ribbon_waves.sh --check      # ribbon_waves corpus (dev tree)
 scripts/run_baseline.sh --workload circles_small --stride 50
 scripts/render_summary.py results/RUN.summary.json
 scripts/verify_reference.sh
@@ -144,6 +146,9 @@ an explicit alternative. The current Lua config is copied into `campaigns/ribbon
 julia --project=julia/PeggleSim -t 8 julia/PeggleSim/bin/campaign.jl --worker-counts 1,2,4,8 --repeats 3
 ```
 
+Peg colors are drawn per match by default (`--colors per_game`); `--colors level`
+reproduces the Lua engine's fixed `level_seed` layout. Any static artifact can be
+passed with `--level` (for example `fixtures/imported_levels/artifact/g1.v1.json`).
 This warms the simulation/output paths, measures the same eight matches at
 1/2/4/8 workers, verifies identical histories, and saves `results/campaign/1v1/`.
 See [workflow and contracts](context/bot-campaign.md) and
@@ -196,6 +201,7 @@ mirrors `../peggle_evolved/wiki/` so material can move between the projects.
 | `wiki/context/m4-validation.md` | M4 correctness-breadth validation: corpus, method, results, divider fix, scenario decision | current |
 | `wiki/context/julia-benchmark-harness.md` | Julia benchmark-execution harness: scope, files, commands, parity evidence, remaining Python | current |
 | `wiki/context/ribbon-waves.md` | Screenshot-reconstructed `ribbon_waves` level: extraction, Lua level, 3-shot trace corpus, mask checker, Julia tests | current |
+| `wiki/context/ribbon-pegs.md` | Dev-tree `ribbon` gameplay peg: Lua semantics, interchange, Julia port, imported-level corpus, per-match campaign colors | current |
 | `wiki/benchmarks/` | Measured performance and parity results | current |
 | `wiki/benchmarks/baseline-metrics.md` | M0 Lua candidate-sweep baseline and continuing-metric protocol | current |
 | `wiki/benchmarks/m2-checkpoint.md` | M2 checkpoint/reset benchmark and M0 init comparison | current |
@@ -243,6 +249,7 @@ Conventions:
 | Which reference fixtures exist and why? | `wiki/context/fixtures.md` |
 | How is the Julia side built? | `wiki/context/julia.md` |
 | How is a benchmark run executed and validated now? | `wiki/context/julia-benchmark-harness.md`, `wiki/context/benchmark-results.md` |
+| How are ribbon pegs and the imported screenshot levels ported? | `wiki/context/ribbon-pegs.md`, `fixtures/imported_levels/README.md` |
 | Which M3 fixtures exist, and how are they compared? | `wiki/context/m3-mustache.md` |
 | What M4 validated, and how it was closed? | `wiki/context/m4-validation.md` |
 | How do I collect the macOS/Windows qualification evidence? | `wiki/context/cross-platform-qualification.md` |

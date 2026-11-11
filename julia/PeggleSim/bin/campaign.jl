@@ -11,11 +11,12 @@ function main(args)
         "base-seed" => "20261024", "sector-size" => "100", "epsilon" => "1",
         "max-steps" => "3600", "max-turns" => "100", "workers" => "8",
         "repeats" => "3", "out" => "results/campaign/1v1/baseline.json",
-        "warmup" => "full")
+        "warmup" => "full", "colors" => "per_game")
     if "--help" in args
         println("julia --project=julia/PeggleSim -t 8 julia/PeggleSim/bin/campaign.jl [--NAME VALUE]")
         println("Benchmarks ribbon 1v1 matches; --mode solo is optional.")
         println("  --warmup full|fast|none (default: full)")
+        println("  --colors per_game|level (default: per_game; level = fixed Lua layout)")
         for k in sort(collect(keys(defaults)))
             println("  --$k (default: $(defaults[k]))")
         end
@@ -32,7 +33,8 @@ function main(args)
     num(k) = parse(Int, defaults[k])
     options_for(workers) = PeggleSim.CampaignOptions(mode = Symbol(defaults["mode"]),
         games = num("games"), base_seed = num("base-seed"), sector_size = num("sector-size"),
-        epsilon = num("epsilon"), max_steps = num("max-steps"), max_turns = num("max-turns"), workers = workers)
+        epsilon = num("epsilon"), max_steps = num("max-steps"), max_turns = num("max-turns"), workers = workers,
+        colors = Symbol(defaults["colors"]))
     counts = isempty(defaults["worker-counts"]) ? collect(1:min(num("workers"), num("games"))) :
         sort(unique(parse.(Int, split(defaults["worker-counts"], ','))))
     !isempty(counts) || error("worker-counts must not be empty")
@@ -49,7 +51,7 @@ function main(args)
     levelpath = abspath(defaults["level"])
     configpath = abspath(defaults["config"])
     level = PeggleSim.load_level(levelpath)
-    level.name == "ribbon_waves" || error("MVP campaign supports only ribbon_waves")
+    # Any static artifact works; ribbon_waves stays the default workload.
     config = PeggleSim.load_config(configpath)
     load_seconds = (time_ns() - t) / 1e9
 

@@ -9,6 +9,10 @@ Base.@kwdef struct CampaignOptions
     max_steps::Int = 3600
     max_turns::Int = 100
     workers::Int = 8
+    # :per_game draws each game's color layout from `color_seed(base_seed,
+    # game)`; :level reproduces the Lua engine's fixed per-level layout
+    # (artifact level_seed) and the histories recorded before 2026-11-11.
+    colors::Symbol = :per_game
 end
 
 function validate_campaign(o::CampaignOptions)
@@ -16,6 +20,7 @@ function validate_campaign(o::CampaignOptions)
         getfield(o, name) > 0 || throw(ArgumentError("$name must be positive"))
     end
     o.mode in (:solo, Symbol("1v1")) || throw(ArgumentError("mode must be solo or 1v1"))
+    o.colors in (:per_game, :level) || throw(ArgumentError("colors must be per_game or level"))
     o.epsilon >= 0 || throw(ArgumentError("epsilon must be nonnegative"))
     o.base_seed >= 0 || throw(ArgumentError("base_seed must be nonnegative"))
     return o
@@ -164,9 +169,26 @@ end
 prepare_solo_turn!(eng::ShotEngine, provenance) = prepare_match_turn!(eng, provenance)
 
 # Separate, deterministically derived bot seeds fit exactly in LoveRandom's
-# Float64 constructor. Gameplay RNG starts from the same level seed in all games.
+# Float64 constructor.
 bot_seed(base::Int, game::Int) = Int(wang_hash64(UInt64(base) ⊻
     (UInt64(game) * UInt64(0x9e3779b97f4a7c15))) & UInt64(0x001fffffffffffff))
+
+# Per-game gameplay seed (color shuffle, purple queue): a stream distinct from
+# every bot seed, so colors are drawn fresh at each game's startup yet the
+# whole campaign stays reproducible from base_seed.
+color_seed(base::Int, game::Int) = Int(wang_hash64(UInt64(base) ⊻
+    (UInt64(game) * UInt64(0xc2b2ae3d27d4eb4f)) ⊻ UInt64(0x636f6c6f72736565)) &
+    UInt64(0x001fffffffffffff))
+
+# The game's ready-to-aim checkpoint. `shared` is the level-seeded checkpoint
+# used by :level campaigns.
+function game_checkpoint(shared::Checkpoint, level::LevelDefinition, config::SimConfig,
+                         o::CampaignOptions, game::Int)::Checkpoint
+    o.colors === :level && return shared
+    return build_checkpoint(level, config; mode = o.mode,
+                            provenance = shared.provenance,
+                            color_seed = color_seed(o.base_seed, game))
+end
 
 function evaluate_candidates!(eng::ShotEngine, ckpt::Checkpoint,
                               scores::Vector{Float64}, max_steps::Int,
@@ -191,10 +213,11 @@ function evaluate_candidates!(eng::ShotEngine, ckpt::Checkpoint,
     return (; reset_ns, simulation_ns, incomplete)
 end
 
-function run_bot_game(initial::Checkpoint, level::LevelDefinition, config::SimConfig,
+function run_bot_game(shared::Checkpoint, level::LevelDefinition, config::SimConfig,
                        o::CampaignOptions, game::Int,
                        instrumentation::Val{Instrument} = Val(true)) where {Instrument}
     setup_start = time_ns()
+    initial = game_checkpoint(shared, level, config, o, game)
     seeds = o.mode === :solo ? [bot_seed(o.base_seed, game)] :
         [bot_seed(o.base_seed, 2 * (game - 1) + player) for player in 1:2]
     rngs = LoveRandom.(seeds)
@@ -272,7 +295,7 @@ function run_bot_game(initial::Checkpoint, level::LevelDefinition, config::SimCo
         reason = "turn_limit"
     end
     result = Dict("game" => game, "mode" => String(o.mode), "base_seed" => o.base_seed,
-        "bot_seeds" => seeds,
+        "bot_seeds" => seeds, "color_seeding" => String(o.colors),
         "gameplay_seed" => initial.rng.seed, "initial_gameplay_rng_state" => initial.rng.state_b64,
         "final_gameplay_rng_state" => get_state(live.sim.rng), "final_bot_rng_states" => get_state.(rngs),
         "decisions" => decisions, "final_score" => o.mode === :solo ?

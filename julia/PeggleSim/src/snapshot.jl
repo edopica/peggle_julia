@@ -7,7 +7,8 @@
 #
 # Null mapping (Lua stores nil fields as absent keys):
 #   * circle and annular pegs have no base_angle/angle in the reference,
-#     so the keys are omitted; rectangles carry both.
+#     so the keys are omitted; rectangles and ribbons (Ribbon.new sets both
+#     to 0) carry both.
 #   * hit_order/multiplier_at_hit are omitted until the first hit.
 #   * circuit_id/circuit_t/circuit_state/circuit_timer/motion are omitted for
 #     static pegs (no motion record).
@@ -58,6 +59,17 @@ function _snapshot_peg(p::Peg)::Dict{String,Any}
         d["r_out"] = p.shape.r_out
         d["theta_start"] = p.shape.theta_start
         d["theta_end_abs"] = p.shape.theta_end_abs
+    elseif p.shape isa RibbonShape
+        d["base_angle"] = p.base_angle
+        d["angle"] = p.angle
+        d["path_start"] = p.shape.path_start
+        d["path_end"] = p.shape.path_end
+        d["parts"] = Any[Dict{String,Any}(
+            "x" => q.x, "y" => q.y, "r_in" => q.shape.r_in, "r_out" => q.shape.r_out,
+            "theta_start" => q.shape.theta_start,
+            "theta_end_abs" => q.shape.theta_end_abs,
+            "path_direction" => q.path_direction,
+        ) for q in p.shape.parts]
     else
         d["radius"] = p.shape.radius
     end

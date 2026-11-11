@@ -1,8 +1,34 @@
-# ribbon_waves — corrected terminal arcs (v5)
+# ribbon_waves — seam-segmented ribbons (v6)
 
-The five ribbons are continuous zero-gap slides. On 2026-10-24 the user
-confirmed the corrected Lua level looks right. All ten ends now steepen
-outward, with flat radial faces and sharp corners.
+**Current state (2026-11-11).** The Lua level is now maintained in
+`../peggle_evolved/src/levels/ribbon_waves.lua` and must **not** be
+regenerated with `tools/generate_ribbon_waves_level.py`. That generator writes
+the older unsegmented v5 representation (80 annular gameplay pegs). Each of
+the five paths is now one `kind = "ribbon"` line, cut at the screenshot seam x
+coordinates (8/8/11/11/8 ribbon pegs). It keeps the v5 curves and fitted
+terminal arcs, with thicknesses of 19.4545 (wave_1), 19.0 (wave_2) and the generated
+values elsewhere. The board has **99 gameplay pegs: 53 circles + 46 ribbons
+(138 annular collision pieces)**. Ribbon semantics and the Julia port are
+described in [ribbon pegs](ribbon-pegs.md).
+
+Current shots (recaptured from the dev tree, gravity 700, wall damping 1.0,
+one ball, bench rule, max_steps 3600; Julia byte-identical):
+
+| Shot | Aim | Steps | Reason | Pegs hit | Reds | Spawned | Score |
+| --- | ---: | ---: | --- | ---: | ---: | ---: | ---: |
+| `center` | 900 | 309 | fell_out | 17 | 5 | 2 | 10,540 |
+| `left_wall` | 1800 | 551 | bucket_caught | 20 | 6 | 0 | 24,800 |
+| `ribbon` | 80 | 142 | bucket_caught | 5 | 1 | 0 | 10,700 |
+
+Cleaned silhouette IoU is 0.963880; per band it is 0.945089 / 0.902032 /
+0.960266 / 0.956509 / 0.955793, and raw IoU is 0.951382. The 0.92 / 0.86
+floors pass. The thinner wave_1/wave_2 ribbons explain the small drop from
+v5. A full-grid Lua/Julia sweep agrees on all 1,801 aims
+(`results/ribbon_port/sweep-compare-ribbon_waves.json`).
+
+The sections below record the v5 terminal-arc work. The geometry they
+describe still underlies the paths, but their peg counts and shot table are
+historical.
 
 ## Geometry and authoring
 
@@ -52,7 +78,7 @@ pixel-perfect reconstruction, and colors remain engine-assigned.
 These previews are local diagnostic artifacts. Durable measured evidence is
 in `fixtures/ribbon_waves/mask_metrics.json` and the corresponding diff PNGs.
 
-## Gameplay corpus
+## Gameplay corpus (v5, historical)
 
 All three shots were recaptured from the actual Lua engine with one initial
 ball, bench rule, max_steps 3600. The center shot is bucket-caught; the other
@@ -72,8 +98,9 @@ contain the exact awarded styles and scores.
 # Optional refitting; review the candidate before replacing the authoring JSON.
 ../level_segment/.venv/bin/python tools/fit_ribbon_waves_ends.py
 
-python3 tools/generate_ribbon_waves_level.py
-python3 tools/generate_ribbon_waves_level.py --check
+# v5 only: do not run against the current hand-maintained Lua level.
+# python3 tools/generate_ribbon_waves_level.py
+python3 tools/generate_ribbon_waves_level.py --check-geometry
 python3 scripts/audit_ribbon_slopes.py --check
 scripts/capture_ribbon_waves.sh
 scripts/capture_ribbon_waves.sh --check

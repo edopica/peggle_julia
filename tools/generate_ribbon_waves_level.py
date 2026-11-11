@@ -20,7 +20,7 @@ to the unchanged six body cubics. The engine receives exact arc segments.
 
 Geometry contract
 -----------------
-``level_segment/ribbon_waves_geometry.json`` (``ribbon_waves.geometry.v1``)
+``level_segment/levels/ribbon_waves/ribbon_waves_geometry.json`` (``ribbon_waves.geometry.v1``)
 provides:
 
 * 53 circle pegs in native coordinates (x, y, r);
@@ -79,7 +79,7 @@ SCRIPT_PATH = Path(__file__).resolve()
 JULIA_ROOT = SCRIPT_PATH.parents[1]          # .../julia_clone
 WORKSPACE = SCRIPT_PATH.parents[2]           # .../pevo
 PEGGLE_ROOT = WORKSPACE / "peggle_evolved"
-DEFAULT_GEOMETRY = WORKSPACE / "level_segment" / "ribbon_waves_geometry.json"
+DEFAULT_GEOMETRY = WORKSPACE / "level_segment" / "levels" / "ribbon_waves" / "ribbon_waves_geometry.json"
 DEFAULT_OUT = PEGGLE_ROOT / "src" / "levels" / "ribbon_waves.lua"
 
 EXPECTED_FORMAT = "ribbon_waves.geometry.v1"

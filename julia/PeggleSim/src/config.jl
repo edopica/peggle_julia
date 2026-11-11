@@ -157,6 +157,13 @@ const CONFIG_VALUE_KEYS = (
     :window_width,
 )
 
+# Presentation-only keys added to the dev-tree config after the pin. They may
+# be present (dev-tree artifacts) or absent (pinned artifacts); the simulation
+# never reads them.
+const CONFIG_OPTIONAL_PRESENTATION_KEYS = (
+    :peg_border_color, # ec4fcb3: peg outline color, render-only
+)
+
 const CONFIG_TOP_LEVEL_KEYS = ("format", "schema_version", "source_sha256", "values")
 
 function _color3(x, what::AbstractString)::NTuple{3,Float64}
@@ -190,7 +197,8 @@ end
 
 function _check_config_keys(values::AbstractDict)
     for key in keys(values)
-        Symbol(key) in CONFIG_VALUE_KEYS ||
+        (Symbol(key) in CONFIG_VALUE_KEYS ||
+         Symbol(key) in CONFIG_OPTIONAL_PRESENTATION_KEYS) ||
             throw(ArgumentError(
                 "config: unknown value key '$(key)'; the pinned reference config advanced"))
     end

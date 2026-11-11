@@ -3,7 +3,7 @@
 `ribbon_waves_geometry.json` is a byte-for-byte copy of the final v3
 extraction:
 
-* `/home/kurapica/Projects/pevo/level_segment/ribbon_waves_geometry.json`
+* `/home/kurapica/Projects/pevo/level_segment/levels/ribbon_waves/ribbon_waves_geometry.json`
 * SHA-256 `bc52e4282b9ee0c42fc20049f40ba18f6b3f52718a9b04616a786941a7e247ea`
 * 225,726 bytes
 * produced by `level_segment/extract_ribbon_waves.py` (one smooth centerline

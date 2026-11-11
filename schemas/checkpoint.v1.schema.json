@@ -113,7 +113,7 @@
               "hit": { "type": "boolean" },
               "x": { "type": "number" },
               "y": { "type": "number" },
-              "shape": { "enum": ["circle", "rectangle", "annular"] },
+              "shape": { "enum": ["circle", "rectangle", "annular", "ribbon"] },
               "base_x": { "type": "number" },
               "base_y": { "type": "number" },
               "radius": { "type": "number" },

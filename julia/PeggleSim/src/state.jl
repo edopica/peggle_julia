@@ -377,11 +377,19 @@ end
 # Build the ready-to-aim state: artifact pegs -> PegColors.init -> bucket /
 # fever / scoring / trackers -> resetTurn ball allocation and first
 # purple promotion. Equivalent to setupLevel + resetTurn with harness balls.
+#
+# `color_seed` seeds the gameplay RNG that PegColors.init shuffles the color
+# pool with. The default, the artifact's `level_seed`, is what the Lua engine
+# uses and what every parity fixture captures. Campaigns pass a per-game seed
+# instead so the color layout is not a fixed property of the level (some
+# imported levels order their pegs so that `level_seed` reproduces the
+# screenshot colors).
 function build_sim_state(
     level::LevelDefinition,
     c::SimConfig;
     balls::Int = 1,
     mode::Symbol = :solo,
+    color_seed::Integer = level.level_seed,
 )::SimState
     balls >= 1 || throw(ArgumentError("balls must be >= 1, got $(balls)"))
 
@@ -391,8 +399,8 @@ function build_sim_state(
     ]
     peg_by_id = Dict(p.id => p for p in pegs)
 
-    rng = LoveRandom(level.level_seed)
-    colors = init_colors!(pegs, level.type_counts, level.level_seed, rng)
+    rng = LoveRandom(color_seed)
+    colors = init_colors!(pegs, level.type_counts, color_seed, rng)
 
     bucket = BucketState(level.virtual_width, level.virtual_height, c)
     fever = FeverBucketsState(c, level.virtual_width, level.virtual_height)

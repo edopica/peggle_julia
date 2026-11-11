@@ -57,7 +57,7 @@ done
 ref_dir="$repo_root/../peggle_evolved"
 level_source="$ref_dir/src/levels/ribbon_waves.lua"
 config_source="$ref_dir/src/config.lua"
-upstream_geometry="$repo_root/../level_segment/ribbon_waves_geometry.json"
+upstream_geometry="$repo_root/../level_segment/levels/ribbon_waves/ribbon_waves_geometry.json"
 fixture_dir="$repo_root/fixtures/ribbon_waves"
 source_geometry="$fixture_dir/source/ribbon_waves_geometry.json"
 mask="$fixture_dir/reference/peg_mask.png"

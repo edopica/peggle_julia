@@ -97,8 +97,19 @@ Each 1v1 player owns a separate bot generator. Its seed is
 `bot_seed(base_seed, game_id)`. The hash and 53-bit mask in `src/campaign.jl`
 make seeds exactly representable by the existing generator constructor. All
 sixteen default bot seeds are distinct, recorded, and independent of scheduling.
-All matches start from the same artifact gameplay seed, colors and first purple
-promotion. Bot draws never consume the separate gameplay RNG.
+Bot draws never consume the separate gameplay RNG.
+
+Peg colors are drawn per match (`CampaignOptions.colors = :per_game`, CLI
+`--colors per_game`, the default since 2026-11-11). Each match seeds its gameplay RNG,
+and therefore the `PegColors.init` shuffle and the purple queue, with
+`color_seed(base_seed, match_id)`. That is a hash stream separate from every bot seed,
+recorded as `gameplay_seed` alongside `color_seeding`. Layouts are therefore
+fresh per match yet reproducible from `base_seed`. `--colors level` restores the
+Lua engine's fixed layout (artifact `level_seed`), which all matches share; it
+reproduces campaign histories recorded before the change. This matters for the
+imported screenshot levels: their generators order the pegs so that the
+artifact `level_seed` reproduces the screenshot colors (see
+[ribbon pegs](ribbon-pegs.md#peg-colors)).
 
 ## 1v1 lifecycle
 

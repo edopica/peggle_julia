@@ -502,7 +502,23 @@ def load_artifact(path):
     height = _as_float(_first(doc, ("virtual_height",), "artifact"), "artifact.virtual_height")
     if width <= 0 or height <= 0:
         raise CheckError(f"{path}: invalid virtual size {width}x{height}")
-    pegs = [normalize_artifact_peg(raw, i) for i, raw in enumerate(doc["pegs"])]
+    pegs = []
+    for i, raw in enumerate(doc["pegs"]):
+        if isinstance(raw, dict) and raw.get("shape") == "ribbon":
+            # A ribbon's silhouette is the union of its annular collision
+            # pieces; each piece is rasterized as its own annular sector.
+            parts = raw.get("parts")
+            if not isinstance(parts, list) or not parts:
+                raise CheckError(f"pegs[{i}]: ribbon has no parts")
+            for j, part in enumerate(parts):
+                piece = dict(part, shape="annular", id=raw.get("id", i + 1),
+                             type=raw.get("type"))
+                normalized = normalize_artifact_peg(piece, len(pegs))
+                normalized["ribbon_id"] = raw.get("id", i + 1)
+                normalized["what"] = f"pegs[{i}].parts[{j}]"
+                pegs.append(normalized)
+        else:
+            pegs.append(normalize_artifact_peg(raw, len(pegs)))
     return {
         "pegs": pegs,
         "size": (width, height),

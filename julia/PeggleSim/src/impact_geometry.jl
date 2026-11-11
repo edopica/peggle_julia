@@ -57,7 +57,21 @@ function surface_separation(peg::Peg, px::Float64, py::Float64, angle::Float64,
                             icy::Float64, r::Float64)::Float64
     shape = peg.shape
     dx, dy = icx - px, icy - py
-    if shape isa CircleShape
+    if shape isa RibbonShape
+        # Minimum over the collision pieces, carried by the owner's transform
+        # delta. Lua indexes `peg.parts` (current piece transforms); static
+        # pieces sit at their authored centers.
+        best = Inf
+        da = angle - peg.angle
+        ca, sa = DetMath.det_cos(da), DetMath.det_sin(da)
+        for part in shape.parts
+            x, y = part.x - peg.x, part.y - peg.y
+            best = min(best, _annular_separation(part.shape,
+                px + x * ca - y * sa, py + x * sa + y * ca,
+                part.shape.theta_start + da, icx, icy, r))
+        end
+        return best
+    elseif shape isa CircleShape
         return DetMath.det_sqrt(dx * dx + dy * dy) - r - shape.radius
     elseif shape isa RectangleShape
         ca, sa = DetMath.det_cos(angle), DetMath.det_sin(angle)
@@ -72,31 +86,40 @@ function surface_separation(peg::Peg, px::Float64, py::Float64, angle::Float64,
         sd = DetMath.det_sqrt(ox * ox + oy * oy) + min(max(qx, qy), 0.0)
         return sd - r
     elseif shape isa AnnularShape
-        d = DetMath.det_sqrt(dx * dx + dy * dy)
-        ts = theta_start === nothing ? shape.theta_start : theta_start
-        te = shape.theta_end_abs - (shape.theta_start - ts) # shift span by same delta
-        ang = DetMath.det_atan2(dy, dx)
-        norm = DetMath.lua_mod(ang - ts, pi * 2)
-        in_arc = norm <= (te - ts + 0.001) || norm >= (pi * 2 - 0.001)
-        if in_arc
-            if d > shape.r_out
-                return d - shape.r_out - r
-            elseif d < shape.r_in
-                return shape.r_in - d - r
-            else
-                return -min(shape.r_out - d, d - shape.r_in) - r
-            end
-        end
-        # Outside the angular span: nearest solid points lie on the cap segments.
-        cs, ss = DetMath.det_cos(ts), DetMath.det_sin(ts)
-        ce, se = DetMath.det_cos(te), DetMath.det_sin(te)
-        d1 = dist_seg_sq(icx, icy, px + shape.r_in * cs, py + shape.r_in * ss,
-                         px + shape.r_out * cs, py + shape.r_out * ss)
-        d2 = dist_seg_sq(icx, icy, px + shape.r_in * ce, py + shape.r_in * se,
-                         px + shape.r_out * ce, py + shape.r_out * se)
-        return DetMath.det_sqrt(min(d1, d2)) - r
+        return _annular_separation(shape, px, py,
+            theta_start === nothing ? shape.theta_start : theta_start, icx, icy, r)
     end
     return 0.0
+end
+
+# Annular branch of `surface_separation`; `ts` is the sector start at the
+# queried transform.
+function _annular_separation(shape::AnnularShape, px::Float64, py::Float64,
+                             ts::Float64, icx::Float64, icy::Float64,
+                             r::Float64)::Float64
+    dx, dy = icx - px, icy - py
+    d = DetMath.det_sqrt(dx * dx + dy * dy)
+    te = shape.theta_end_abs - (shape.theta_start - ts) # shift span by same delta
+    ang = DetMath.det_atan2(dy, dx)
+    norm = DetMath.lua_mod(ang - ts, pi * 2)
+    in_arc = norm <= (te - ts + 0.001) || norm >= (pi * 2 - 0.001)
+    if in_arc
+        if d > shape.r_out
+            return d - shape.r_out - r
+        elseif d < shape.r_in
+            return shape.r_in - d - r
+        else
+            return -min(shape.r_out - d, d - shape.r_in) - r
+        end
+    end
+    # Outside the angular span: nearest solid points lie on the cap segments.
+    cs, ss = DetMath.det_cos(ts), DetMath.det_sin(ts)
+    ce, se = DetMath.det_cos(te), DetMath.det_sin(te)
+    d1 = dist_seg_sq(icx, icy, px + shape.r_in * cs, py + shape.r_in * ss,
+                     px + shape.r_out * cs, py + shape.r_out * ss)
+    d2 = dist_seg_sq(icx, icy, px + shape.r_in * ce, py + shape.r_in * se,
+                     px + shape.r_out * ce, py + shape.r_out * se)
+    return DetMath.det_sqrt(min(d1, d2)) - r
 end
 
 # `virtual_width` replaces the Lua `LevelManager.virtual_width` global.

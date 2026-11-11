@@ -1,18 +1,17 @@
-# ribbon_waves fixture corpus (v5)
+# ribbon_waves fixture corpus (v6)
 
-53 circles and five continuous zero-gap slides, reconstructed from the source
-screenshot. Each slide has six body cubics plus two exact terminal arcs fitted
-to the reference boundaries. All ten ends steepen outward. The user confirmed
-the Lua level looks correct on 2026-10-24.
-
-The board contains **133 pegs: 53 circles + 80 annular**, 16 annular sectors
-per ribbon, `segments=16`, `gap=0`. The world transform and source extraction
-are unchanged. Authoring now also requires `tools/ribbon_waves_ends.json`.
+53 circles and five continuous zero-gap ribbons, reconstructed from the source
+screenshot. Since 2026-11-11 each path is one dev-tree `ribbon` line, cut at
+the screenshot seams. The board has **99 gameplay pegs: 53 circles + 46 ribbon
+pegs (138 annular collision pieces)**, with `segments=16` and `gap=0`. The
+Lua level is maintained in peggle_evolved; do not regenerate it with
+`tools/generate_ribbon_waves_level.py`, which emits the v5 layout. See
+[ribbon pegs](../../wiki/context/ribbon-pegs.md) and
+[the geometry notes](../../wiki/context/ribbon-waves.md).
 
 This is a dev-tree corpus, separate from the immutable pinned M1 reference.
 `make check-all` does not recapture it. Use `scripts/capture_ribbon_waves.sh`
-and its `--check` mode. Read [the current geometry documentation](../../wiki/context/ribbon-waves.md)
-for the generator, fitting workflow, regression checks and visual evidence.
+and its `--check` mode.
 
 ## Files
 
@@ -26,30 +25,24 @@ for the generator, fitting workflow, regression checks and visual evidence.
 
 ## Shots
 
-| Shot | Aim | Steps | Pegs hit | Spawned | Score |
-| --- | ---: | ---: | ---: | ---: | ---: |
-| `center` | 900 | 156 | 12 | 0 | 20,560 |
-| `left_wall` | 1800 | 590 | 25 | 0 | 24,750 |
-| `ribbon` | 80 | 265 | 6 | 0 | 900 |
+| Shot | Aim | Steps | Reason | Pegs hit | Reds | Spawned | Score |
+| --- | ---: | ---: | --- | ---: | ---: | ---: | ---: |
+| `center` | 900 | 309 | fell_out | 17 | 5 | 2 | 10,540 |
+| `left_wall` | 1800 | 551 | bucket_caught | 20 | 6 | 0 | 24,800 |
+| `ribbon` | 80 | 142 | bucket_caught | 5 | 1 | 0 | 10,700 |
 
-The center shot is bucket-caught; the other two fall out. The left-wall shot
-awards one slide style. The focused Julia suite passes 2,192 assertions, including outward-steepening
-checks on the emitted terminal sectors and exact replay parity.
+Julia reproduces all three records and traces byte-for-byte.
 
 ## Fidelity and provenance
 
-Cleaned IoU is **0.966956** (previous incorrect ends: 0.939040); per-ribbon
-IoU is 0.966024 / 0.910620 / 0.960684 / 0.956839 / 0.955757. Raw IoU is
-0.954427. The unchanged wave_2 body fit remains the largest residual; the
-0.97 overall / 0.95 per-ribbon fidelity reference is not fully reached.
+Cleaned IoU is **0.963880**; per-ribbon IoU is 0.945089 / 0.902032 / 0.960266 /
+0.956509 / 0.955793. Raw IoU is 0.951382. wave_2 remains the largest
+residual.
 
 Source geometry SHA-256:
-`bc52e4282b9ee0c42fc20049f40ba18f6b3f52718a9b04616a786941a7e247ea`.
-The authoring JSON additionally records the source mask hash. Generated Lua
-comments record the authoring JSON hash. Exported artifact provenance records
-the dev-tree revision/tree/config hashes; the generated level is an overlay,
-not a claim that the dev tree is clean. Actual artifact and trace hashes are
-stored in each expected record rather than duplicated here.
-
-The final capture uses the user’s current gravity `700` and wall damping `1.0`;
-these settings were preserved, not edited by the level correction.
+`bc52e4282b9ee0c42fc20049f40ba18f6b3f52718a9b04616a786941a7e247ea`
+(upstream now at `../level_segment/levels/ribbon_waves/`). Exported
+artifact provenance records the dev-tree revision/tree/config hashes; the
+working tree also carried uncommitted level edits (ribbon thickness 19.45/19.0),
+so the provenance revision is not a clean-tree claim. Artifact and trace
+hashes are stored in each expected record.

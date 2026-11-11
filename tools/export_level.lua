@@ -156,9 +156,11 @@ local function build_static_level(name)
 	local level_data = LevelManager.load(name)
 
 	-- Peg normalization, exactly Engine:setupLevel (src/engine/core.lua).
+	-- Ribbon owners (dev tree, src/entities/ribbon.lua) carry no radius but
+	-- are already engine entities.
 	local pegs = {}
 	for _, p in ipairs(level_data.pegs or {}) do
-		if p.radius and p.base_x then
+		if p.base_x and (p.radius or p.shape == "ribbon") then
 			pegs[#pegs + 1] = p
 		else
 			local new_p = Peg.new(p.x, p.y, p.type, p.radius)
@@ -250,6 +252,27 @@ local function canonical_peg(p, id)
 		peg.theta_start = p.theta_start
 		peg.theta_end_abs = p.theta_end_abs
 		peg.segments = p.segments
+	elseif shape == "ribbon" then
+		-- One gameplay peg owning an ordered chain of annular collision
+		-- pieces. The owner transform (cap-corner centroid) is emitted as
+		-- computed by Ribbon.new; cap suppression and piece-local offsets
+		-- are derived by consumers from piece order and path_direction.
+		peg.path_start = p.path_start
+		peg.path_end = p.path_end
+		local parts = {}
+		for j, part in ipairs(p.parts) do
+			parts[j] = {
+				x = part.x,
+				y = part.y,
+				r_in = part.r_in,
+				r_out = part.r_out,
+				theta_start = part.theta_start,
+				theta_end_abs = part.theta_end_abs,
+				segments = part.segments,
+				path_direction = part.path_direction,
+			}
+		end
+		peg.parts = parts
 	else
 		error("export_level: unknown peg shape " .. tostring(shape))
 	end
@@ -385,6 +408,21 @@ local function check_roundtrip(artifact, text, built)
 				or dp.theta_end_abs ~= live.theta_end_abs
 				or dp.segments ~= live.segments then
 				return string.format("peg %d annular geometry differs", i)
+			end
+		elseif shape == "ribbon" then
+			if dp.path_start ~= live.path_start or dp.path_end ~= live.path_end
+				or #dp.parts ~= #live.parts then
+				return string.format("peg %d ribbon metadata differs", i)
+			end
+			for j, lp in ipairs(live.parts) do
+				local q = dp.parts[j]
+				if q.x ~= lp.x or q.y ~= lp.y or q.r_in ~= lp.r_in
+					or q.r_out ~= lp.r_out or q.theta_start ~= lp.theta_start
+					or q.theta_end_abs ~= lp.theta_end_abs
+					or q.segments ~= lp.segments
+					or q.path_direction ~= lp.path_direction then
+					return string.format("peg %d ribbon part %d geometry differs", i, j)
+				end
 			end
 		end
 		local has_line = live.line ~= nil

@@ -35,6 +35,11 @@ const PRIORITY = (
 @inline peg_shape_name(::CircleShape)::String = "circle"
 @inline peg_shape_name(::RectangleShape)::String = "rectangle"
 @inline peg_shape_name(::AnnularShape)::String = "annular"
+@inline peg_shape_name(::RibbonShape)::String = "ribbon"
+
+# Lua `peg.ribbon_owner or peg`: collision pieces report their gameplay owner.
+@inline gameplay_peg(peg::Peg)::Peg = peg.ribbon_owner === nothing ? peg : peg.ribbon_owner
+@inline gameplay_peg(peg) = peg
 
 # Lua reads a peg's shape-specific fields off the flat table; the Julia Peg
 # keeps them on the shape object. `peg.shape or "circle"` is a nil check that
@@ -42,7 +47,12 @@ const PRIORITY = (
 # handles the mapping directly.
 @inline circle_shape(peg::Peg)::CircleShape = peg.shape
 @inline rect_shape(peg::Peg)::RectangleShape = peg.shape
-@inline annular_shape(peg::Peg)::AnnularShape = peg.shape
+# Ribbon pieces carry their sector in `piece_shape` (see Peg).
+@inline annular_shape(peg::Peg)::AnnularShape =
+    peg.ribbon_owner === nothing ? peg.shape::AnnularShape : peg.piece_shape
+
+@inline compact_shape(p::Peg, ::Type{AnnularShape}) = annular_shape(p)
+@inline compact_shape(p::Peg, ::Type{S}) where {S} = p.shape::S
 
 # `circ.radius`: circle pegs keep it on CircleShape, fever dividers directly.
 @inline circ_radius(circ::Peg)::Float64 = circle_shape(circ).radius
@@ -215,6 +225,9 @@ mutable struct PhysicsContext
     grazed::Vector{GrazedPeg}
     frame_pool::Vector{BallFrameState}
     static_query::StaticCollisionQuery
+    # Ribbon.collision_pieces output and its reusable piece objects.
+    annular_pieces::Vector{Peg}
+    ribbon_piece_pool::Vector{Peg}
 end
 
 function PhysicsContext(balls::Vector{BallState}, config::SimConfig,
@@ -223,7 +236,7 @@ function PhysicsContext(balls::Vector{BallState}, config::SimConfig,
         balls, Dict{BallState,BallFrameState}(), journal, config, virtual_width,
         nothing, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0,
         nothing, nothing, nothing, nothing, nothing, 0.0, GrazedPeg[], BallFrameState[],
-        StaticCollisionQuery(0.0, 0.0, 0.0))
+        StaticCollisionQuery(0.0, 0.0, 0.0), Peg[], Peg[])
 end
 
 # Release borrowed entity references without discarding reusable capacity.
@@ -253,7 +266,7 @@ end
 # by `grazed_n` and reset before each sweep window; the vector `empty!` reset
 # preserves the "entries from a previous window are never read" contract.
 function grazed_add!(ctx::PhysicsContext, peg::Peg, t::Float64)::Nothing
-    push!(ctx.grazed, GrazedPeg(peg, t))
+    push!(ctx.grazed, GrazedPeg(gameplay_peg(peg), t))
     return nothing
 end
 
@@ -263,6 +276,7 @@ function register_hit!(ctx::PhysicsContext, t::Float64, nx::Float64, ny::Float64
                        priority::Int, peg_index::Union{Nothing,Int},
                        overlap::Float64,
                        other_ball::Union{Nothing,BallState} = nothing)::Bool
+    peg = gameplay_peg(peg)
     if t < ctx.min_t - ctx.config.toi_epsilon
         ctx.min_t = t
         ctx.hit_nx, ctx.hit_ny = nx, ny
@@ -507,7 +521,7 @@ function refresh_geometry!(records::Vector{CompactPegGeometry{S}}, pegs::Vector{
     for i in eachindex(pegs)
         p = pegs[i]
         records[i] = CompactPegGeometry(p.x, p.y, p.vx, p.vy,
-                                       prepared_bounding_radius(p), p.shape::S)
+                                       prepared_bounding_radius(p), compact_shape(p, S))
     end
     return nothing
 end
@@ -1097,26 +1111,35 @@ function check_annulars(ctx::PhysicsContext,
                 cos_te = DetMath.det_cos(t_end)
                 sin_te = DetMath.det_sin(t_end)
 
-                annular_check_cap(ctx, peg, ball, i, t_offset, t_scale, px, py, bx,
-                                  by, dx, dy, slice_move_x, slice_move_y, sin_ts,
-                                  -cos_ts, t_start)
-                annular_check_cap(ctx, peg, ball, i, t_offset, t_scale, px, py, bx,
-                                  by, dx, dy, slice_move_x, slice_move_y, -sin_te,
-                                  cos_te, t_end)
+                # Ribbon pieces suppress their internal (shared) caps.
+                if !peg.no_cap_start
+                    annular_check_cap(ctx, peg, ball, i, t_offset, t_scale, px, py, bx,
+                                      by, dx, dy, slice_move_x, slice_move_y, sin_ts,
+                                      -cos_ts, t_start)
+                end
+                if !peg.no_cap_end
+                    annular_check_cap(ctx, peg, ball, i, t_offset, t_scale, px, py, bx,
+                                      by, dx, dy, slice_move_x, slice_move_y, -sin_te,
+                                      cos_te, t_end)
+                end
 
                 # 4. Corners (recomputed at the slice-start transform)
-                annular_check_corner(ctx, peg, ball, i, t_offset, t_scale, px, py,
-                                     bx, by, dx, dy, slice_move_x, slice_move_y,
-                                     a, shape.r_in, t_start)
-                annular_check_corner(ctx, peg, ball, i, t_offset, t_scale, px, py,
-                                     bx, by, dx, dy, slice_move_x, slice_move_y,
-                                     a, shape.r_out, t_start)
-                annular_check_corner(ctx, peg, ball, i, t_offset, t_scale, px, py,
-                                     bx, by, dx, dy, slice_move_x, slice_move_y,
-                                     a, shape.r_in, t_end)
-                annular_check_corner(ctx, peg, ball, i, t_offset, t_scale, px, py,
-                                     bx, by, dx, dy, slice_move_x, slice_move_y,
-                                     a, shape.r_out, t_end)
+                if !peg.no_cap_start
+                    annular_check_corner(ctx, peg, ball, i, t_offset, t_scale, px, py,
+                                         bx, by, dx, dy, slice_move_x, slice_move_y,
+                                         a, shape.r_in, t_start)
+                    annular_check_corner(ctx, peg, ball, i, t_offset, t_scale, px, py,
+                                         bx, by, dx, dy, slice_move_x, slice_move_y,
+                                         a, shape.r_out, t_start)
+                end
+                if !peg.no_cap_end
+                    annular_check_corner(ctx, peg, ball, i, t_offset, t_scale, px, py,
+                                         bx, by, dx, dy, slice_move_x, slice_move_y,
+                                         a, shape.r_in, t_end)
+                    annular_check_corner(ctx, peg, ball, i, t_offset, t_scale, px, py,
+                                         bx, by, dx, dy, slice_move_x, slice_move_y,
+                                         a, shape.r_out, t_end)
+                end
             end
         end
     end
@@ -1347,7 +1370,7 @@ function depenetrate(ctx::PhysicsContext, pegs_list::Union{Nothing,Vector{Peg}},
                 ball.y = ball.y + ny * (overlap + ctx.config.overlap_push_margin)
                 # Report objective depenetration contact; reducer decides scoring.
                 emit_contact!(ctx.journal, "ball_contacted_peg", ball, depen_rec,
-                              false, peg, "depenetrate")
+                              false, gameplay_peg(peg), "depenetrate")
             end
         end
     end
@@ -1398,6 +1421,69 @@ end
 # Physics.update (physics.lua lines 1094-1433)
 # ---------------------------------------------------------------------------
 
+# ---------------------------------------------------------------------------
+# Ribbon collision pieces (dev-tree src/entities/ribbon.lua collision_pieces)
+# ---------------------------------------------------------------------------
+
+# Called once per physics step. Returns `pegs` itself when it holds no ribbon;
+# otherwise a context-owned list in which each ribbon owner is replaced, in
+# place, by its annular pieces. Pieces never enter a gameplay list. Their
+# velocity is Lua's secant `(part - start_transform) / dt` against the owner's
+# step-start transform; for a static owner this is not always exactly zero
+# (`owner + (part - owner)` need not round-trip), and the reference uses the
+# resulting ulp-scale value, so it is reproduced verbatim.
+function ribbon_collision_pieces!(ctx::PhysicsContext, pegs::Vector{Peg},
+                                  dt::Float64)::Vector{Peg}
+    has_ribbon = false
+    for peg in pegs
+        if peg.shape isa RibbonShape
+            has_ribbon = true
+            break
+        end
+    end
+    has_ribbon || return pegs
+    result = ctx.annular_pieces
+    pool = ctx.ribbon_piece_pool
+    empty!(result)
+    n = 0
+    for peg in pegs
+        shape = peg.shape
+        if shape isa RibbonShape
+            angle = peg.angle - peg.va * dt
+            ca, sa = DetMath.det_cos(angle), DetMath.det_sin(angle)
+            for part in shape.parts
+                n += 1
+                if n > length(pool)
+                    # A pooled piece's `shape` is only its creation-time sector;
+                    # physics reads the live one through `annular_shape`.
+                    push!(pool, Peg(peg.id, part.x, part.y, part.x, part.y, part.shape,
+                                    peg.peg_type, false, 0, 0, nothing))
+                end
+                piece = pool[n]
+                x, y = part.local_x, part.local_y
+                sx = peg.x - peg.vx * dt + x * ca - y * sa
+                sy = peg.y - peg.vy * dt + x * sa + y * ca
+                piece.id = peg.id
+                piece.peg_type = peg.peg_type
+                piece.piece_shape = part.shape
+                piece.x = piece.base_x = piece.prev_x = part.x
+                piece.y = piece.base_y = piece.prev_y = part.y
+                piece.vx = (part.x - sx) / dt
+                piece.vy = (part.y - sy) / dt
+                piece.va = peg.va
+                piece.bounding_radius = part.shape.r_out
+                piece.ribbon_owner = peg
+                piece.no_cap_start = part.no_cap_start
+                piece.no_cap_end = part.no_cap_end
+                push!(result, piece)
+            end
+        else
+            push!(result, peg)
+        end
+    end
+    return result
+end
+
 # event_sink: the gameplay journal. Physics only reports objective collision
 # facts to it; it never mutates authoritative gameplay state (peg.hit,
 # scoring, ...). Presentation-only recording (ImpactDebug, ContactEvents) and
@@ -1417,10 +1503,17 @@ function physics_update!(
     static_geometry::Bool = false,
 )::Nothing
     reset_physics_context!(ctx, balls, config, virtual_width, journal)
-    if geometry !== nothing && !static_geometry
-        refresh_geometry!(geometry.circles, circle_pegs)
-        refresh_geometry!(geometry.rectangles, rect_pegs)
-        refresh_geometry!(geometry.annulars, annular_pegs)
+    gameplay_annulars = annular_pegs
+    annular_pegs = ribbon_collision_pieces!(ctx, annular_pegs, dt)
+    if geometry !== nothing
+        if !static_geometry
+            refresh_geometry!(geometry.circles, circle_pegs)
+            refresh_geometry!(geometry.rectangles, rect_pegs)
+            refresh_geometry!(geometry.annulars, annular_pegs)
+        elseif annular_pegs !== gameplay_annulars
+            # Piece velocities are per-step values; never trust a prepared copy.
+            refresh_geometry!(geometry.annulars, annular_pegs)
+        end
     end
 
     # Per-frame ball bookkeeping for ball-ball collision reconstruction. A

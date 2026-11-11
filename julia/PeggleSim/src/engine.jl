@@ -285,7 +285,8 @@ function reset_shot_engine!(eng::ShotEngine, ckpt::Union{Checkpoint,PreparedChec
                             compact::Bool = true, static_geometry::Bool = false)::ShotEngine
     # Only closed static-level callers may promise no transform/shape/velocity
     # changes between resets. General callers retain per-frame cache refresh.
-    eng.static_geometry = ckpt isa PreparedCheckpoint && compact && static_geometry
+    eng.static_geometry = ckpt isa PreparedCheckpoint && compact && static_geometry &&
+                          !ckpt.has_ribbons
     if ckpt isa PreparedCheckpoint
         restore!(eng.sim, ckpt, eng.restore_scratch)
         for (list, indices) in ((eng.circle_pegs, ckpt.circle_indices),
@@ -904,7 +905,7 @@ function save_previous_state(eng::ShotEngine)::Nothing
         peg.prev_y = peg.y
         if peg.shape isa RectangleShape
             peg.prev_angle = peg.angle
-        elseif peg.shape isa AnnularShape
+        elseif peg.shape isa AnnularShape || peg.shape isa RibbonShape
             peg.prev_angle = peg.angle
         end
     end
