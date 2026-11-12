@@ -245,10 +245,7 @@ make wpd-state           # WP-D: Lua core_math capture + Julia state comparison
 make wpd-parity          # WP-D: experimental CORE-MATH-era parity manifest + comparison
 make wpd-trace           # WP-E: gameplay traces/candidates (single host)
 make wpd-perf            # WP-F: math/checkpoint/sweep performance comparison
-make m3-trace            # M3: Julia snapshot traces for the base mustache fixtures
-make m3-mustache         # M3: 5-fixture Lua-vs-Julia trace control comparison
-make m3-sweep            # M3: stride-200 serial/parallel identity sweep
-make m3-bench            # M3: Lua-vs-Julia mustache benchmark + full-grid agreement
+make alloc-gate          # strict zero-allocation stepping gate on the six real levels
 ```
 
 Every command selects its backend with `PEGGLE_MATH_BACKEND` (`system_libm`,
@@ -267,8 +264,8 @@ through both engines. Acceptance records:
 `src/parity.jl` also exposes the manifest API used by `bin/parity_emit.jl`:
 `parity_manifest`, `parity_authoritative`, `parity_configurations`,
 `parity_provenance`, `write_parity`, `first_parity_difference`.
-`bin/checkpoint_bench.jl` writes the checkpoint/reset benchmark and records
-the backend identity; `bin/math_census.jl` writes the math census result
+`bin/checkpoint_bench.jl` writes the checkpoint/reset benchmark on the six real
+levels (`--level NAME|all|PATH`) and records the backend identity; `bin/math_census.jl` writes the math census result
 summary.
 
 ## 9. Provenance and hash conventions
@@ -331,7 +328,8 @@ stays `0.1.0`, and the checkpoint serialization is unchanged.
 | `src/snapshot.jl` | per-step simulation snapshot (schema v2) |
 | `src/trace.jl` | canonical gameplay-trace JSONL writer |
 | `src/engine.jl` | `ShotEngine` pipeline: launch, update, run, scoring, clearing, shot end |
-| `bin/shot_bench.jl` | single-shot trace/expected-record driver and serial/parallel sweeps |
+| `src/real_levels.jl` | `RealLevels`: the named registry of the six real levels and the campaign config |
+| `bin/shot_bench.jl` | single-shot trace/expected-record driver and serial/parallel sweeps (`--level NAME\|PATH`) |
 
 The entity and tracker systems read the step's raw/derived events from the
 journal and push commands. They never mutate pegs, scores, or `SimState.engine`
@@ -379,8 +377,13 @@ runbook.
 `test_events.jl`, `test_impact_geometry.jl`, `test_physics.jl`,
 `test_bucket.jl`, `test_fever.jl`, `test_powers.jl`, `test_style_shots.jl`,
 `test_ball_state.jl`, `test_slide_inversion.jl`, `test_engine.jl`,
-`test_snapshot.jl`, and `test_trace.jl`. See [test selection](testing.md)
-for the retained coverage and the 2026-10-28 pruning rationale.
+`test_snapshot.jl`, and `test_trace.jl`. Since 2026-11-12 every level-based
+test uses only the six real levels (b1, b2, g1, m1, m2, ribbon_waves; see
+`PeggleSim.RealLevels`) under the 10ee3a0 rules. See [test selection](testing.md)
+for the retained coverage and the pruning rationale.
+
+The M3 evidence below is historical (the mustache tools were retired on
+2026-11-12):
 
 - 5 mustache trace fixtures: the Lua snapshot-enabled corpus and the Julia
   traces are byte-identical. The comparison covers the full per-step state

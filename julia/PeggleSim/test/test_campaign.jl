@@ -46,9 +46,9 @@ end
 end
 
 @testset "solo lifecycle, isolation, and scheduling" begin
-    root = normpath(joinpath(@__DIR__, "../../.."))
-    level = PeggleSim.load_level(joinpath(root, "fixtures/ribbon_waves/artifact/ribbon_waves.v1.json"))
-    config = PeggleSim.load_config(joinpath(root, "fixtures/ribbon_waves/config.dev.v1.json"))
+    level = PeggleSim.load_level(PeggleSim.RealLevels.artifact_path("ribbon_waves"))
+    config = PeggleSim.load_config(PeggleSim.RealLevels.config_path())
+    @test config.rules === PeggleSim.RULES_RAMP_BUCKET
     prov = PeggleSim.campaign_provenance(level)
     initial = PeggleSim.build_checkpoint(level, config; provenance=prov)
     live = PeggleSim.shot_engine(initial; config, level, callbacks=PeggleSim.solo_callbacks())

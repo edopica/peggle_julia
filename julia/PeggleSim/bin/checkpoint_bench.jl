@@ -1,51 +1,46 @@
 #!/usr/bin/env julia
-# Checkpoint memory and reset benchmark (WP-F, M2 acceptance).
+# Checkpoint memory and reset benchmark on the real levels.
 #
 # Usage:
 #   julia --project=julia/PeggleSim julia/PeggleSim/bin/checkpoint_bench.jl \
-#       [--out results/m2-checkpoint-bench.json] [--iterations 200]
-#       [--warmups 20] [--baseline results/20261003T093826Z_omarchy.summary.json]
+#       [--level NAME|all|PATH] [--out results/checkpoint-bench.json]
+#       [--iterations 200] [--warmups 20]
 #
-# For every configuration (8 static levels with one ball, plus slide with
-# three balls) the script times one setupLevel-equivalent build, then measures
-# `capture_checkpoint` and `reset_worker!` over the requested iterations after
-# warmups. It records per-iteration nanoseconds, `@allocated` per call, memory
-# sizes, and, when the M0 baseline summary is available, the mapped
-# per-candidate init p50 as a reference point. Output is canonical JSON with a
+# For every configuration (each real level with one ball, plus m1 with three
+# balls, under the campaign config) the script times one setupLevel-equivalent
+# build, then measures `capture_checkpoint` and `reset_worker!` over the
+# requested iterations after warmups. It records per-iteration nanoseconds,
+# `@allocated` per call and memory sizes. Output is canonical JSON with a
 # date-free, host-free method block.
+#
+# The M2 version of this benchmark measured the pinned interchange levels and
+# mapped them to the M0 Lua baseline workloads; that record is
+# results/m2-checkpoint-bench.json (historical, not rewritten here). There is
+# no M0 baseline for the real levels, so the `baseline` block always reports
+# `present = false`.
 
 using PeggleSim
 import JSON
 
 const REPO_ROOT = normpath(joinpath(@__DIR__, "..", "..", ".."))
-const CONFIG_PATH = joinpath(REPO_ROOT, "interchange", "config.v1.json")
-const DEFAULT_OUT = joinpath(REPO_ROOT, "results", "m2-checkpoint-bench.json")
-const DEFAULT_BASELINE = joinpath(REPO_ROOT, "results", "20261003T093826Z_omarchy.summary.json")
+const DEFAULT_OUT = joinpath(REPO_ROOT, "results", "checkpoint-bench.json")
 const DEFAULT_ITERATIONS = 200
 const DEFAULT_WARMUPS = 20
-
-# M0 workload names that correspond to the benchmarked level/ball pairs.
-const BASELINE_WORKLOADS = Dict{String,String}(
-    "circle_level" => "circles_small",
-    "off_the_wall" => "circles_mixed",
-    "long_shot" => "overhead_static_2p",
-    "slide" => "lines_rect_annular",
-    "slide.multiball3" => "lines_rect_annular_multi3",
-    "squiggly_circle" => "annular_dense",
-)
 
 function parse_args(argv)
     opts = Dict{String,String}()
     i = 1
     while i <= length(argv)
         arg = argv[i]
-        if arg in ("--out", "--iterations", "--warmups", "--baseline")
+        if arg in ("--out", "--iterations", "--warmups", "--level")
             i += 1
             i <= length(argv) || error("missing value for $(arg)")
             opts[arg[3:end]] = argv[i]
         elseif arg == "--help" || arg == "-h"
-            println("usage: checkpoint_bench.jl [--out PATH] [--iterations N] " *
-                    "[--warmups N] [--baseline PATH]")
+            println("usage: checkpoint_bench.jl [--level NAME|all|PATH] [--out PATH] " *
+                    "[--iterations N] [--warmups N]")
+            println("  real levels: ", join(PeggleSim.RealLevels.NAMES, ", "),
+                    " (default: all)")
             exit(0)
         else
             error("unknown argument: $(arg)")
@@ -53,6 +48,16 @@ function parse_args(argv)
         i += 1
     end
     return opts
+end
+
+# (label, level name, level path, balls) rows for a --level value. `all` adds
+# the three-ball m1 row, which exercises multi-ball checkpoints.
+function _configurations(spec::AbstractString)
+    rows = [(label, label, path, 1) for (label, path) in PeggleSim.RealLevels.resolve(spec)]
+    if spec == "all"
+        push!(rows, ("m1.multiball3", "m1", PeggleSim.RealLevels.artifact_path("m1"), 3))
+    end
+    return rows
 end
 
 function _percentile_us(ns::Vector{Int}, q::Float64)::Float64
@@ -67,29 +72,6 @@ function _median(values::Vector{Float64})::Float64
     isempty(values) && return 0.0
     sorted = sort(values)
     return sorted[cld(length(sorted), 2)]
-end
-
-# Baseline summary -> workload -> init p50 samples (one per repeat).
-function _load_baseline(path::AbstractString)
-    isfile(path) || return nothing
-    doc = JSON.parsefile(path)
-    out = Dict{String,Any}()
-    for workload in doc["workloads"]
-        name = String(workload["workload"])
-        entry = get!(out, name, Dict{String,Any}(
-            "workload" => name,
-            "level" => String(workload["level"]),
-            "balls" => Int(workload["balls"]),
-            "candidates" => Int(workload["candidates"]),
-            "init_p50_us_samples" => Float64[],
-        ))
-        push!(entry["init_p50_us_samples"],
-              Float64(workload["phases"]["init"]["p50"]))
-    end
-    for (_, entry) in out
-        entry["init_p50_us"] = _median(entry["init_p50_us_samples"])
-    end
-    return out
 end
 
 function _benchmark_configuration(cfg, level, config, provenance, iterations, warmups)
@@ -164,37 +146,25 @@ end
 function main(argv)
     opts = parse_args(argv)
     out_path = get(opts, "out", DEFAULT_OUT)
-    baseline_path = get(opts, "baseline", DEFAULT_BASELINE)
     iterations = parse(Int, get(opts, "iterations", string(DEFAULT_ITERATIONS)))
     warmups = parse(Int, get(opts, "warmups", string(DEFAULT_WARMUPS)))
     iterations >= 200 || error("iterations must be >= 200, got $(iterations)")
     warmups >= 20 || error("warmups must be >= 20, got $(warmups)")
 
-    config = PeggleSim.load_config(CONFIG_PATH)
-    baseline = _load_baseline(baseline_path)
-    mapped = Dict{String,Any}()
+    config = PeggleSim.load_config(PeggleSim.RealLevels.config_path())
 
     results = []
-    for cfg in PeggleSim.parity_configurations(REPO_ROOT)
-        level_path = joinpath(REPO_ROOT, "interchange", "levels", cfg.level * ".v1.json")
+    for (label, name, level_path, balls) in _configurations(get(opts, "level", "all"))
         level = PeggleSim.load_level(level_path)
-        provenance = PeggleSim.parity_provenance(REPO_ROOT, cfg.level)
+        provenance = (
+            reference_revision = String(level.provenance.reference_revision),
+            reference_tree = String(level.provenance.reference_tree),
+            config_sha256 = config.source_sha256,
+            level_sha256 = String(level.level_sha256),
+        )
+        cfg = (label = label, level = name, balls = balls)
         result = _benchmark_configuration(
             cfg, level, config, provenance, iterations, warmups)
-
-        workload = get(BASELINE_WORKLOADS, cfg.label, nothing)
-        if baseline !== nothing && workload !== nothing && haskey(baseline, workload)
-            entry = baseline[workload]
-            result["baseline"] = Dict{String,Any}(
-                "workload" => workload,
-                "init_p50_us" => entry["init_p50_us"],
-                "init_p50_us_samples" => entry["init_p50_us_samples"],
-                "candidates" => entry["candidates"],
-            )
-            mapped[cfg.label] = workload
-        else
-            result["baseline"] = nothing
-        end
         push!(results, result)
         println("benchmarked ", cfg.label,
                 ": build=", round(result["build_us"]; digits = 2), " us",
@@ -233,10 +203,13 @@ function main(argv)
         ),
         "results" => results,
         "summary" => summary,
+        "config" => PeggleSim.RealLevels.CONFIG,
+        "config_sha256" => config.source_sha256,
+        "rules" => string(config.rules),
         "baseline" => Dict{String,Any}(
-            "source" => relpath(baseline_path, REPO_ROOT),
-            "present" => baseline !== nothing,
-            "mapped" => mapped,
+            "source" => nothing,
+            "present" => false,
+            "mapped" => Dict{String,Any}(),
         ),
     )
 

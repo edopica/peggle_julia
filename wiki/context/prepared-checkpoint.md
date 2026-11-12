@@ -58,16 +58,18 @@ Qualification commands, from the repository root:
 
 ```bash
 julia --project=julia/PeggleSim -t 4 julia/PeggleSim/test/runtests.jl
-julia --project=julia/PeggleSim julia/PeggleSim/bin/replay_fixtures.jl --prepared \
-  --out tmp/prepared/replay.json --trace-report tmp/prepared/traces.json \
-  --trace-out-dir tmp/prepared/traces
 julia --project=julia/PeggleSim -t 4 julia/PeggleSim/bin/shot_bench.jl \
-  --sweep --prepared --level interchange/levels/slide.v1.json \
-  --config interchange/config.v1.json --stride 1 --threads 4 --verify-serial \
-  --out tmp/prepared/slide.jsonl --summary tmp/prepared/slide.json
-julia --project=julia/PeggleSim -t 1 scripts/m4_allocation.jl --prepared \
-  --workload all --out tmp/prepared/allocation.json --print
+  --sweep --prepared --level b2 --stride 1 --threads 4 --verify-serial \
+  --out tmp/prepared/b2.jsonl --summary tmp/prepared/b2.json
+make alloc-gate-prepared   # scripts/allocation_gate.jl --prepared on the six real levels
 ```
+
+`test_prepared_checkpoint.jl` compares prepared and ordinary resets on the real
+levels (b2 takes the frozen static-geometry path; the ribbon boards never do).
+The prepared M4 fixture replay (`bin/replay_fixtures.jl --prepared`) was
+removed on 2026-11-12 with the pinned-corpus M4 tools. Under the 10ee3a0
+rules a prepared reset still allocates 1,168 bytes per candidate on every
+real level, while stepping stays at 0 bytes (devlog 2026-11-12).
 
 `scripts/bench_prepared_checkpoint.jl` compares three source trees: baseline,
 prepared reset alone, and combined reset/geometry. The prepared-only tree is

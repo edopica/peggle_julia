@@ -5,8 +5,8 @@ using SHA
 
 const ROOT = normpath(joinpath(@__DIR__, "../../.."))
 function main(args)
-    defaults = Dict("level" => "fixtures/ribbon_waves/artifact/ribbon_waves.v1.json",
-        "config" => "campaigns/ribbon/config.v1.json", "games" => "8", "mode" => "1v1",
+    defaults = Dict("level" => PeggleSim.RealLevels.DEFAULT,
+        "config" => PeggleSim.RealLevels.CONFIG, "games" => "8", "mode" => "1v1",
         "worker-counts" => "1,2,4,8",
         "base-seed" => "20261024", "sector-size" => "100", "epsilon" => "1",
         "max-steps" => "3600", "max-turns" => "100", "workers" => "8",
@@ -14,7 +14,10 @@ function main(args)
         "warmup" => "full", "colors" => "per_game")
     if "--help" in args
         println("julia --project=julia/PeggleSim -t 8 julia/PeggleSim/bin/campaign.jl [--NAME VALUE]")
-        println("Benchmarks ribbon 1v1 matches; --mode solo is optional.")
+        println("Benchmarks 1v1 matches on a real level; --mode solo is optional.")
+        println("  --level NAME|all|PATH (default: $(PeggleSim.RealLevels.DEFAULT))")
+        println("      real levels: $(join(PeggleSim.RealLevels.NAMES, ", ")); all runs each in turn,")
+        println("      writing <out stem>-<level>.json; PATH is any static level artifact")
         println("  --warmup full|fast|none (default: full)")
         println("  --colors per_game|level (default: per_game; level = fixed Lua layout)")
         for k in sort(collect(keys(defaults)))
@@ -30,6 +33,21 @@ function main(args)
         defaults[key] = args[i+1]
     end
     defaults["warmup"] in ("full", "fast", "none") || error("warmup must be one of: full, fast, none")
+    levels = PeggleSim.RealLevels.resolve(defaults["level"])
+    if length(levels) == 1
+        label, path = only(levels)
+        return run_level(merge(defaults, Dict("level" => path, "level_name" => label)), args)
+    end
+    stem, ext = splitext(defaults["out"])
+    for (label, path) in levels
+        println("== level $label")
+        flush(stdout)
+        run_level(merge(defaults, Dict("level" => path, "level_name" => label,
+                                       "out" => "$stem-$label$ext")), args)
+    end
+end
+
+function run_level(defaults, args)
     num(k) = parse(Int, defaults[k])
     options_for(workers) = PeggleSim.CampaignOptions(mode = Symbol(defaults["mode"]),
         games = num("games"), base_seed = num("base-seed"), sector_size = num("sector-size"),
@@ -51,7 +69,8 @@ function main(args)
     levelpath = abspath(defaults["level"])
     configpath = abspath(defaults["config"])
     level = PeggleSim.load_level(levelpath)
-    # Any static artifact works; ribbon_waves stays the default workload.
+    # Real levels are named in PeggleSim.RealLevels; any static artifact path
+    # also works. ribbon_waves stays the default workload.
     config = PeggleSim.load_config(configpath)
     load_seconds = (time_ns() - t) / 1e9
 

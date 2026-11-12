@@ -2,16 +2,11 @@ using Test
 using PeggleSim
 
 @testset "shot scratch ownership and reset" begin
-    root = normpath(joinpath(@__DIR__, "..", "..", ".."))
-    fixture = joinpath(root, "fixtures", "mustache")
-    level = PeggleSim.load_level(joinpath(fixture, "artifact", "mustache.v1.json"))
-    config = PeggleSim.load_config(joinpath(fixture, "config.dev.v1.json"))
-    provenance = (
-        reference_revision = "da752257f613abbd209f1aa1acdd37a5f9be05f5",
-        reference_tree = "61278edc5467bf8399c24f4af0fcf36d75cac6a2",
-        config_sha256 = config.source_sha256,
-        level_sha256 = level.level_sha256,
-    )
+    # Real level b2 (circles, annular and rectangle pegs) under the campaign
+    # config (10ee3a0 rules). Aim 0 spawns a ball; aim 900 is a bucket catch.
+    level = PeggleSim.load_level(PeggleSim.RealLevels.artifact_path("b2"))
+    config = PeggleSim.load_config(PeggleSim.RealLevels.config_path())
+    provenance = PeggleSim.campaign_provenance(level)
     ckpt = PeggleSim.build_checkpoint(level, config; provenance)
     new_engine() = PeggleSim.shot_engine(ckpt; config, level,
                                          callbacks = PeggleSim.harness_callbacks())

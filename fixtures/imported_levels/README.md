@@ -20,7 +20,7 @@ Each level has 25 red and 2 green pegs; the rest are blue.
 - `artifact/<level>.v1.json`: exported `peggle.level` artifacts (ribbon pegs
   carry their annular `parts`; see
   [ribbon pegs](../../wiki/context/ribbon-pegs.md)).
-- `config.dev.v1.json`: dev-tree config artifact.
+- `config.dev.v1.json`: dev-tree config artifact (`RULES_RAMP_BUCKET`).
 - `catalog.lua`: 25 shots, aims 0/450/900/1350/1800 per level.
 - `workloads.lua`: one full-grid workload per level (sweep parity).
 - `expected/*.json`, `traces/*.jsonl`: Lua records and canonical traces.
@@ -41,42 +41,49 @@ are not fixed by the level.
 
 ## Shots (Lua capture, Julia identical)
 
+Captured from the peggle_evolved dev tree at `10ee3a0` (clean tree
+`b3630882…`, config `src/config.lua` sha256 `e40d659e…`). The config artifact
+selects `RULES_RAMP_BUCKET` (ramp bucket, catch hold, one-ball multiball,
+launch speed 400, wall damping 0.8); it is byte-identical to
+`campaigns/ribbon/config.v1.json`. See
+[bucket ramps](../../wiki/context/bucket-ramps.md).
+
 | Shot | Aim | Steps | Reason | Pegs | Reds | Spawned | Score | Styles |
 | --- | ---: | ---: | --- | ---: | ---: | ---: | ---: | --- |
-| b1_right_wall | 0 | 512 | fell_out | 19 | 1 | 2 | 5320 | — |
-| b1_right | 450 | 276 | fell_out | 11 | 3 | 0 | 4180 | — |
-| b1_center | 900 | 325 | bucket_caught | 10 | 4 | 0 | 14600 | — |
-| b1_left | 1350 | 565 | fell_out | 13 | 4 | 0 | 12740 | — |
-| b1_left_wall | 1800 | 346 | fell_out | 22 | 7 | 2 | 18700 | — |
-| b2_right_wall | 0 | 451 | fell_out | 20 | 5 | 2 | 23000 | — |
-| b2_right | 450 | 61 | fell_out | 2 | 0 | 0 | 40 | — |
-| b2_center | 900 | 444 | fell_out | 18 | 5 | 2 | 11340 | — |
-| b2_left | 1350 | 246 | fell_out | 7 | 1 | 0 | 1120 | — |
-| b2_left_wall | 1800 | 182 | fell_out | 2 | 2 | 0 | 5400 | off_the_wall:1 |
-| g1_right_wall | 0 | 169 | fell_out | 7 | 1 | 0 | 4550 | — |
-| g1_right | 450 | 264 | fell_out | 10 | 4 | 0 | 4600 | — |
-| g1_center | 900 | 468 | fell_out | 15 | 2 | 0 | 9950 | slide:1 |
-| g1_left | 1350 | 132 | fell_out | 5 | 2 | 0 | 1150 | — |
-| g1_left_wall | 1800 | 600 | fell_out | 20 | 6 | 0 | 19800 | slide:1 |
-| m1_right_wall | 0 | 335 | fell_out | 8 | 2 | 0 | 2080 | — |
-| m1_right | 450 | 390 | fell_out | 10 | 2 | 2 | 2800 | — |
-| m1_center | 900 | 195 | fell_out | 3 | 0 | 0 | 90 | — |
-| m1_left | 1350 | 358 | fell_out | 17 | 5 | 0 | 10540 | — |
-| m1_left_wall | 1800 | 714 | fell_out | 22 | 7 | 2 | 18700 | — |
-| m2_right_wall | 0 | 553 | fell_out | 28 | 3 | 2 | 15400 | — |
-| m2_right | 450 | 407 | fell_out | 13 | 4 | 0 | 11370 | slide:1 |
-| m2_center | 900 | 475 | fell_out | 15 | 4 | 0 | 7650 | — |
-| m2_left | 1350 | 555 | fell_out | 21 | 9 | 0 | 36710 | slide:1 |
-| m2_left_wall | 1800 | 381 | bucket_caught | 16 | 3 | 0 | 21880 | slide:1 |
+| b1_right_wall | 0 | 317 | fell_out | 8 | 3 | 0 | 2800 | — |
+| b1_right | 450 | 369 | fell_out | 10 | 2 | 0 | 2800 | — |
+| b1_center | 900 | 491 | fell_out | 12 | 3 | 0 | 4680 | — |
+| b1_left | 1350 | 169 | fell_out | 5 | 2 | 0 | 1150 | — |
+| b1_left_wall | 1800 | 395 | fell_out | 7 | 0 | 0 | 490 | — |
+| b2_right_wall | 0 | 424 | fell_out | 15 | 4 | 1 | 17650 | — |
+| b2_right | 450 | 348 | fell_out | 15 | 4 | 1 | 15000 | — |
+| b2_center | 900 | 528 | bucket_caught | 11 | 4 | 0 | 15170 | — |
+| b2_left | 1350 | 310 | fell_out | 15 | 3 | 1 | 13650 | — |
+| b2_left_wall | 1800 | 119 | fell_out | 2 | 0 | 0 | 40 | — |
+| g1_right_wall | 0 | 453 | bucket_caught | 18 | 4 | 0 | 24720 | slide:1 |
+| g1_right | 450 | 310 | fell_out | 10 | 2 | 0 | 7700 | — |
+| g1_center | 900 | 247 | fell_out | 3 | 1 | 0 | 360 | — |
+| g1_left | 1350 | 289 | fell_out | 9 | 3 | 0 | 7650 | — |
+| g1_left_wall | 1800 | 256 | fell_out | 6 | 1 | 0 | 900 | — |
+| m1_right_wall | 0 | 405 | fell_out | 16 | 5 | 0 | 9760 | — |
+| m1_right | 450 | 315 | fell_out | 5 | 1 | 0 | 700 | — |
+| m1_center | 900 | 199 | fell_out | 2 | 0 | 0 | 40 | — |
+| m1_left | 1350 | 116 | fell_out | 2 | 0 | 0 | 40 | — |
+| m1_left_wall | 1800 | 278 | fell_out | 10 | 3 | 2 | 3700 | — |
+| m2_right_wall | 0 | 741 | fell_out | 28 | 4 | 0 | 17920 | — |
+| m2_right | 450 | 309 | fell_out | 14 | 4 | 0 | 7000 | — |
+| m2_center | 900 | 521 | fell_out | 14 | 3 | 0 | 5740 | — |
+| m2_left | 1350 | 698 | bucket_caught | 16 | 4 | 0 | 18320 | — |
+| m2_left_wall | 1800 | 466 | bucket_caught | 13 | 1 | 0 | 15360 | lucky_bounce:1 |
 
-Full-grid sweeps (1,801 aims per level) agree with Lua on every candidate:
-`results/ribbon_port/sweep-compare-*.json`.
+`Spawned` counts green-power balls; under the one-ball multiball rule each
+green hit spawns one ball (m1_left_wall hits both greens). A `bucket_caught`
+shot ends after the caught ball falls out and the 90-step catch hold elapses.
 
-## Status after peggle_evolved 10ee3a0
+The classic-rule capture at `bbd8622` (config `0e34b40…`) that this corpus
+replaced is in git history (commit `8cb8d51`). The full-grid sweep reports
+`results/ribbon_port/sweep-compare-*.json` were measured against that
+classic-rule capture and are kept as a historical record.
 
-This corpus was captured at `bbd8622` under the classic rules (classic bucket,
-two-ball multiball, launch speed 600, wall damping 1.0). Its config artifact
-still selects `RULES_CLASSIC`, and Julia replays it byte-identically. It is
-**stale relative to the dev tree** from `10ee3a0` onward: the `--check`
-capture fails, because the config, the artifact provenance and every shot
-changed. See [bucket ramps](../../wiki/context/bucket-ramps.md).
+These are the six "real" levels (with `ribbon_waves`) that the Julia tests,
+campaigns and benchmarks use; see `wiki/context/testing.md`.

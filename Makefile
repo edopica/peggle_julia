@@ -1,4 +1,4 @@
-.PHONY: help verify export fixtures fixture-list check check-all list self-check quick baseline test julia-test julia-scripts-test julia-scripts-integration julia-parity julia-bench capture-m2 capture-m2-check math-census math-census-check core-math-build core-math-verify wpd-math wpd-state-capture wpd-state-compare wpd-state wpd-trace wpd-compare-hosts wpd-perf wpd-parity m3-trace m3-mustache m3-sweep m3-bench m4-parity m4-replay m4-bench
+.PHONY: help verify export fixtures fixture-list check check-all list self-check quick baseline test julia-test julia-scripts-test julia-scripts-integration julia-parity julia-bench capture-m2 capture-m2-check math-census math-census-check core-math-build core-math-verify wpd-math wpd-state-capture wpd-state-compare wpd-state wpd-trace wpd-compare-hosts wpd-perf wpd-parity alloc-gate alloc-gate-prepared
 
 JULIA = julia --project=julia/PeggleSim
 
@@ -19,7 +19,9 @@ help:
 	@echo "  julia-scripts-test run the Julia benchmark-execution harness tests"
 	@echo "  julia-scripts-integration run one real end-to-end benchmark smoke (~30 s)"
 	@echo "  julia-parity recompute the cross-machine parity manifest"
-	@echo "  julia-bench  checkpoint/reset benchmark (writes results/)"
+	@echo "  julia-bench  checkpoint/reset benchmark on the six real levels (writes results/)"
+	@echo "  alloc-gate   strict zero-allocation stepping gate on the six real levels"
+	@echo "  alloc-gate-prepared same gate with prepared checkpoints (records reset bytes)"
 	@echo "  capture-m2   capture RNG/peg-color/checkpoint fixtures (needs LÖVE)"
 	@echo "  capture-m2-check re-capture the M2 fixtures and require equality"
 	@echo "  math-census  capture the math census fixture and emit the Julia summary"
@@ -27,9 +29,6 @@ help:
 	@echo "  core-math-build build the pinned native math component (linux-x86_64)"
 	@echo "  core-math-verify verify the native pin, artifact, and ABI/symbol audit"
 	@echo "  wpd-parity   experimental CORE-MATH-era parity capture + local comparison"
-	@echo "  m4-parity    M4 correctness-breadth parity (replay, sweeps, threads, scenarios)"
-	@echo "  m4-replay    M4 fixture replay + trace parity into results/m4/"
-	@echo "  m4-bench     M4 representative performance benchmark (throughput, latency, alloc, RSS)"
 
 verify:
 	scripts/verify_reference.sh
@@ -127,47 +126,18 @@ wpd-compare-hosts:
 wpd-perf:
 	scripts/core_math_perf.sh
 
-# M3 shot evaluator: mustache traces, Lua-vs-Julia control comparison, and a
-# short parallel sweep. The level/config artifacts are the dev-tree corpus
-# under fixtures/mustache/.
-M3_LEVEL = fixtures/mustache/artifact/mustache.v1.json
-M3_CONFIG = fixtures/mustache/config.dev.v1.json
-M3_SHOT_BENCH = julia/PeggleSim/bin/shot_bench.jl
+# Zero-allocation gate on the six real levels (PeggleSim.RealLevels) under the
+# campaign config (10ee3a0 rules). Single-threaded; exits nonzero unless every
+# steady-state row allocates 0 bytes. The M3/M4 targets that measured the
+# pinned mustache/interchange corpora were retired on 2026-11-12 (see
+# wiki/context/testing.md).
+ALLOC_GATE = $(JULIA) --startup-file=no -t 1 scripts/allocation_gate.jl --workload all --threads 1 --gate --print
 
-m3-trace:
-	$(JULIA) $(M3_SHOT_BENCH) --fixture m3_mustache_center --level $(M3_LEVEL) --config $(M3_CONFIG) --aim 900 --category completion --snapshots --trace-out results/m3/traces/m3_mustache_center.jsonl --expected-out results/m3/expected/m3_mustache_center.json
-	$(JULIA) $(M3_SHOT_BENCH) --fixture m3_mustache_left_wall --level $(M3_LEVEL) --config $(M3_CONFIG) --aim 0 --category power --snapshots --trace-out results/m3/traces/m3_mustache_left_wall.jsonl --expected-out results/m3/expected/m3_mustache_left_wall.json
-	$(JULIA) $(M3_SHOT_BENCH) --fixture m3_mustache_right_wall --level $(M3_LEVEL) --config $(M3_CONFIG) --aim 1800 --category style --snapshots --trace-out results/m3/traces/m3_mustache_right_wall.jsonl --expected-out results/m3/expected/m3_mustache_right_wall.json
+alloc-gate:
+	$(ALLOC_GATE) --out tmp/allocation-gate/profile.json
 
-m3-mustache:
-	scripts/compare_m3_mustache.sh
-
-m3-sweep:
-	$(JULIA) -t auto $(M3_SHOT_BENCH) --sweep --level $(M3_LEVEL) --config $(M3_CONFIG) --stride 200 --verify-serial --out results/m3/sweep.jsonl --summary results/m3/sweep-summary.json
-
-m3-bench:
-	scripts/bench_m3.sh
-
-# M4 correctness-breadth parity: fixture/trace replay, candidate sweeps for the
-# M4 workloads, thread identity, the scenario probe, and a combined report
-# under results/m4/. The Lua sweeps run the frozen pinned tree
-# (reference/peggle_evolved), which stays read-only.
-M4_REPLAY = julia/PeggleSim/bin/replay_fixtures.jl
-
-m4-parity:
-	scripts/m4_parity.sh
-
-m4-replay:
-	$(JULIA) $(M4_REPLAY)
-
-# M4 representative performance gate: seven workloads x Lua/Julia, thread
-# scaling, allocation, peak process RSS, and a tracing on/off diagnostic. The
-# full-grid stride-1 reference is reused read-only from results/m4/. Raw
-# artifacts land under results/raw/ (gitignored); the report is
-# results/m4/bench-report.json. Pass options with ARGS=..., e.g.
-#   make m4-bench ARGS="--threads '1 2 4'"
-m4-bench:
-	scripts/bench_m4.sh $(ARGS)
+alloc-gate-prepared:
+	$(ALLOC_GATE) --prepared --out tmp/allocation-gate/profile-prepared.json
 
 # WP-D open item: experimental CORE-MATH-era parity inputs and local manifests.
 # Captures the census through the dev tree + core_math, emits one manifest from

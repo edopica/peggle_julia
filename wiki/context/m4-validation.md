@@ -1,5 +1,16 @@
 # M4 correctness-breadth validation
 
+> **Retired on 2026-11-12.** Tests, campaigns and benchmarks now use only the
+> six real levels (see [testing](testing.md)). The `make m4-parity`,
+> `m4-replay` and `m4-bench` targets, `scripts/m4_parity.sh`,
+> `scripts/bench_m4.sh`, `scripts/bench_m4_report.py`,
+> `scripts/m4_cross_machine.py`, `bin/replay_fixtures.jl` and
+> `bin/scenario_probe.jl` were removed (git history keeps them). The
+> zero-allocation gate continues as `scripts/allocation_gate.jl`
+> (`make alloc-gate`) on the real levels. This page is the historical record
+> of the M4 validation.
+
+
 M4 is the full static-level shot-behavior milestone. It is **closed** as of
 session 3. This page records **sessions 1–3**: session 1 is corpus parity
 (this page), session 2 is the performance gate

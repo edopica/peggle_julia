@@ -4,7 +4,7 @@
 # Trace mode replays one aim index from the M2 ready-to-aim checkpoint,
 # writes a canonical gameplay trace (optionally with per-step snapshots), and
 # emits a fixture expected record in the exact shape of
-# fixtures/mustache/expected/*.json. The expected record's trace block always
+# fixtures/imported_levels/expected/*.json. The expected record's trace block always
 # describes the snapshot-free serialization (the corpus convention), so the
 # driver runs a second, snapshot-free pass when --snapshots is given.
 #
@@ -16,12 +16,12 @@
 #
 # Usage:
 #   julia --project=julia/PeggleSim julia/PeggleSim/bin/shot_bench.jl \
-#       --fixture ID --level PATH --config PATH --aim INDEX \
+#       --fixture ID --level NAME|PATH [--config PATH] --aim INDEX \
 #       [--balls N] [--clearing] [--max-steps N] [--snapshots] \
 #       [--category NAME] --trace-out PATH --expected-out PATH
 #
 #   julia --project=julia/PeggleSim -t 4 julia/PeggleSim/bin/shot_bench.jl \
-#       --sweep --level PATH --config PATH \
+#       --sweep --level NAME|PATH [--config PATH] \
 #       (--indices 0,900,1800 | --stride N) \
 #       [--balls N] [--clearing] [--max-steps N] [--threads N] \
 #       [--verify-serial] [--alloc] [--trace-dir DIR] \
@@ -41,9 +41,14 @@
 # candidate code path first; the summary records `alloc_method` and an
 # `alloc` block with per-candidate bytes and stats.
 #
+# --level takes one of the real level names (b1, b2, g1, m1, m2, ribbon_waves;
+# see PeggleSim.RealLevels) or a path to a static level artifact. --config
+# defaults to the campaign config shared by the real levels
+# (campaigns/ribbon/config.v1.json).
+#
 # --category is optional: when omitted the driver reads the reference expected
-# record at fixtures/mustache/expected/<id>.json if it exists, and otherwise
-# uses "completion".
+# record <id>.json from the real-level corpora (fixtures/imported_levels or
+# fixtures/ribbon_waves) if it exists, and otherwise uses "completion".
 
 using PeggleSim
 
@@ -61,13 +66,25 @@ const VALUE_ARGS = Set([
 function usage()
     println("  --prepared: use the internal prepared checkpoint and compact geometry")
     println("usage:")
-    println("  shot_bench.jl --fixture ID --level PATH --config PATH --aim INDEX " *
+    println("  shot_bench.jl --fixture ID --level NAME|PATH [--config PATH] --aim INDEX " *
             "[--balls N] [--clearing] [--max-steps N] [--snapshots] " *
             "[--category NAME] --trace-out PATH --expected-out PATH")
-    println("  shot_bench.jl --sweep --level PATH --config PATH " *
+    println("  shot_bench.jl --sweep --level NAME|PATH [--config PATH] " *
             "(--indices 0,900,1800 | --stride N) [--balls N] [--clearing] " *
             "[--max-steps N] [--threads N] [--verify-serial] [--alloc] " *
             "[--trace-dir DIR] --out PATH.jsonl --summary PATH.json")
+    println("  real levels: ", join(PeggleSim.RealLevels.NAMES, ", "),
+            "; --config defaults to ", PeggleSim.RealLevels.CONFIG)
+end
+
+# --level NAME|PATH and optional --config, resolved through the real-level
+# registry. "all" is not supported: run one level per invocation.
+function _level_and_config_paths(opts)
+    spec = _require(opts, "--level")
+    spec == "all" && error("--level all is not supported by shot_bench.jl; pass one level")
+    level_path = only(PeggleSim.RealLevels.resolve(spec))[2]
+    config_path = get(opts, "--config", PeggleSim.RealLevels.config_path())
+    return level_path, config_path
 end
 
 function parse_args(argv)
@@ -147,8 +164,9 @@ end
 
 function _category_for(fixture::AbstractString, opts)
     haskey(opts, "--category") && return opts["--category"]
-    ref_path = joinpath(REPO_ROOT, "fixtures", "mustache", "expected", fixture * ".json")
-    if isfile(ref_path)
+    for dir in ("imported_levels", "ribbon_waves")
+        ref_path = joinpath(REPO_ROOT, "fixtures", dir, "expected", fixture * ".json")
+        isfile(ref_path) || continue
         doc = load_json(ref_path)
         if doc isa AbstractDict && doc["category"] isa AbstractString
             return String(doc["category"])
@@ -176,8 +194,7 @@ end
 
 function run_trace(opts, flags)
     fixture = _require(opts, "--fixture")
-    level_path = _require(opts, "--level")
-    config_path = _require(opts, "--config")
+    level_path, config_path = _level_and_config_paths(opts)
     aim = parse(Int, _require(opts, "--aim"))
     trace_out = _require(opts, "--trace-out")
     expected_out = _require(opts, "--expected-out")
@@ -484,8 +501,7 @@ function _throughput_block(rows, timings::Matrix{Int}, wall_ns::Int)
 end
 
 function run_sweep(opts, flags)
-    level_path = _require(opts, "--level")
-    config_path = _require(opts, "--config")
+    level_path, config_path = _level_and_config_paths(opts)
     out_path = _require(opts, "--out")
     summary_path = _require(opts, "--summary")
     balls = parse(Int, get(opts, "--balls", "1"))

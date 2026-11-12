@@ -125,7 +125,8 @@ end
 
 function main(args)
     d = Dict("workers"=>"1", "games"=>"8", "repeats"=>"3", "kind"=>"timing",
-        "out"=>"", "max-turns"=>"100", "max-steps"=>"3600", "allocation-rate"=>"0.01")
+        "out"=>"", "max-turns"=>"100", "max-steps"=>"3600", "allocation-rate"=>"0.01",
+        "level"=>PeggleSim.RealLevels.DEFAULT)
     iseven(length(args)) || error("options require values")
     for i in 1:2:length(args)
         k = replace(args[i], "--"=>"")
@@ -133,6 +134,9 @@ function main(args)
         d[k] = args[i+1]
     end
     d["kind"] in ("timing", "cpu", "allocations") || error("invalid kind")
+    # A real level name (PeggleSim.RealLevels.NAMES) or a level artifact path.
+    d["level"] == "all" && error("--level all is not supported here; run one level per process")
+    levelpath = only(PeggleSim.RealLevels.resolve(d["level"]))[2]
     isempty(d["out"]) && error("--out required")
     out = abspath(d["out"])
     isdir(out) && error("output exists: $out")
@@ -148,8 +152,8 @@ function main(args)
     d["kind"] == "timing" || o.workers == 1 || error("profiles initially require one worker")
     entry_to_load = (time_ns()-ENTRY_NS)/1e9
     t = time_ns()
-    loaded = @timed (PeggleSim.load_level("fixtures/ribbon_waves/artifact/ribbon_waves.v1.json"),
-        PeggleSim.load_config("campaigns/ribbon/config.v1.json"))
+    loaded = @timed (PeggleSim.load_level(levelpath),
+        PeggleSim.load_config(PeggleSim.RealLevels.config_path()))
     level, config = loaded.value
     load_seconds = (time_ns()-t)/1e9
     loaded_rss = rss_bytes()

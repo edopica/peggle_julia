@@ -1,14 +1,14 @@
 # Focused tests for src/style_shots.jl (workstream E), porting the dev-tree
 # unit tests ../peggle_evolved/tests/test_style_shots.lua to the real
 # GameplayJournal / GameplayCommands API. A real SimConfig is loaded from the
-# mustache dev fixture; distances/points in the assertions come from it.
+# campaign config of the real levels; distances/points in the assertions come
+# from it.
 
 using Test
 using PeggleSim
 
-const STYLE_REPO_ROOT = normpath(joinpath(@__DIR__, "..", "..", ".."))
-const STYLE_CONFIG_PATH =
-    joinpath(STYLE_REPO_ROOT, "fixtures", "mustache", "config.dev.v1.json")
+# The campaign config shared by the real levels (10ee3a0 rules).
+const STYLE_CONFIG_PATH = PeggleSim.RealLevels.config_path()
 
 # A line metadata dict in the payload shape produced by the Engine reducer.
 _sline(id, index, count; closed = false, gap = 0) = Dict{String,Any}(

@@ -27,7 +27,7 @@ and adds the first cross-engine benchmark. Start with the
 | `schemas/` | Versioned interchange schemas and examples |
 | `interchange/` | Generated level/config artifacts, SVG previews, manifest |
 | `fixtures/` | Fixture catalog, expected records, gameplay traces, `rng/`, `checkpoints/`, `math_census/`, `mustache/` |
-| `scripts/` | Julia benchmark-execution harness plus reference verification, export, fixture capture, previews, baseline runner, M2 captures, M3/M4 capture/compare/bench |
+| `scripts/` | Julia benchmark-execution harness, real-level allocation gate and corpus captures, plus reference verification, export, fixture capture, previews, baseline runner, M2 captures |
 | `results/` | Baseline summaries, M2 benchmark/census/parity results, M3 benchmark/sweep reports; `results/raw/` is gitignored |
 
 ## Quickstart
@@ -52,12 +52,14 @@ make test         # run the reference test suite
 make julia-test   # run the Julia package test suite
 make julia-scripts-test # run the Julia benchmark-execution harness tests
 make julia-parity # recompute the cross-machine parity manifest
-make julia-bench  # checkpoint/reset benchmark
-make m3-trace     # Julia snapshot traces for the base mustache fixtures
-make m3-mustache  # 5-fixture Lua-vs-Julia trace control comparison
-make m3-sweep     # stride-200 serial/parallel identity sweep
-make m3-bench     # Lua-vs-Julia mustache benchmark + full-grid agreement
+make julia-bench  # checkpoint/reset benchmark on the six real levels
+make alloc-gate   # strict zero-allocation stepping gate on the six real levels
 ```
+
+Tests, campaigns and benchmarks use only the six real levels (b1, b2, g1, m1,
+m2, ribbon_waves) under the peggle_evolved `10ee3a0` rules; see
+`wiki/context/testing.md`. The M3/M4 pinned-corpus targets were retired on
+2026-11-12.
 
 ## The M0 workload
 
@@ -110,7 +112,8 @@ they imply are in `wiki/benchmarks/baseline-metrics.md`.
   style shots, ball state, slide inversion, the 26-phase `ShotEngine`
   pipeline, snapshots, and canonical traces (4,722 tests pass).
 - `wiki/context/m3-mustache.md` — the 5-fixture mustache corpus, the capture
-  and snapshot-comparison runbook, and the full-grid agreement.
+  and snapshot-comparison runbook, and the full-grid agreement (historical;
+  the M3 tools were retired on 2026-11-12).
 - `wiki/benchmarks/m3-shot.md` — the Lua-vs-Julia mustache benchmark
   (`results/m3/bench-report.json`): 16.66 vs 32.56 candidates/s same-core
   (indicative 1.95×), 93.3 candidates/s at 12 threads, and the allocation

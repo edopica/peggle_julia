@@ -405,8 +405,9 @@ The comparison is byte-identical on a second **host**, same OS
 (`linux-x86_64`), not a second OS. The macOS ARM64 and Windows x86-64 rows
 above remain uncollected and are not claimed.
 
-The M4 second-host criterion is implemented by `scripts/m4_cross_machine.py`
-and deliberately counts a distinct *host* on the same OS as sufficient, with
+The M4 second-host criterion was implemented by `scripts/m4_cross_machine.py`
+(removed on 2026-11-12 with the other pinned-corpus M4 tools; see git
+history) and deliberately counts a distinct *host* on the same OS as sufficient, with
 `verdict.scope` recording that; it is not the WP-E `cross-machine-summary.json`
 rule in §5b, which requires two distinct `os` values for `complete: true`.
 

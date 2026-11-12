@@ -1,5 +1,13 @@
 #!/usr/bin/env julia
-# M4 allocation profiler.
+# Zero-allocation gate on the real levels (successor of scripts/m4_allocation.jl).
+#
+# The workload catalog is the six real levels (PeggleSim.RealLevels) under the
+# campaign config, which selects the 10ee3a0 rules (ramp bucket, catch hold,
+# one-ball multiball). Each level is measured at aims chosen to cover a
+# bucket catch with its hold, green spawns, slides on ribbons and plain
+# fall-outs. The gate is strict: every steady-state row must allocate 0 bytes
+# in total and 0 bytes on every step. With --gate the script exits 1 when any
+# row fails.
 #
 # Measures the three phases defined by wiki/benchmarks/m4-perf.md section 1:
 # reset, launch, and steady-state stepping. Steady state is the per-step
@@ -19,20 +27,22 @@
 # Usage (from the repository root, single-threaded):
 #   export JULIA_DEPOT_PATH="$PWD/tmp/julia-depot:$HOME/.julia"
 #   julia --startup-file=no --project=julia/PeggleSim -t 1 \
-#     scripts/m4_allocation.jl --workload all --threads 1 \
-#     --out results/m4/allocation-profile.pre.json --print
+#     scripts/allocation_gate.jl --workload all --threads 1 --gate --print
+#   (or: make alloc-gate)
 #
 # Options:
-#   --workload ID   "all" (representative five rows), a catalog id, or a
-#                   comma-separated list of ids. Default: all.
+#   --workload ID   "all" (the six real levels), a catalog id (a real level
+#                   name, or m1_multi3), or a comma-separated list of ids.
+#                   Default: all.
 #   --aim N         run this aim for every selected workload. Default: each
-#                   workload's catalog profile aims (mustache 900 and 570,
-#                   the others 900).
+#                   workload's catalog profile aims.
 #   --threads N     must match the Julia thread count; default: current.
 #   --shots N       per-shot step cap for every measured loop. Default: 4000
 #                   (step_probe.jl's stepwise cap).
 #   --warmups N     full warmup shots per row; must be >= 3. Default: 3.
-#   --out PATH      output JSON. Default: results/m4/allocation-profile.pre.json
+#   --out PATH      output JSON. Default: tmp/allocation-gate/profile.json
+#   --gate          exit 1 unless every steady-state row passes (strict zero)
+#   --prepared      use prepared checkpoints and compact geometry
 #   --top N         allocation sites per workload. Default: 25.
 #   --print         print a human-readable summary to stdout.
 #   --snapshot-note TEXT
@@ -51,9 +61,9 @@ using SHA
 
 const REPO_ROOT = dirname(@__DIR__)
 const SRC_DIR = joinpath(REPO_ROOT, "julia", "PeggleSim", "src")
-const FORMAT = "peggle.m4_allocation_profile"
-const SCHEMA_VERSION = 1
-const DEFAULT_OUT = "results/m4/allocation-profile.pre.json"
+const FORMAT = "peggle.allocation_profile"
+const SCHEMA_VERSION = 2
+const DEFAULT_OUT = "tmp/allocation-gate/profile.json"
 const DEFAULT_SHOTS = 4000
 const DEFAULT_WARMUPS = 3
 const DEFAULT_TOP = 25
@@ -71,17 +81,21 @@ struct CatalogEntry
     representative::Bool
 end
 
+const _RL = PeggleSim.RealLevels
+_real(id, name, balls, aims, representative) = CatalogEntry(
+    id, _RL.artifact_relpath(name), _RL.CONFIG, balls, aims, representative)
+
+# Aims follow the Lua 10ee3a0 records in fixtures/*/expected: b2 900, g1 0,
+# m2 1350/1800 and ribbon_waves 80 end in a bucket catch with its hold; b2 450,
+# m1 1800 and ribbon_waves 900 spawn balls; g1 0 awards a slide on ribbons.
 const CATALOG = [
-    CatalogEntry("mustache", "fixtures/mustache/artifact/mustache.v1.json",
-                 "fixtures/mustache/config.dev.v1.json", 1, [900, 570], true),
-    CatalogEntry("circles_small", "interchange/levels/circle_level.v1.json",
-                 "interchange/config.v1.json", 1, [900], true),
-    CatalogEntry("lines_rect_annular", "interchange/levels/slide.v1.json",
-                 "interchange/config.v1.json", 1, [900], true),
-    CatalogEntry("annular_dense", "interchange/levels/squiggly_circle.v1.json",
-                 "interchange/config.v1.json", 1, [900], true),
-    CatalogEntry("lines_rect_annular_multi3", "interchange/levels/slide.v1.json",
-                 "interchange/config.v1.json", 3, [900], false),
+    _real("b1", "b1", 1, [900, 0], true),
+    _real("b2", "b2", 1, [900, 450], true),
+    _real("g1", "g1", 1, [0, 900], true),
+    _real("m1", "m1", 1, [1800, 900], true),
+    _real("m2", "m2", 1, [1350, 1800], true),
+    _real("ribbon_waves", "ribbon_waves", 1, [900, 80], true),
+    _real("m1_multi3", "m1", 3, [1800], false),
 ]
 
 # ---------------------------------------------------------------------------
@@ -824,7 +838,8 @@ end
 # ---------------------------------------------------------------------------
 
 function _usage(io::IO = stdout)
-    println(io, "usage: julia --project=julia/PeggleSim -t 1 scripts/m4_allocation.jl [options]")
+    println(io, "usage: julia --project=julia/PeggleSim -t 1 scripts/allocation_gate.jl [options]")
+    println(io, "  --gate         exit 1 unless every steady-state row allocates 0 bytes")
     println(io, "  --prepared     use prepared checkpoints and compact geometry")
     println(io, "  --workload ID   all, a catalog id, or comma-separated ids (default: all)")
     println(io, "  --aim N         aim index for every selected workload (default: catalog aims)")
@@ -862,6 +877,7 @@ function _parse_cli(argv)
         "top" => DEFAULT_TOP,
         "print" => false,
         "prepared" => false,
+        "gate" => false,
         "snapshot_note" => "",
     )
     i = 1
@@ -874,6 +890,8 @@ function _parse_cli(argv)
             opts["prepared"] = true
         elseif a == "--print"
             opts["print"] = true
+        elseif a == "--gate"
+            opts["gate"] = true
         elseif a in ("--workload", "--aim", "--threads", "--shots", "--warmups",
                      "--out", "--top", "--snapshot-note")
             i += 1
@@ -976,7 +994,7 @@ function main()
     last_hash = ""
     source_moving = false
     for (entry, aim) in rows
-        println(stderr, "m4_allocation: measuring ", entry.id, " aim=", aim,
+        println(stderr, "allocation_gate: measuring ", entry.id, " aim=", aim,
                 " (warmups=", opts["warmups"], ", step_cap=", opts["shots"], ")")
         h_start = _src_hashes().jl
         row = _measure_row(entry, aim, opts)
@@ -1014,7 +1032,7 @@ function main()
     notes = String[
         "Phases are measured in a separate process pass each; allocation bytes are deterministic for a fixed tree.",
         "Profile.Allocs sizes are payload sizes and exclude GC headers/padding; site bytes_per_step therefore do not sum to the measured steady_state total (see each workload's profile ratios).",
-        "The zero-allocation verdict is the orchestrator's; this file only reports the per-phase pass flags for the stated criterion.",
+        "The gate verdict is strict zero on every steady_state row (total and max single step); reset and launch are reported, not gated.",
     ]
     if !isempty(opts["snapshot_note"])
         pushfirst!(notes, opts["snapshot_note"])
@@ -1027,7 +1045,8 @@ function main()
     doc = Dict{String,Any}(
         "format" => FORMAT,
         "schema_version" => SCHEMA_VERSION,
-        "generator" => "scripts/m4_allocation.jl",
+        "generator" => "scripts/allocation_gate.jl",
+        "prepared" => opts["prepared"],
         "method" => opts["method"],
         "environment" => env,
         "source_moving" => source_moving,
@@ -1044,8 +1063,16 @@ function main()
         doc["snapshot_note"] = opts["snapshot_note"]
     end
     _write_json(out_abs, doc)
-    println(stderr, "m4_allocation: wrote ", out_abs)
+    println(stderr, "allocation_gate: wrote ", out_abs)
     opts["print"] && _print_summary(results)
+    failed = [r["id"] for r in results if !r["phases"]["steady_state"]["pass"]]
+    if isempty(failed)
+        println(stderr, "allocation_gate: PASS: ", length(results),
+                " steady-state rows allocate 0 bytes")
+    else
+        println(stderr, "allocation_gate: FAIL: steady-state allocation in ", join(failed, ", "))
+        opts["gate"] && exit(1)
+    end
     return nothing
 end
 

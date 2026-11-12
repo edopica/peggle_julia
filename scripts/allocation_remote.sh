@@ -30,8 +30,8 @@ case "$mode" in
       --out tmp/allocation/parity.json --label deathstar-allocation > tmp/allocation/parity.log 2>&1
     for threads in 1 2 4; do
       "${julia_cmd[@]}" -t "$threads,0" julia/PeggleSim/bin/shot_bench.jl --sweep \
-        --level fixtures/mustache/artifact/mustache.v1.json --config fixtures/mustache/config.dev.v1.json \
-        --indices 0,200,400,570,600,800,900,1000,1200,1400,1600,1800 \
+        --level ribbon_waves \
+        --indices 0,80,200,400,600,800,900,1000,1200,1400,1600,1800 \
         --threads "$threads" --verify-serial --out "tmp/allocation/sweep-t$threads.jsonl" \
         --summary "tmp/allocation/sweep-t$threads.json" > "tmp/allocation/sweep-t$threads.log" 2>&1
     done

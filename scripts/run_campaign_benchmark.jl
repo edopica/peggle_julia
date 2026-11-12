@@ -21,6 +21,8 @@ using SHA
 
 include(joinpath(@__DIR__, "benchmark", "BenchmarkHarness.jl"))
 using .BenchmarkHarness
+# The named registry of the six real levels (no PeggleSim load needed).
+include(joinpath(@__DIR__, "..", "julia", "PeggleSim", "src", "real_levels.jl"))
 
 const PROG = "run_campaign_benchmark.jl"
 const DASHES = repeat("-", 80)
@@ -75,10 +77,13 @@ options:
                         Max simulation steps per candidate
   --max-turns MAX_TURNS
                         Max turns per match
-  --level LEVEL         Path to level artifact
+  --level LEVEL         Real level name (b1, b2, g1, m1, m2, ribbon_waves;
+                        default ribbon_waves) or path to a level artifact
   --config CONFIG       Path to campaign config
   --workload-id WORKLOAD_ID
-                        Identifier for workload
+                        Identifier for workload (default
+                        ribbon_1v1_8matches_1801aim for ribbon_waves,
+                        <level>_1v1_8matches_1801aim for another real level)
   --benchmark BENCHMARK
                         Benchmark name
   --allow-dirty         Allow exploratory dirty runs; retain source snapshot
@@ -113,9 +118,9 @@ function _default_options()
         "epsilon" => 1,
         "max-steps" => 3600,
         "max-turns" => 100,
-        "level" => "fixtures/ribbon_waves/artifact/ribbon_waves.v1.json",
-        "config" => "campaigns/ribbon/config.v1.json",
-        "workload-id" => "ribbon_1v1_8matches_1801aim",
+        "level" => RealLevels.DEFAULT,
+        "config" => RealLevels.CONFIG,
+        "workload-id" => nothing,
         "benchmark" => "ribbon_1v1_campaign",
         "allow-dirty" => false,
         "run-id" => nothing,
@@ -251,7 +256,18 @@ function main(args::Vector{String} = ARGS)::Int
 
     root_dir = abspath(pwd())
     benchmarks_dir = abspath(String(options["benchmarks-dir"]))
-    level_path = _rooted(root_dir, String(options["level"]))
+    level_spec = String(options["level"])
+    if level_spec == "all"
+        println(stderr, "Error: --level all is not supported; run one level per benchmark run")
+        return 2
+    end
+    level_path = RealLevels.is_real_level(level_spec) ?
+        RealLevels.artifact_path(level_spec) : _rooted(root_dir, level_spec)
+    if options["workload-id"] === nothing
+        options["workload-id"] = level_spec == "ribbon_waves" ? "ribbon_1v1_8matches_1801aim" :
+            RealLevels.is_real_level(level_spec) ? "$(level_spec)_1v1_8matches_1801aim" :
+            "custom_1v1_8matches_1801aim"
+    end
     config_path = _rooted(root_dir, String(options["config"]))
 
     if !ispath(level_path)

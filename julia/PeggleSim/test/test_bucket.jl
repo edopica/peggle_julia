@@ -1,8 +1,8 @@
 # Focused tests for src/bucket.jl (workstream D), porting src/entities/
-# bucket.lua from the dev tree. Uses the pinned interchange config
-# (`interchange/config.v1.json`) and the mustache level dimensions
-# (880x550), which override Config.virtual_width -- the faithful
-# bucket_update! overload takes that width explicitly.
+# bucket.lua from the dev tree. The classic-rules section uses the pinned
+# interchange config (`interchange/config.v1.json`, RULES_CLASSIC) on a
+# synthetic 880x550 board, which overrides Config.virtual_width -- the
+# faithful bucket_update! overload takes that width explicitly.
 #
 # Pendulum hand-derivation (Lua formulas, vw = 880, pinned config):
 #
@@ -162,8 +162,7 @@ end
 # resolve oracle (wiki/context/bucket-ramps.md).
 # ---------------------------------------------------------------------------
 
-const RAMP_CONFIG_PATH =
-    joinpath(BUCKET_REPO_ROOT, "campaigns", "ribbon", "config.v1.json")
+const RAMP_CONFIG_PATH = PeggleSim.RealLevels.config_path()
 
 function _ramp_config(; overrides...)
     base = PeggleSim.load_config(RAMP_CONFIG_PATH)
@@ -358,8 +357,7 @@ _bounds(p) = (minimum(_piece_xs(p)), maximum(_piece_xs(p)),
     end
 
     @testset "checkpoint round trip keeps the model and rebuilds nothing" begin
-        level = PeggleSim.load_level(joinpath(BUCKET_REPO_ROOT, "fixtures",
-                                              "imported_levels", "artifact", "b2.v1.json"))
+        level = PeggleSim.load_level(PeggleSim.RealLevels.artifact_path("b2"))
         prov = (reference_revision = "r", reference_tree = "t",
                 config_sha256 = c.source_sha256, level_sha256 = level.level_sha256)
         ckpt = PeggleSim.build_checkpoint(level, c; provenance = prov)

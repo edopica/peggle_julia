@@ -25,13 +25,19 @@ and its `--check` mode.
 
 ## Shots
 
+Captured from the peggle_evolved dev tree at `10ee3a0` under
+`RULES_RAMP_BUCKET` (ramp bucket, catch hold, one-ball multiball, launch speed
+400, wall damping 0.8). `config.dev.v1.json` is byte-identical to
+`campaigns/ribbon/config.v1.json`.
+
 | Shot | Aim | Steps | Reason | Pegs hit | Reds | Spawned | Score |
 | --- | ---: | ---: | --- | ---: | ---: | ---: | ---: |
-| `center` | 900 | 309 | fell_out | 17 | 5 | 2 | 10,540 |
-| `left_wall` | 1800 | 551 | bucket_caught | 20 | 6 | 0 | 24,800 |
-| `ribbon` | 80 | 142 | bucket_caught | 5 | 1 | 0 | 10,700 |
+| `center` | 900 | 489 | fell_out | 27 | 4 | 1 | 32,010 |
+| `left_wall` | 1800 | 589 | fell_out | 21 | 5 | 0 | 13,860 |
+| `ribbon` | 80 | 714 | bucket_caught | 24 | 5 | 0 | 26,560 |
 
-Julia reproduces all three records and traces byte-for-byte.
+Julia reproduces all three records and traces byte-for-byte. The earlier
+classic-rule capture (`bbd8622`) is in git history (commit `8cb8d51`).
 
 ## Fidelity and provenance
 
@@ -42,16 +48,9 @@ residual.
 Source geometry SHA-256:
 `bc52e4282b9ee0c42fc20049f40ba18f6b3f52718a9b04616a786941a7e247ea`
 (upstream now at `../level_segment/levels/ribbon_waves/`). Exported
-artifact provenance records the dev-tree revision/tree/config hashes; the
-working tree also carried uncommitted level edits (ribbon thickness 19.45/19.0),
-so the provenance revision is not a clean-tree claim. Artifact and trace
-hashes are stored in each expected record.
-
-## Status after peggle_evolved 10ee3a0
-
-This corpus was captured at `bbd8622` under the classic rules (classic bucket,
-two-ball multiball, launch speed 600, wall damping 1.0). Its config artifact
-still selects `RULES_CLASSIC`, and Julia replays it byte-identically. It is
-**stale relative to the dev tree** from `10ee3a0` onward: the `--check`
-capture fails, because the config, the artifact provenance and every shot
-changed. See [bucket ramps](../../wiki/context/bucket-ramps.md).
+artifact provenance records the dev-tree revision `10ee3a0`, tree
+`b3630882…` and config sha256 `e40d659e…`. The dev tree was clean at capture
+(`src/levels/ribbon_waves.lua` is tracked there now), so the provenance is a
+clean-tree claim. Artifact and trace hashes are stored in each expected
+record. The level geometry is unchanged from the `bbd8622` capture; only the
+provenance block of the artifact changed.

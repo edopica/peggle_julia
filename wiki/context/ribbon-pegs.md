@@ -4,7 +4,9 @@ Ported on 2026-11-11 from peggle_evolved `bbd8622` ("Separate ribbon peg
 segmentation from collision geometry"). The Lua change is **after the pin**
 (`d17f6e7`). The pinned reference, M1 interchange and M1–M4 corpora are
 unchanged; ribbons occur only in dev-tree corpora (`fixtures/ribbon_waves`,
-`fixtures/imported_levels`).
+`fixtures/imported_levels`). Both corpora were re-captured at `10ee3a0`
+(ramp bucket rules) on 2026-11-12; the evidence below is from the `bbd8622`
+classic-rule captures (see [bucket ramps](bucket-ramps.md)).
 
 ## What a ribbon is
 

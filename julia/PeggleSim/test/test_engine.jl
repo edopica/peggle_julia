@@ -1,48 +1,38 @@
 # Focused tests for src/engine.jl (workstream F), porting
-# ../peggle_evolved/src/engine/core.lua (dev tree @ da75225).
+# ../peggle_evolved/src/engine/core.lua.
 #
-# Every scene uses the real mustache artifact + dev config through the M2
-# checkpoint contract (`build_checkpoint` -> `shot_engine`), so the assertions
-# pin the full engine pipeline: launch staging, physics integration, scoring,
-# green power spawns, the clearing cascade, and multi-worker determinism.
+# Every scene uses a real level through the checkpoint contract
+# (`build_checkpoint` -> `shot_engine`) with the campaign config, which selects
+# the 10ee3a0 rules (RULES_RAMP_BUCKET). The assertions pin the full engine
+# pipeline: launch staging, physics integration, scoring, green power spawns,
+# the clearing cascade, and multi-worker determinism. Bench-rule step counts
+# and scores are the Lua 10ee3a0 records in fixtures/imported_levels/expected.
 
 using Test
 using PeggleSim
 
-const ENGINE_REPO_ROOT = normpath(joinpath(@__DIR__, "..", "..", ".."))
-const ENGINE_MUSTACHE_DIR = joinpath(ENGINE_REPO_ROOT, "fixtures", "mustache")
-const ENGINE_MUSTACHE_LEVEL =
-    joinpath(ENGINE_MUSTACHE_DIR, "artifact", "mustache.v1.json")
-const ENGINE_MUSTACHE_CONFIG =
-    joinpath(ENGINE_MUSTACHE_DIR, "config.dev.v1.json")
+const ENGINE_RL = PeggleSim.RealLevels
+const ENGINE_REPO_ROOT = ENGINE_RL.ROOT
 
 const ENGINE_CENTER_AIM = 900
-const ENGINE_LEFT_AIM = 0
-const ENGINE_CENTER_STEPS = 922
-const ENGINE_CENTER_CLEARING_STEPS = 975
-const ENGINE_LEFT_STEPS = 1507
+const ENGINE_LEFT_WALL_AIM = 1800
+# Lua 10ee3a0 b1_center record (bench rule).
+const ENGINE_CENTER_STEPS = 491
+# Same shot with the end-of-turn clearing cascade (harness clearing rule and
+# the default callbacks agree).
+const ENGINE_CENTER_CLEARING_STEPS = 544
 
-function _engine_level()
-    return PeggleSim.load_level(ENGINE_MUSTACHE_LEVEL)
-end
-
-function _engine_config()
-    return PeggleSim.load_config(ENGINE_MUSTACHE_CONFIG)
-end
+_engine_level(name = "b1") = PeggleSim.load_level(ENGINE_RL.artifact_path(name))
+_engine_config() = PeggleSim.load_config(ENGINE_RL.config_path())
 
 function _engine_checkpoint(level, config)
-    provenance = (
-        reference_revision = "da752257f613abbd209f1aa1acdd37a5f9be05f5",
-        reference_tree = "61278edc5467bf8399c24f4af0fcf36d75cac6a2",
-        config_sha256 = config.source_sha256,
-        level_sha256 = PeggleSim.level_sha256(ENGINE_MUSTACHE_LEVEL),
-    )
     return PeggleSim.build_checkpoint(
-        level, config; balls = 1, mode = :solo, provenance = provenance)
+        level, config; balls = 1, mode = :solo,
+        provenance = PeggleSim.campaign_provenance(level))
 end
 
-function _engine_new(; clearing::Bool = false)
-    level = _engine_level()
+function _engine_new(name = "b1"; clearing::Bool = false)
+    level = _engine_level(name)
     config = _engine_config()
     ckpt = _engine_checkpoint(level, config)
     return PeggleSim.shot_engine(
@@ -51,8 +41,8 @@ function _engine_new(; clearing::Bool = false)
         level = level)
 end
 
-function _engine_run(aim_index::Int; clearing::Bool = false)
-    eng = _engine_new(; clearing = clearing)
+function _engine_run(aim_index::Int, name = "b1"; clearing::Bool = false)
+    eng = _engine_new(name; clearing = clearing)
     PeggleSim.launch!(eng, aim_index)
     PeggleSim.run_shot!(eng)
     return eng
@@ -61,6 +51,7 @@ end
 @testset "engine" begin
     @testset "launch stages ball_launched and the shot reaches fell_out" begin
         eng = _engine_new()
+        level = _engine_level()
 
         # launch! mirrors Engine:launchBalls: velocities are set immediately
         # and the raw event is staged for the next fixed step.
@@ -69,13 +60,13 @@ end
         event_type, fields = eng.journal.staged[1]
         @test event_type == "ball_launched"
         @test fields["ball_id"] == 1
-        @test fields["x"] == 440.0
+        @test fields["x"] == level.virtual_width / 2
         @test fields["y"] == 50.0
-        # Center aim snaps to pi/2: vx = cos(pi/2) * 800, vy = 800.
+        # Center aim snaps to pi/2: vx = cos(pi/2) * 400, vy = 400.
         @test PeggleSim.float_bits_hex(fields["vx"]) ==
-              PeggleSim.float_bits_hex(4.8985871965894129e-14)
+              PeggleSim.float_bits_hex(2.4492935982947064e-14)
         @test PeggleSim.float_bits_hex(fields["vy"]) ==
-              PeggleSim.float_bits_hex(800.0)
+              PeggleSim.float_bits_hex(400.0)
         @test eng.sim.engine.shot_id == 1
         @test eng.shot_initial_step == 1
 
@@ -88,16 +79,17 @@ end
 
         PeggleSim.run_shot!(eng)
         summary = PeggleSim.shot_summary(eng)
+        # Lua 10ee3a0 record b1_center.
         @test summary.completed
         @test summary.reason == "fell_out"
         @test summary.steps == ENGINE_CENTER_STEPS
-        @test summary.score == 9000.0
-        @test summary.peg_score == 4000.0
+        @test summary.score == 4680.0
+        @test summary.peg_score == 4680.0
         @test summary.bonus == 0.0
-        @test summary.style_points == 5000.0
-        @test summary.styles == "slide:1"
-        @test summary.pegs_hit == 16
-        @test summary.reds_hit == 1
+        @test summary.style_points == 0.0
+        @test summary.styles == ""
+        @test summary.pegs_hit == 12
+        @test summary.reds_hit == 3
         @test summary.multiplier == 1
         @test !summary.is_fever
         @test summary.balls == 1
@@ -106,18 +98,19 @@ end
         @test eng.last_removal_reason == "fell_out"
     end
 
-    @testset "green power spawns two balls" begin
-        eng = _engine_run(ENGINE_LEFT_AIM)
+    @testset "each green hit spawns one ball" begin
+        # Lua 10ee3a0 record m1_left_wall: both greens are hit, and under the
+        # one-ball multiball rule each spawns one ball.
+        eng = _engine_run(ENGINE_LEFT_WALL_AIM, "m1")
         summary = PeggleSim.shot_summary(eng)
         @test summary.completed
         @test summary.reason == "fell_out"
-        @test summary.steps == ENGINE_LEFT_STEPS
-        @test summary.pegs_hit == 30
-        @test summary.reds_hit == 4
-        @test summary.score == 39500.0
-        @test summary.peg_score == 34500.0
+        @test summary.steps == 278
+        @test summary.pegs_hit == 10
+        @test summary.reds_hit == 3
+        @test summary.score == 3700.0
         @test summary.spawned == 2
-        # The green peg staged two spawn specs; ids 2 and 3 were consumed.
+        # Ids 2 and 3 were consumed by the two spawns.
         @test eng.sim.engine.next_ball_id == 4
         @test sort(eng.sim.engine.used_ball_ids) == [1, 2, 3]
     end
@@ -130,6 +123,7 @@ end
         @test eng.sim.engine.clear_queue === nothing
         # The cascade runs after the bench completion point.
         @test summary.steps == ENGINE_CENTER_CLEARING_STEPS
+        @test summary.steps > ENGINE_CENTER_STEPS
         # Every hit peg was swept off the board; un-hit pegs remain.
         @test all(!p.hit for p in eng.sim.engine.pegs)
         @test !isempty(eng.sim.engine.pegs)
@@ -190,14 +184,12 @@ end
 # 10ee3a0 rules (RULES_RAMP_BUCKET): one-ball multiball and the bucket catch
 # hold. Mirrors tests/test_engine_integration.lua @ 10ee3a0. The b2 imported
 # level plus the synced campaign config (exported from 10ee3a0) are used; the
-# full-shot step counts below were captured from the Lua dev tree at 10ee3a0
-# with the harness (scripts/capture_imported_levels.sh flow into a scratch
-# directory) and the Julia traces were byte-identical with snapshots.
+# full-shot step counts below are the Lua 10ee3a0 records in
+# fixtures/imported_levels/expected (b2_right, b2_center).
 # ---------------------------------------------------------------------------
 
-const RAMP_ENGINE_CONFIG = joinpath(ENGINE_REPO_ROOT, "campaigns", "ribbon", "config.v1.json")
-const RAMP_ENGINE_LEVEL = joinpath(ENGINE_REPO_ROOT, "fixtures", "imported_levels",
-                                   "artifact", "b2.v1.json")
+const RAMP_ENGINE_CONFIG = ENGINE_RL.config_path()
+const RAMP_ENGINE_LEVEL = ENGINE_RL.artifact_path("b2")
 
 function _ramp_engine(; callbacks = PeggleSim.harness_callbacks(), trace_path = nothing)
     level = PeggleSim.load_level(RAMP_ENGINE_LEVEL)

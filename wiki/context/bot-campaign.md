@@ -34,19 +34,39 @@ measurements per worker count. It reverses count order on alternate repetitions
 to reduce order bias. Every warmup/trial compares complete gameplay and decision
 histories to the sequential reference, excluding timings. A mismatch fails.
 
-Solo with the old input and three-game workload:
+Solo with the three-game workload:
 
 ```bash
 julia --project=julia/PeggleSim -t 3 julia/PeggleSim/bin/campaign.jl \
   --mode solo --games 3 --workers 3 --worker-counts 1,3 \
-  --config fixtures/ribbon_waves/config.dev.v1.json \
   --out results/campaign/solo-current.json
 ```
 
+`fixtures/ribbon_waves/config.dev.v1.json` was a classic-rule config until
+2026-11-12; it is now the 10ee3a0 capture and byte-identical to the campaign
+config, so the old `--config` override is no longer needed.
+
+### Levels
+
+Campaigns use only the six real levels, named in `PeggleSim.RealLevels`:
+`b1`, `b2`, `g1`, `m1`, `m2` (`fixtures/imported_levels`) and `ribbon_waves`
+(`fixtures/ribbon_waves`, the default). `--level` takes a name, `all`, or a
+path to a static level artifact:
+
+```bash
+julia --project=julia/PeggleSim -t 8 julia/PeggleSim/bin/campaign.jl --level g1
+julia --project=julia/PeggleSim -t 8 julia/PeggleSim/bin/campaign.jl --level all \
+  --out results/campaign/1v1/all.json   # writes all-<level>.json per level
+```
+
+`all` runs the levels one after another in the same process, each with its own
+warmup, trials and report. `scripts/run_campaign_benchmark.jl --level NAME` and
+`bin/campaign_diagnostics.jl --level NAME` accept a single name or path.
+
 `--help` lists all options. Level, config, match count, seed, sector size,
 epsilon, per-shot step limit, per-match turn limit, repetition count and output
-are configurable. The CLI supports only ribbon. `--max-turns 1 --max-steps 1`
-is a cheap limit/identity diagnostic and does not measure completed matches.
+are configurable. `--max-turns 1 --max-steps 1` is a cheap limit/identity
+diagnostic and does not measure completed matches.
 
 For a single campaign without warmup or file output, use
 `PeggleSim.run_campaign(level, config, PeggleSim.CampaignOptions(...); parallel=true)`.

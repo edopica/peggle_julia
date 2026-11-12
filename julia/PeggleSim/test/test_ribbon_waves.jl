@@ -1,5 +1,7 @@
-# Golden Lua-trace replay for the three ribbon_waves shots.
-# Frozen geometry is exercised through the resulting simulation and trace.
+# Golden Lua-trace replay for the three ribbon_waves shots, captured from
+# peggle_evolved 10ee3a0 (RULES_RAMP_BUCKET) with
+# scripts/capture_ribbon_waves.sh. Frozen geometry is exercised through the
+# resulting simulation and trace.
 
 using Test
 using JSON
@@ -68,6 +70,10 @@ function _rw_replay(id::AbstractString)
 end
 
 @testset "ribbon_waves fixture" begin
+    @test PeggleSim.load_config(RW_CONFIG).rules === PeggleSim.RULES_RAMP_BUCKET
+    @test read(RW_CONFIG) == read(PeggleSim.RealLevels.config_path())
+    @test RW_ARTIFACT == PeggleSim.RealLevels.artifact_path("ribbon_waves")
+
     @testset "golden trace replay: $id" for id in RW_IDS
         record, summary, bytes, events = _rw_replay(id)
 

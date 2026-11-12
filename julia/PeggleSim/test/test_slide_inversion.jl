@@ -1,14 +1,13 @@
 # Focused tests for src/slide_inversion.jl (workstream E), porting the
 # dev-tree unit tests ../peggle_evolved/tests/test_slide_inversion.lua to the
 # real GameplayJournal / GameplayCommands API. A real SimConfig is loaded from
-# the mustache dev fixture.
+# the campaign config of the real levels.
 
 using Test
 using PeggleSim
 
-const SI_REPO_ROOT = normpath(joinpath(@__DIR__, "..", "..", ".."))
-const SI_CONFIG_PATH =
-    joinpath(SI_REPO_ROOT, "fixtures", "mustache", "config.dev.v1.json")
+# The campaign config shared by the real levels (10ee3a0 rules).
+const SI_CONFIG_PATH = PeggleSim.RealLevels.config_path()
 
 _si_line(id; index = 1, count = 3, closed = false, gap = 0) = Dict{String,Any}(
     "id" => id, "index" => index, "count" => count,

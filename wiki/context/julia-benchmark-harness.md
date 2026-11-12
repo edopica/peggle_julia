@@ -53,8 +53,9 @@ julia --project=julia/PeggleSim scripts/bench_process.jl \
   --out tmp/m.json --label smoke -- julia -e 'println("ok")'
 ```
 
-`scripts/bench_m4.sh` calls `scripts/bench_process.jl`; its inline JSON helpers
-and the report generator remain Python analysis glue.
+`scripts/bench_process.jl` is a standalone measurement wrapper; its former M4
+caller (`scripts/bench_m4.sh`) was removed on 2026-11-12 with the other
+pinned-corpus M4 tools.
 
 The fallback must collect child usage inside the small helper. Reading
 `RUSAGE_CHILDREN` in Julia includes the launcher's inherited pre-exec memory
@@ -103,7 +104,7 @@ byte-identical to the former Python output:
 
 `scripts/benchmark_schema.py`, `scripts/validate_benchmark.py`,
 `scripts/generate_benchmark_index.py`, `scripts/compare_benchmarks.py`,
-`scripts/bench_m4_report.py`, `scripts/run_campaign_diagnostics.py`,
+`scripts/run_campaign_diagnostics.py`,
 `scripts/import_legacy_benchmark.py`, the SVG/level tools, and the notebook
 generator remain Python. The benchmark-storage helpers used by the importer and
 diagnostics were moved into `scripts/benchmark_schema.py` so those analysis

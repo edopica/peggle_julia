@@ -52,7 +52,7 @@ end
 end
 
 @testset "powers: 10ee3a0 one-ball multiball" begin
-    c = PeggleSim.load_config(joinpath(POWERS_REPO_ROOT, "campaigns", "ribbon", "config.v1.json"))
+    c = PeggleSim.load_config(PeggleSim.RealLevels.config_path())
     @test c.rules === PeggleSim.RULES_RAMP_BUCKET
     peg = _powers_test_peg(1, 440.5, 310.25)
     specs = PeggleSim.powers_activate(peg, c)

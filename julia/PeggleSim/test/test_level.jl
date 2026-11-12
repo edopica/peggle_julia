@@ -2,11 +2,13 @@ using Test
 using JSON
 using PeggleSim
 
-const LEVEL_REPO_ROOT = normpath(joinpath(@__DIR__, "..", "..", ".."))
-const LEVEL_ARTIFACT_DIR = joinpath(LEVEL_REPO_ROOT, "interchange", "levels")
+const LEVEL_REPO_ROOT = PeggleSim.RealLevels.ROOT
+# The pinned interchange config is the classic-rules config artifact; the
+# campaign config of the real levels selects the 10ee3a0 rules.
 const LEVEL_CONFIG_PATH = joinpath(LEVEL_REPO_ROOT, "interchange", "config.v1.json")
+const LEVEL_RAMP_CONFIG_PATH = PeggleSim.RealLevels.config_path()
 @testset "non-static levels are rejected" begin
-    source = joinpath(LEVEL_ARTIFACT_DIR, "long_shot.v1.json")
+    source = PeggleSim.RealLevels.artifact_path("b2")
     mktempdir() do dir
         doc = JSON.parsefile(source)
 
@@ -36,9 +38,11 @@ const LEVEL_CONFIG_PATH = joinpath(LEVEL_REPO_ROOT, "interchange", "config.v1.js
     end
 end
 
-@testset "config artifact" begin
-    doc = JSON.parsefile(LEVEL_CONFIG_PATH)
-    config = PeggleSim.load_config(LEVEL_CONFIG_PATH)
+@testset "config artifact: $(rules)" for (path, rules, bucket_keys, hold_steps) in (
+        (LEVEL_RAMP_CONFIG_PATH, PeggleSim.RULES_RAMP_BUCKET, PeggleSim.CONFIG_RAMP_BUCKET_KEYS, 90),
+        (LEVEL_CONFIG_PATH, PeggleSim.RULES_CLASSIC, PeggleSim.CONFIG_CLASSIC_BUCKET_KEYS, 0))
+    doc = JSON.parsefile(path)
+    config = PeggleSim.load_config(path)
 
     @test doc["format"] == "peggle.config"
     @test doc["schema_version"] == 1
@@ -47,9 +51,9 @@ end
 
     # Every value key is represented bit-exactly (float fields via canonical
     # encoding, which emits %.17g for non-integral doubles).
-    @test config.rules === PeggleSim.RULES_CLASSIC
-    @test config.bucket_catch_hold_steps == 0
-    for key in (PeggleSim.CONFIG_VALUE_KEYS..., PeggleSim.CONFIG_CLASSIC_BUCKET_KEYS...)
+    @test config.rules === rules
+    @test config.bucket_catch_hold_steps == hold_steps
+    for key in (PeggleSim.CONFIG_VALUE_KEYS..., bucket_keys...)
         raw = doc["values"][String(key)]
         value = getfield(config, key)
         if key === :peg_types
@@ -104,7 +108,7 @@ end
 
 @testset "config rule-set selection (10ee3a0 bucket keys)" begin
     classic_doc = JSON.parsefile(LEVEL_CONFIG_PATH)
-    ramp_path = joinpath(LEVEL_REPO_ROOT, "campaigns", "ribbon", "config.v1.json")
+    ramp_path = LEVEL_RAMP_CONFIG_PATH
     ramp_doc = JSON.parsefile(ramp_path)
     ramp = PeggleSim.load_config(ramp_path)
     @test ramp.rules === PeggleSim.RULES_RAMP_BUCKET

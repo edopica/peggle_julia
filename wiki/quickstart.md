@@ -20,6 +20,16 @@ in `../peggle_evolved/wiki/`.
 | M3 — full-physics shot engine, mustache traces, first benchmark | **Done** |
 | M4 — full static-level shot behavior + main performance gate | **Done** — correctness breadth and strict zero-allocation gate passed; second-host corpus qualification recorded; M4 closed |
 
+**Six real levels.** Since 2026-11-12 tests, campaigns and benchmarks use only
+the six real levels: `b1`, `b2`, `g1`, `m1`, `m2` (`fixtures/imported_levels`)
+and `ribbon_waves` (`fixtures/ribbon_waves`), named in `PeggleSim.RealLevels`.
+Both corpora are captured from the peggle_evolved dev tree at `10ee3a0` and
+run under its rules (ramp bucket, catch hold, one-ball multiball;
+`RULES_RAMP_BUCKET`), with the campaign config `campaigns/ribbon/config.v1.json`.
+The pinned-corpus M3/M4 tests and tools were removed; see
+[test selection](context/testing.md). The milestone text below is the
+historical record.
+
 The repository contains the frozen Lua reference, the baseline sweep harness,
 the versioned interchange artifacts and fixtures, the M2/M3 Julia package
 (`julia/PeggleSim`) with its pinned math/RNG/state foundation and full
@@ -67,10 +77,12 @@ make test         # run the pinned reference test suite in a scratch copy
 M2 Julia targets:
 
 ```bash
-make julia-test          # run the Julia package test suite (pinned env)
+make julia-test          # Julia package test suite (six real levels + unit tests)
 make julia-scripts-test  # run the Julia benchmark-execution harness tests
 make julia-parity        # recompute results/parity/local.json
-make julia-bench         # checkpoint/reset benchmark (writing results/)
+make julia-bench         # checkpoint/reset benchmark on the six real levels (writes results/checkpoint-bench.json)
+make alloc-gate          # strict zero-allocation stepping gate on the six real levels
+make alloc-gate-prepared # the same gate with prepared checkpoints (records reset bytes)
 make capture-m2          # capture RNG/peg-color/checkpoint fixtures (needs LÖVE)
 make capture-m2-check    # re-capture the M2 fixtures and require equality
 make math-census         # capture the math census fixture and Julia summary
@@ -82,23 +94,11 @@ make wpd-trace           # gameplay traces/candidate samples, single host (WP-E)
 make wpd-perf            # math/checkpoint/sweep performance comparison (WP-F)
 ```
 
-M3 Julia targets:
-
-```bash
-make m3-trace            # Julia snapshot traces for the base mustache fixtures
-make m3-mustache         # 5-fixture Lua-vs-Julia trace control comparison
-make m3-sweep            # stride-200 serial/parallel identity sweep
-make m3-bench            # Lua-vs-Julia mustache benchmark + full-grid agreement
-```
-
-M4 Julia targets:
-
-```bash
-make m4-parity           # full M4 correctness-breadth run (replay, sweeps, threads, scenarios)
-make m4-replay           # fixture replay + trace parity into results/m4/
-make m4-bench            # M4 seven-workload benchmark (Lua + Julia, latency/throughput/alloc/RSS)
-scripts/m4_allocation.jl --workload all --out results/m4/allocation-profile.json  # strict-zero allocation gate
-```
+The M3 (`m3-trace`, `m3-mustache`, `m3-sweep`, `m3-bench`) and M4
+(`m4-parity`, `m4-replay`, `m4-bench`) targets measured the pinned
+mustache/interchange corpora and were removed on 2026-11-12. The allocation
+gate continues as `make alloc-gate` (`scripts/allocation_gate.jl`, formerly
+`scripts/m4_allocation.jl`).
 
 The `wpd-*` targets are the experimental CORE-MATH comparison; their outputs
 and acceptance records live under `tmp/core-math/` (see
@@ -124,16 +124,16 @@ contract, validation rules, and archival limitations.
 Focused commands:
 
 ```bash
-scripts/capture_imported_levels.sh --check   # imported b1/b2/g1/m1/m2 corpus (dev tree)
-scripts/capture_ribbon_waves.sh --check      # ribbon_waves corpus (dev tree)
-scripts/run_baseline.sh --workload circles_small --stride 50
+scripts/capture_imported_levels.sh --check   # imported b1/b2/g1/m1/m2 corpus (dev tree 10ee3a0)
+scripts/capture_ribbon_waves.sh --check      # ribbon_waves corpus (dev tree 10ee3a0)
+julia --project=julia/PeggleSim julia/PeggleSim/bin/shot_bench.jl --sweep --level g1 \
+  --stride 100 --out tmp/g1.jsonl --summary tmp/g1.json   # real level by name
+scripts/run_baseline.sh --workload circles_small --stride 50   # M0 Lua baseline (pinned reference)
 scripts/render_summary.py results/RUN.summary.json
 scripts/verify_reference.sh
 scripts/export_interchange.sh
 scripts/capture_fixtures.sh --id slide_rail_graze
 scripts/validate_interchange.py
-scripts/compare_m3_mustache.sh --julia-only
-scripts/bench_m3.sh --stride 20 --threads "1 2 4"
 ```
 
 ## Ribbon bot campaign
@@ -147,8 +147,11 @@ julia --project=julia/PeggleSim -t 8 julia/PeggleSim/bin/campaign.jl --worker-co
 ```
 
 Peg colors are drawn per match by default (`--colors per_game`); `--colors level`
-reproduces the Lua engine's fixed `level_seed` layout. Any static artifact can be
-passed with `--level` (for example `fixtures/imported_levels/artifact/g1.v1.json`).
+reproduces the Lua engine's fixed `level_seed` layout. `--level` takes a real
+level name (`b1`, `b2`, `g1`, `m1`, `m2`, `ribbon_waves`; default
+`ribbon_waves`), `all` (each level in turn, one report per level), or a path to
+a static artifact. `scripts/run_campaign_benchmark.jl --level NAME` works the
+same way for one level.
 This warms the simulation/output paths, measures the same eight matches at
 1/2/4/8 workers, verifies identical histories, and saves `results/campaign/1v1/`.
 See [workflow and contracts](context/bot-campaign.md) and
@@ -171,8 +174,8 @@ allocation profiles, GC totals, isolated memory measurements and paired phase-ti
 | `tools/` | Lua interchange tools: canonical JSON, level/config exporters, M2 captures |
 | `schemas/` | Versioned interchange schemas and examples |
 | `interchange/` | Generated level/config artifacts, SVG previews, manifest |
-| `fixtures/` | Fixture catalog, expected records, gameplay traces, `rng/`, `checkpoints/`, `math_census/`, `mustache/` |
-| `scripts/` | Julia benchmark-execution harness (`run_campaign_benchmark.jl`, `bench_process.jl`, `sync_campaign_config.jl`, `benchmark/`), plus verification, export, fixture capture, previews, baseline runner, M2 captures, parity compare, M3/M4 capture/compare/bench |
+| `fixtures/` | Real-level corpora `imported_levels/` and `ribbon_waves/` (10ee3a0); `matches/` (1v1 rule oracle); pinned M1/M2 corpora (catalog, expected records, traces, `rng/`, `checkpoints/`, `math_census/`) for the Lua tooling and the level-independent RNG test; the historical `mustache/` corpus |
+| `scripts/` | Julia benchmark-execution harness (`run_campaign_benchmark.jl`, `bench_process.jl`, `sync_campaign_config.jl`, `benchmark/`), the real-level allocation gate (`allocation_gate.jl`), real-level corpus captures, plus verification, export, fixture capture, previews, baseline runner, M2 captures, parity compare |
 | `results/` | Baseline summary JSON (committed); `results/parity/`, M2 benchmark/census summaries, M3 benchmark/sweep reports; `results/raw/` per-candidate JSONL (gitignored) |
 | `tmp/` | Local scratch (gitignored) |
 
@@ -195,14 +198,14 @@ mirrors `../peggle_evolved/wiki/` so material can move between the projects.
 | `wiki/context/inventory.md` | Inventory of the existing Lua corpus, tools, and plumbing | current |
 | `wiki/context/interchange.md` | Versioned level/config/checkpoint/action/result formats, static subset, verification | current |
 | `wiki/context/fixtures.md` | Reference fixture matrix, capture protocol, the 42-case assessment | current |
-| `wiki/context/testing.md` | Test commands, selection criteria, and pruning rationale | current |
+| `wiki/context/testing.md` | Test commands, the six-real-level policy, selection criteria, and pruning rationale | current |
 | `wiki/context/julia.md` | M2/M3 Julia package: pinned env, DetMath backends, RNG, state, checkpoint contract, shot engine, traces | current |
-| `wiki/context/m3-mustache.md` | M3 mustache corpus: 5 trace fixtures, capture and comparison runbook, full-grid agreement | current |
-| `wiki/context/m4-validation.md` | M4 correctness-breadth validation: corpus, method, results, divider fix, scenario decision | current |
+| `wiki/context/m3-mustache.md` | M3 mustache corpus: 5 trace fixtures, capture and comparison runbook, full-grid agreement | historical (tools retired 2026-11-12) |
+| `wiki/context/m4-validation.md` | M4 correctness-breadth validation: corpus, method, results, divider fix, scenario decision | historical (tools retired 2026-11-12) |
 | `wiki/context/julia-benchmark-harness.md` | Julia benchmark-execution harness: scope, files, commands, parity evidence, remaining Python | current |
 | `wiki/context/ribbon-waves.md` | Screenshot-reconstructed `ribbon_waves` level: extraction, Lua level, 3-shot trace corpus, mask checker, Julia tests | current |
 | `wiki/context/ribbon-pegs.md` | Dev-tree `ribbon` gameplay peg: Lua semantics, interchange, Julia port, imported-level corpus, per-match campaign colors | current |
-| `wiki/context/bucket-ramps.md` | Dev-tree `10ee3a0` rules: ramp bucket, catch hold, one-ball multiball; `SimConfig.rules` selection, Julia port, evidence, stale corpora | current |
+| `wiki/context/bucket-ramps.md` | Dev-tree `10ee3a0` rules: ramp bucket, catch hold, one-ball multiball; `SimConfig.rules` selection, Julia port, evidence, real-level corpus re-capture | current |
 | `wiki/benchmarks/` | Measured performance and parity results | current |
 | `wiki/benchmarks/baseline-metrics.md` | M0 Lua candidate-sweep baseline and continuing-metric protocol | current |
 | `wiki/benchmarks/m2-checkpoint.md` | M2 checkpoint/reset benchmark and M0 init comparison | current |
@@ -252,7 +255,8 @@ Conventions:
 | How is a benchmark run executed and validated now? | `wiki/context/julia-benchmark-harness.md`, `wiki/context/benchmark-results.md` |
 | How are ribbon pegs and the imported screenshot levels ported? | `wiki/context/ribbon-pegs.md`, `fixtures/imported_levels/README.md` |
 | How are the ramp bucket, catch hold and one-ball multiball selected and ported? | `wiki/context/bucket-ramps.md` |
-| Which M3 fixtures exist, and how are they compared? | `wiki/context/m3-mustache.md` |
+| Which levels do tests, campaigns and benchmarks use? | `wiki/context/testing.md` |
+| Which M3 fixtures existed, and how were they compared? | `wiki/context/m3-mustache.md` (historical) |
 | What M4 validated, and how it was closed? | `wiki/context/m4-validation.md` |
 | How do I collect the macOS/Windows qualification evidence? | `wiki/context/cross-platform-qualification.md` |
 | How fast is Lua today? | `wiki/benchmarks/baseline-metrics.md` |

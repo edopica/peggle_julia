@@ -2,76 +2,50 @@ using Test
 using Base64
 using PeggleSim
 
-const CKPT_REPO_ROOT = normpath(joinpath(@__DIR__, "..", "..", ".."))
-const CKPT_DIR = joinpath(CKPT_REPO_ROOT, "fixtures", "checkpoints")
-const CKPT_LEVEL_DIR = joinpath(CKPT_REPO_ROOT, "interchange", "levels")
-const CKPT_CONFIG_PATH = joinpath(CKPT_REPO_ROOT, "interchange", "config.v1.json")
-const CKPT_PIN_PATH = joinpath(CKPT_REPO_ROOT, "reference", "PIN.md")
+const CKPT_RL = PeggleSim.RealLevels
+const CKPT_CONFIG_PATH = CKPT_RL.config_path()
 
-struct _CkFixture
-    file::String
-    level::String
-    balls::Int
-end
-
-function _ck_fixtures()::Vector{_CkFixture}
-    out = _CkFixture[]
-    for file in sort(readdir(CKPT_DIR))
-        endswith(file, ".v1.json") || continue
-        base = replace(file, ".v1.json" => "")
-        if base == "slide.multiball3"
-            push!(out, _CkFixture(file, "slide", 3))
-        else
-            push!(out, _CkFixture(file, base, 1))
-        end
-    end
-    return out
-end
-
-# Provenance is rebuilt from the pin document, the config artifact, and the
-# level artifact bytes -- never from the fixture being checked.
-function _ck_provenance(level_name::AbstractString)
-    pin = read(CKPT_PIN_PATH, String)
-    revision = match(r"Revision \(full\) \| `([0-9a-f]{40})`", pin)[1]
-    tree = match(r"Tree hash \| `([0-9a-f]{40})`", pin)[1]
-    config_sha = match(r"Config hash \(`src/config.lua`\) \| `([0-9a-f]{64})`", pin)[1]
-    config_doc = load_json(CKPT_CONFIG_PATH)
-    config_doc["source_sha256"] == config_sha || error(
-        "PIN config hash does not match the config artifact source_sha256")
-    level_path = joinpath(CKPT_LEVEL_DIR, level_name * ".v1.json")
+# Provenance is rebuilt from the level artifact and the config, never from a
+# checkpoint being checked.
+function _ck_provenance(level, config)
     return (
-        reference_revision = revision,
-        reference_tree = tree,
-        config_sha256 = config_sha,
-        level_sha256 = PeggleSim.level_sha256(level_path),
+        reference_revision = String(level.provenance.reference_revision),
+        reference_tree = String(level.provenance.reference_tree),
+        config_sha256 = config.source_sha256,
+        level_sha256 = String(level.level_sha256),
     )
 end
 
-@testset "captured checkpoints are byte-identical" begin
+_ck_level(name) = PeggleSim.load_level(CKPT_RL.artifact_path(name))
+
+@testset "checkpoint encoding round trip on the real levels" begin
     config = PeggleSim.load_config(CKPT_CONFIG_PATH)
-    fixtures = _ck_fixtures()
-    @test length(fixtures) == 9
-
-    for fixture in fixtures
-        level_path = joinpath(CKPT_LEVEL_DIR, fixture.level * ".v1.json")
-        fixture_path = joinpath(CKPT_DIR, fixture.file)
-        @test isfile(level_path)
-        @test isfile(fixture_path)
-
-        provenance = _ck_provenance(fixture.level)
-        level = PeggleSim.load_level(level_path)
+    # Every real level with one ball, plus a three-ball m1 checkpoint.
+    for (name, balls) in vcat([(n, 1) for n in CKPT_RL.NAMES], [("m1", 3)])
+        level = _ck_level(name)
+        provenance = _ck_provenance(level, config)
         checkpoint = PeggleSim.build_checkpoint(
-            level, config;
-            balls = fixture.balls, mode = :solo, provenance = provenance)
+            level, config; balls, mode = :solo, provenance)
         encoded = canonical_json(checkpoint) * "\n"
-        expected = read(fixture_path, String)
-        @test encoded == expected
+        # Building is deterministic.
+        @test canonical_json(PeggleSim.build_checkpoint(
+            level, config; balls, mode = :solo, provenance)) * "\n" == encoded
+        @test length(checkpoint.engine.balls) == balls
 
         # checkpoint_from_dict is the inverse of checkpoint_to_dict.
-        decoded = PeggleSim.checkpoint_from_dict(load_json(fixture_path))
-        @test canonical_json(decoded) * "\n" == expected
+        decoded = mktempdir() do dir
+            path = joinpath(dir, "checkpoint.v1.json")
+            write(path, encoded)
+            PeggleSim.checkpoint_from_dict(load_json(path))
+        end
+        @test canonical_json(decoded) * "\n" == encoded
+        @test PeggleSim.first_difference(decoded, checkpoint) === nothing
         @test PeggleSim.checkpoint_canonical(decoded) ==
               canonical_json(PeggleSim.checkpoint_to_dict(decoded))
+
+        # The ramp bucket is encoded by key presence.
+        bucket = PeggleSim.checkpoint_to_dict(decoded)["engine"]["bucket"]
+        @test haskey(bucket, "rim_width") && !haskey(bucket, "edge")
 
         # state_b64 decodes to the ASCII getState() string.
         state = String(Base64.base64decode(decoded.rng.state_b64))
@@ -82,10 +56,9 @@ end
 
 @testset "reset contract: capture -> advance -> restore" begin
     config = PeggleSim.load_config(CKPT_CONFIG_PATH)
-    for level_name in ("circle_level", "slide", "squiggly_circle")
-        level_path = joinpath(CKPT_LEVEL_DIR, level_name * ".v1.json")
-        provenance = _ck_provenance(level_name)
-        level = PeggleSim.load_level(level_path)
+    for level_name in ("b2", "g1", "ribbon_waves")
+        level = _ck_level(level_name)
+        provenance = _ck_provenance(level, config)
         checkpoint = PeggleSim.build_checkpoint(
             level, config; balls = 1, mode = :solo, provenance = provenance)
         witness = canonical_json(checkpoint)
@@ -111,9 +84,8 @@ end
 
 @testset "restore and capture do not alias" begin
     config = PeggleSim.load_config(CKPT_CONFIG_PATH)
-    level_path = joinpath(CKPT_LEVEL_DIR, "circle_level.v1.json")
-    provenance = _ck_provenance("circle_level")
-    level = PeggleSim.load_level(level_path)
+    level = _ck_level("b2")
+    provenance = _ck_provenance(level, config)
 
     # Mutating the worker simulation must not touch the checkpoint.
     checkpoint = PeggleSim.build_checkpoint(
@@ -152,9 +124,8 @@ end
 
 @testset "first_difference" begin
     config = PeggleSim.load_config(CKPT_CONFIG_PATH)
-    level_path = joinpath(CKPT_LEVEL_DIR, "circle_level.v1.json")
-    provenance = _ck_provenance("circle_level")
-    level = PeggleSim.load_level(level_path)
+    level = _ck_level("b2")
+    provenance = _ck_provenance(level, config)
     checkpoint = PeggleSim.build_checkpoint(
         level, config; balls = 1, mode = :solo, provenance = provenance)
 

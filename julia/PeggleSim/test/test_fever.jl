@@ -1,6 +1,6 @@
 # Focused tests for src/fever_buckets.jl (workstream D), porting
 # src/entities/fever_buckets.lua from the dev tree. The constructor state is
-# built by state.jl (mustache-sized 880x550 level): five segments of width
+# built by state.jl (synthetic 880x550 board): five segments of width
 # 96 separated by six radius-40 dividers, values 10000/50000/100000.
 
 using Test

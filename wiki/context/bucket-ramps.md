@@ -5,7 +5,8 @@ ramps, hold shot end after catch, fix multiball"). Like
 [ribbon pegs](ribbon-pegs.md), the Lua change is **after the pin**
 (`d17f6e7`). The pinned reference, the M1 interchange and the M1–M4 corpora
 are unchanged. The new rules apply only when a config artifact exported from
-`10ee3a0` (or later) is loaded. Today that means `campaigns/ribbon/`.
+`10ee3a0` (or later) is loaded. Today that means `campaigns/ribbon/` and,
+since 2026-11-12, the real-level corpora `fixtures/{ribbon_waves,imported_levels}`.
 
 ## Lua semantics (10ee3a0)
 
@@ -69,9 +70,10 @@ which bucket keys the artifact carries:
 
 Any other combination is rejected (`ArgumentError`). `bucket_rim_color` is
 accepted as a presentation key and never stored. The pinned
-`interchange/config.v1.json` and every existing fixture config
-(`fixtures/{mustache,ribbon_waves,imported_levels}/config.dev.v1.json`)
-select `RULES_CLASSIC`, so they reproduce the old behavior bit-for-bit.
+`interchange/config.v1.json` and `fixtures/mustache/config.dev.v1.json` select
+`RULES_CLASSIC`, so they reproduce the old behavior bit-for-bit. Since
+2026-11-12 the real-level corpora (`fixtures/{ribbon_waves,imported_levels}`)
+are 10ee3a0 captures whose configs select `RULES_RAMP_BUCKET` (see below).
 `bucket_catch_hold_steps = ceil(bucket_catch_hold / fixed_dt)` (90) is also
 computed at load. Lua computes the same expression at every fall-out.
 
@@ -137,15 +139,20 @@ or on `bucket.ramps`. There are no dictionary lookups.
 - **Allocation**: warmed ramp-rule shots (catches, holds, spawns) step with
   0 bytes, the same as the classic rules on the same boards.
 
-## Stale dev-tree corpora
+## Real-level corpora (re-captured 2026-11-12)
 
 `fixtures/ribbon_waves` and `fixtures/imported_levels` were captured at
-`bbd8622` with config `0e34b40…` (classic bucket, two-ball multiball, launch
-speed 600, wall damping 1.0). They remain valid classic-rule corpora: their
-config artifacts select `RULES_CLASSIC`, and Julia replays them
-byte-identically. They no longer describe the dev tree, though:
-`scripts/capture_imported_levels.sh --check` and
-`scripts/capture_ribbon_waves.sh --check` now fail against `10ee3a0`. The
-re-exported config differs, the artifact provenance differs (level geometry
-is unchanged), and every shot changes. Recapturing them, or adding a
-`10ee3a0` corpus next to them, is left to the trace-parity work.
+`bbd8622` under the classic rules until 2026-11-12. They were re-captured from
+the clean dev tree at `10ee3a0` (tree `b3630882…`, `src/config.lua` sha256
+`e40d659e…`) with `scripts/capture_ribbon_waves.sh` and
+`scripts/capture_imported_levels.sh`; no tooling change was needed. Both
+config artifacts now select `RULES_RAMP_BUCKET` and are byte-identical to
+`campaigns/ribbon/config.v1.json`. The level geometry is unchanged; only the
+artifact provenance changed. Every shot changed (new rules). Both `--check`
+modes pass, and Julia replays all 28 records and traces byte-for-byte
+(`test_imported_levels.jl`, `test_ribbon_waves.jl`). The 25+3 Lua records
+now include 5 bucket catches with holds and 5 shots with one-ball spawns. These are
+the six real levels that tests, campaigns and benchmarks use
+([testing](testing.md)). The full-grid sweep reports under
+`results/ribbon_port/` were measured against the classic-rule captures and
+remain historical.

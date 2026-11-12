@@ -16,7 +16,8 @@ using PeggleSim
     @test config.rules === PeggleSim.RULES_RAMP_BUCKET
     @test PeggleSim.CampaignOptions().mode == Symbol("1v1")
     @test_throws ArgumentError PeggleSim.validate_campaign(PeggleSim.CampaignOptions(mode=:other))
-    level = PeggleSim.load_level(joinpath(root,"fixtures/ribbon_waves/artifact/ribbon_waves.v1.json"))
+    @test config_path == PeggleSim.RealLevels.config_path()
+    level = PeggleSim.load_level(PeggleSim.RealLevels.artifact_path("ribbon_waves"))
     prov = merge(PeggleSim.campaign_provenance(level), (; config_sha256=config.source_sha256))
     metadata = JSON.parsefile(joinpath(root,"campaigns/ribbon/provenance.json"))
     @test metadata["game_source_sha256"] == bytes2hex(sha256(read(joinpath(root,"campaigns/ribbon/game.source.lua"))))

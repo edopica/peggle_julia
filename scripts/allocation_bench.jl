@@ -1,5 +1,8 @@
 #!/usr/bin/env julia
 # Run from the repository root, on deathstar only. Extraction is outside measurement.
+# Workload: the real level ribbon_waves under the campaign config (10ee3a0
+# rules), aims 900 (spawn) and 80 (bucket catch with hold). Reports from the
+# earlier mustache workload are not comparable (level_sha256 differs).
 using PeggleSim
 
 function evaluate!(eng, ckpt, aim)
@@ -41,8 +44,8 @@ function main()
     strip(read(`hostname -s`, String)) == "deathstar" || error("Run this harness on deathstar")
     Threads.nthreads(:default) == 1 || error("Allocation accounting requires one thread")
     length(ARGS) in (2, 3) || error("usage: allocation_bench.jl OUT LABEL [BASELINE_JSON]")
-    level_path = "fixtures/mustache/artifact/mustache.v1.json"
-    config_path = "fixtures/mustache/config.dev.v1.json"
+    level_path = PeggleSim.RealLevels.artifact_path("ribbon_waves")
+    config_path = PeggleSim.RealLevels.config_path()
     level = PeggleSim.load_level(level_path)
     config = PeggleSim.load_config(config_path)
     ckpt = PeggleSim.build_checkpoint(level, config; balls = 1, mode = :solo,
@@ -52,7 +55,7 @@ function main()
     eng = PeggleSim.shot_engine(ckpt; callbacks = PeggleSim.harness_callbacks(clearing = false),
         config = config, virtual_width = level.virtual_width, virtual_height = level.virtual_height)
     eng.trace = nothing
-    aims = (900, 570)
+    aims = (900, 80)
     expected = Dict{Int,String}()
     for aim in aims
         for i in 1:5

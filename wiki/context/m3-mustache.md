@@ -1,5 +1,14 @@
 # M3 mustache reference corpus
 
+> **Retired on 2026-11-12.** Tests, campaigns and benchmarks now use only the
+> six real levels (see [testing](testing.md)). The `make m3-*` targets,
+> `scripts/capture_m3_mustache.sh`, `scripts/compare_m3_mustache.sh`,
+> `scripts/bench_m3.sh` and `scripts/compare_m3_sweeps.py` were removed; they
+> are in git history before that date. `fixtures/mustache/` is kept (the
+> ribbon_waves mask checker's self-test still reads its artifact). This page
+> is the historical record of the M3 corpus.
+
+
 The M3 mustache corpus is the first Lua-vs-Julia gameplay-trace reference for
 the full physics port. It contains five complete shots on the mustache level,
 captured from the peggle_evolved **dev tree**. It lives under

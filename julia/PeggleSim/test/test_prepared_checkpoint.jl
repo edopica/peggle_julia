@@ -2,18 +2,19 @@ using Test
 using PeggleSim
 
 @testset "prepared decision checkpoint and compact scans" begin
-    root = normpath(joinpath(@__DIR__, "../../.."))
-    config = PeggleSim.load_config(joinpath(root, "interchange/config.v1.json"))
+    RL = PeggleSim.RealLevels
+    config = PeggleSim.load_config(RL.config_path())
 
     @testset "restore ownership, removals, and complete RNG state" begin
-        for file in sort(readdir(joinpath(root, "fixtures/checkpoints")))
-            endswith(file, ".v1.json") || continue
-            checkpoint = PeggleSim.checkpoint_from_dict(PeggleSim.load_json(
-                joinpath(root, "fixtures/checkpoints", file)))
+        # Every real level with one ball, plus a three-ball m1 checkpoint.
+        for (name, balls) in vcat([(n, 1) for n in RL.NAMES], [("m1", 3)])
+            level = PeggleSim.load_level(RL.artifact_path(name))
+            checkpoint = PeggleSim.build_checkpoint(level, config; balls,
+                provenance = PeggleSim.campaign_provenance(level))
             prepared = PeggleSim.prepare_checkpoint(checkpoint)
             witness = canonical_json(checkpoint)
-            eng = PeggleSim.shot_engine(checkpoint; config)
-            other = PeggleSim.shot_engine(checkpoint; config)
+            eng = PeggleSim.shot_engine(checkpoint; config, level)
+            other = PeggleSim.shot_engine(checkpoint; config, level)
             PeggleSim.reset_shot_engine!(eng, prepared)
             PeggleSim.reset_shot_engine!(other, prepared)
             pool = copy(eng.sim.engine.pegs)
@@ -49,13 +50,14 @@ using PeggleSim
     end
 
     @testset "full shot parity, events, spawn and clearing reuse" begin
-        for (path, configpath, aims, balls) in (
-                ("fixtures/mustache/artifact/mustache.v1.json",
-                 "fixtures/mustache/config.dev.v1.json", (0, 900), 1),
-                ("interchange/levels/slide.v1.json", "interchange/config.v1.json", (570,), 3),
-                ("interchange/levels/squiggly_circle.v1.json", "interchange/config.v1.json", (900,), 1))
-            level = PeggleSim.load_level(joinpath(root, path))
-            cfg = PeggleSim.load_config(joinpath(root, configpath))
+        # b2 has no ribbons, so it takes the frozen static_geometry path; the
+        # ribbon boards never do. b2 900 and g1/ribbon_waves cover the bucket
+        # catch and hold, b2 450 and m1 1800 the one-ball spawns (m1 with
+        # three balls), g1 0 a slide award on ribbons.
+        cfg = config
+        for (name, aims, balls) in (("b2", (900, 450), 1), ("g1", (0,), 1),
+                                    ("m1", (1800,), 3), ("ribbon_waves", (80,), 1))
+            level = PeggleSim.load_level(RL.artifact_path(name))
             checkpoint = PeggleSim.build_checkpoint(level, cfg; balls,
                 provenance=PeggleSim.campaign_provenance(level))
             prepared = PeggleSim.prepare_checkpoint(checkpoint)

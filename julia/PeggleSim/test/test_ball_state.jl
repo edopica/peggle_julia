@@ -1,14 +1,13 @@
 # Focused tests for src/ball_state.jl (workstream E), porting the dev-tree
 # unit tests ../peggle_evolved/tests/test_ball_state.lua to the real
 # GameplayJournal / GameplayCommands API. A real SimConfig is loaded from the
-# mustache dev fixture.
+# campaign config of the real levels.
 
 using Test
 using PeggleSim
 
-const BS_REPO_ROOT = normpath(joinpath(@__DIR__, "..", "..", ".."))
-const BS_CONFIG_PATH =
-    joinpath(BS_REPO_ROOT, "fixtures", "mustache", "config.dev.v1.json")
+# The campaign config shared by the real levels (10ee3a0 rules).
+const BS_CONFIG_PATH = PeggleSim.RealLevels.config_path()
 
 function _bs_trackers()
     t = PeggleSim.BallStateTrackers()

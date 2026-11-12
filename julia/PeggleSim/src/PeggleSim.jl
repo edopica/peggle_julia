@@ -5,6 +5,7 @@ using JSON
 using Printf
 using SHA
 
+include("real_levels.jl")
 include("detmath.jl")
 include("rng.jl")
 include("canonical.jl")
@@ -33,7 +34,7 @@ include("engine.jl")
 include("campaign.jl")
 include("parity.jl")
 
-export DetMath
+export DetMath, RealLevels
 export LoveRandom, wang_hash64, rand_u64!, random01, random, get_state,
        set_state!, get_seed, random_normal, snapshot, restore!
 export canonical_json, sha256_hex, float_bits_hex, CanonicalArray, CanonicalObject
