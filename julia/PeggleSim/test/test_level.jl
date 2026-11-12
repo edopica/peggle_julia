@@ -47,7 +47,9 @@ end
 
     # Every value key is represented bit-exactly (float fields via canonical
     # encoding, which emits %.17g for non-integral doubles).
-    for key in PeggleSim.CONFIG_VALUE_KEYS
+    @test config.rules === PeggleSim.RULES_CLASSIC
+    @test config.bucket_catch_hold_steps == 0
+    for key in (PeggleSim.CONFIG_VALUE_KEYS..., PeggleSim.CONFIG_CLASSIC_BUCKET_KEYS...)
         raw = doc["values"][String(key)]
         value = getfield(config, key)
         if key === :peg_types
@@ -97,5 +99,44 @@ end
             JSON.print(io, bad_top)
         end
         @test_throws ArgumentError PeggleSim.load_config(bad_top_path)
+    end
+end
+
+@testset "config rule-set selection (10ee3a0 bucket keys)" begin
+    classic_doc = JSON.parsefile(LEVEL_CONFIG_PATH)
+    ramp_path = joinpath(LEVEL_REPO_ROOT, "campaigns", "ribbon", "config.v1.json")
+    ramp_doc = JSON.parsefile(ramp_path)
+    ramp = PeggleSim.load_config(ramp_path)
+    @test ramp.rules === PeggleSim.RULES_RAMP_BUCKET
+    @test ramp.bucket_edge == 0.0
+    # core.lua: math.ceil(bucket_catch_hold / fixed_dt) = ceil(1.5 * 60) = 90.
+    @test ramp.bucket_catch_hold_steps == Int(ceil(ramp.bucket_catch_hold / ramp.fixed_dt))
+    @test ramp.bucket_catch_hold_steps == 90
+    for key in PeggleSim.CONFIG_RAMP_BUCKET_KEYS
+        @test float_bits_hex(getfield(ramp, key)) ==
+              float_bits_hex(Float64(ramp_doc["values"][String(key)]))
+    end
+    # Render-only key accepted, never stored.
+    @test haskey(ramp_doc["values"], "bucket_rim_color")
+    @test !hasfield(PeggleSim.SimConfig, :bucket_rim_color)
+
+    function write_doc(dir, name, doc)
+        path = joinpath(dir, name)
+        open(io -> JSON.print(io, doc), path, "w")
+        return path
+    end
+    mktempdir() do dir
+        both = deepcopy(ramp_doc)
+        both["values"]["bucket_edge"] = 12
+        @test_throws ArgumentError PeggleSim.load_config(write_doc(dir, "both.json", both))
+        partial = deepcopy(ramp_doc)
+        delete!(partial["values"], "bucket_catch_hold")
+        @test_throws ArgumentError PeggleSim.load_config(write_doc(dir, "partial.json", partial))
+        neither = deepcopy(classic_doc)
+        delete!(neither["values"], "bucket_edge")
+        @test_throws ArgumentError PeggleSim.load_config(write_doc(dir, "neither.json", neither))
+        added = deepcopy(classic_doc)
+        added["values"]["bucket_rim_width"] = 12
+        @test_throws ArgumentError PeggleSim.load_config(write_doc(dir, "added.json", added))
     end
 end

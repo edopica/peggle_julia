@@ -153,3 +153,231 @@ const BUCKET_CONFIG_PATH =
         @test PeggleSim.bucket_resolve!(bucket, rising, c) == :none
     end
 end
+
+# ---------------------------------------------------------------------------
+# 10ee3a0 ramp bucket (RULES_RAMP_BUCKET). Mirrors peggle_evolved
+# tests/test_bucket.lua @ 10ee3a0 with the synced campaign config
+# (campaigns/ribbon/config.v1.json, exported from 10ee3a0 src/config.lua).
+# Bit-exactness against Lua was checked separately with a 20,000-case
+# resolve oracle (wiki/context/bucket-ramps.md).
+# ---------------------------------------------------------------------------
+
+const RAMP_CONFIG_PATH =
+    joinpath(BUCKET_REPO_ROOT, "campaigns", "ribbon", "config.v1.json")
+
+function _ramp_config(; overrides...)
+    base = PeggleSim.load_config(RAMP_CONFIG_PATH)
+    fields = fieldnames(PeggleSim.SimConfig)
+    vals = Any[getfield(base, f) for f in fields]
+    for (key, value) in pairs(overrides)
+        vals[findfirst(==(key), fields)] = value
+    end
+    return PeggleSim.SimConfig(vals...)
+end
+
+function _ramp_setup(c)
+    bucket = PeggleSim.BucketState(c.virtual_width, c.virtual_height, c)
+    bucket.x = 600.0
+    bucket.prev_x = 600.0
+    return bucket
+end
+
+# Ball moving (x0, y0) -> (x1, y1) this step with velocity (vx, vy).
+function _ramp_ball(c, x0, y0, x1, y1, vx, vy)
+    b = PeggleSim.BallState(1, Float64(x1), Float64(y1), c.ball_radius)
+    b.prev_x = Float64(x0)
+    b.prev_y = Float64(y0)
+    b.vx = Float64(vx)
+    b.vy = Float64(vy)
+    b.launched = true
+    return b
+end
+
+_piece_xs(p) = [p.verts[i] for i in 1:2:(2 * p.nverts)]
+_piece_ys(p) = [p.verts[i] for i in 2:2:(2 * p.nverts)]
+
+function _find_piece(bucket, kind, side)
+    for p in bucket.pieces
+        p.kind == kind || continue
+        (side === :left) == (minimum(_piece_xs(p)) < 0) && return p
+    end
+    return nothing
+end
+
+_bounds(p) = (minimum(_piece_xs(p)), maximum(_piece_xs(p)),
+              minimum(_piece_ys(p)), maximum(_piece_ys(p)))
+
+@testset "ramp bucket (10ee3a0)" begin
+    c = _ramp_config()
+    R = c.ball_radius
+    @test c.rules === PeggleSim.RULES_RAMP_BUCKET
+    BODY, RIM = PeggleSim.BUCKET_PIECE_BODY, PeggleSim.BUCKET_PIECE_RIM
+
+    @testset "geometry follows config" begin
+        bucket = _ramp_setup(c)
+        @test bucket.ramps
+        @test length(bucket.pieces) == 7
+        @test bucket.rim_width == c.bucket_rim_width
+        drop = c.bucket_height + c.bucket_margin
+        @test bucket.top + drop == c.virtual_height
+        slope = rad2deg(atan(drop / bucket.ramp_width))
+        @test abs(slope - c.bucket_ramp_slope_deg) < 1e-6
+        hh = c.bucket_hole / 2
+        x0, x1, y0, y1 = _bounds(_find_piece(bucket, RIM, :left))
+        @test x1 == -hh
+        @test x1 - x0 == c.bucket_rim_width
+        @test y0 == 0
+        @test y1 == c.bucket_rim_height
+        bx0, _, _, by1 = _bounds(_find_piece(bucket, BODY, :left))
+        @test bx0 == -hh - c.bucket_rim_width - bucket.ramp_width
+        @test by1 == drop
+        @test PeggleSim.bucket_half_span(bucket) == hh + c.bucket_rim_width + bucket.ramp_width
+        rx0, rx1, _, _ = _bounds(_find_piece(bucket, RIM, :right))
+        @test rx0 == hh
+        @test rx1 == hh + c.bucket_rim_width
+    end
+
+    @testset "ramp starts flush with the rim top (no step)" begin
+        bucket = _ramp_setup(c)
+        xo = -c.bucket_hole / 2 - c.bucket_rim_width
+        ramp = _find_piece(bucket, BODY, :left)
+        @test _bounds(ramp)[3] == 0
+        @test any(ramp.verts[i] == xo && ramp.verts[i + 1] == 0 for i in 1:2:(2 * ramp.nverts))
+        px, py = xo - 0.01, c.bucket_rim_height / 2
+        for k in 1:ramp.nedges
+            e = ramp.edges[k]
+            @test (px - e.ax) * e.nx + (py - e.ay) * e.ny <= 1e-9
+        end
+    end
+
+    @testset "ball on the ridge slides off outward" begin
+        bucket = _ramp_setup(c)
+        x = 600 - c.bucket_hole / 2 - c.bucket_rim_width - 3
+        b = _ramp_ball(c, x, bucket.top - 20, x, bucket.top + 4, 0, 900)
+        @test PeggleSim.bucket_resolve!(bucket, b, c) === :bounced
+        @test b.vx < 0
+        @test b.vy < 0
+    end
+
+    @testset "config parameters change the shape" begin
+        c20 = _ramp_config(bucket_rim_width = 20.0)
+        x0, x1, _, _ = _bounds(_find_piece(_ramp_setup(c20), RIM, :left))
+        @test x1 - x0 == 20
+        c45 = _ramp_config(bucket_ramp_slope_deg = 45.0)
+        b45 = _ramp_setup(c45)
+        @test abs(b45.ramp_width - (c.bucket_height + c.bucket_margin)) < 1e-9
+        shallow = _ramp_setup(_ramp_config(bucket_ramp_slope_deg = 10.0))
+        steep = _ramp_setup(_ramp_config(bucket_ramp_slope_deg = 30.0))
+        @test shallow.ramp_width > steep.ramp_width
+        # A zero rim height removes the (degenerate) rim pieces, as Lua does.
+        flat = _ramp_setup(_ramp_config(bucket_rim_height = 0.0))
+        @test length(flat.pieces) == 5
+        @test _find_piece(flat, RIM, :left) === nothing
+    end
+
+    @testset "drop through the opening is caught" begin
+        bucket = _ramp_setup(c)
+        b = _ramp_ball(c, 600, bucket.top - 20, 600, bucket.top - 2, 0, 900)
+        @test PeggleSim.bucket_resolve!(bucket, b, c) === :caught
+    end
+
+    @testset "drop onto the rim bounces" begin
+        bucket = _ramp_setup(c)
+        rim_center = 600 - c.bucket_hole / 2 - c.bucket_rim_width / 2
+        b = _ramp_ball(c, rim_center, bucket.top - 20, rim_center, bucket.top + 1, 0, 900)
+        @test PeggleSim.bucket_resolve!(bucket, b, c) === :bounced
+        @test b.vy < 0
+        @test abs(b.vx) < 1e-9
+        @test b.y + R <= bucket.top + 1e-6
+    end
+
+    @testset "fast ball does not tunnel through the rim" begin
+        bucket = _ramp_setup(c)
+        rim_center = 600 - c.bucket_hole / 2 - c.bucket_rim_width / 2
+        b = _ramp_ball(c, rim_center, bucket.top - 12, rim_center, bucket.top + 18, 0, 1800)
+        @test PeggleSim.bucket_resolve!(bucket, b, c) === :bounced
+        @test b.vy < 0
+        @test b.y < bucket.top
+    end
+
+    @testset "ramps deflect outward, mirrored" begin
+        bucket = _ramp_setup(c)
+        hh = c.bucket_hole / 2
+        x = 600 - hh - c.bucket_rim_width - bucket.ramp_width / 2
+        b = _ramp_ball(c, x, bucket.top - 10, x, bucket.top + 20, 0, 900)
+        @test PeggleSim.bucket_resolve!(bucket, b, c) === :bounced
+        @test b.vx < 0
+        rb = _ramp_ball(c, 1200 - x, bucket.top - 10, 1200 - x, bucket.top + 20, 0, 900)
+        @test PeggleSim.bucket_resolve!(bucket, rb, c) === :bounced
+        @test rb.vx > 0
+        @test rb.vx == -b.vx
+    end
+
+    @testset "inner corner with the center over the opening is caught" begin
+        bucket = _ramp_setup(c)
+        x = 600 - c.bucket_hole / 2 + 2
+        b = _ramp_ball(c, x, bucket.top - 20, x, bucket.top + 2, 0, 900)
+        @test PeggleSim.bucket_resolve!(bucket, b, c) === :caught
+    end
+
+    @testset "moving bucket pushes a resting ball" begin
+        bucket = _ramp_setup(c)
+        x0 = c.bucket_hole / 2 + c.bucket_rim_width
+        rw, drop = bucket.ramp_width, bucket.ramp_height
+        L = sqrt(rw * rw + drop * drop)
+        nx, ny = drop / L, -rw / L
+        mx, my = x0 + rw / 2, drop / 2
+        bx = 600 + mx + nx * (R + 1)
+        by = bucket.top + my + ny * (R + 1)
+        b = _ramp_ball(c, bx, by, bx, by, 0, 0)
+        bucket.prev_x, bucket.x = 600.0, 605.0
+        @test PeggleSim.bucket_resolve!(bucket, b, c) === :bounced
+        dist = (b.x - bucket.x - x0) * nx + (b.y - bucket.top) * ny
+        @test dist >= R - 1e-6
+    end
+
+    @testset "resolution is deterministic and allocation-free" begin
+        function run()
+            bucket = _ramp_setup(c)
+            out = Tuple{Symbol,Float64,Float64,Float64,Float64}[]
+            for i in 0:40
+                x = 520 + i * 4
+                b = _ramp_ball(c, x - 3, bucket.top - 15, x, bucket.top + 9, 180, 1200)
+                r = PeggleSim.bucket_resolve!(bucket, b, c)
+                push!(out, (r, b.x, b.y, b.vx, b.vy))
+            end
+            return out
+        end
+        @test isequal(run(), run())
+        bucket = _ramp_setup(c)
+        b = _ramp_ball(c, 597, bucket.top - 15, 600, bucket.top + 9, 180, 1200)
+        PeggleSim.bucket_resolve!(bucket, b, c)
+        b2 = _ramp_ball(c, 547, bucket.top - 15, 550, bucket.top + 9, 180, 1200)
+        @test (@allocated PeggleSim.bucket_resolve!(bucket, b2, c)) == 0
+        @test (@allocated PeggleSim.bucket_update!(bucket, c.fixed_dt, c, 1200.0)) == 0
+    end
+
+    @testset "checkpoint round trip keeps the model and rebuilds nothing" begin
+        level = PeggleSim.load_level(joinpath(BUCKET_REPO_ROOT, "fixtures",
+                                              "imported_levels", "artifact", "b2.v1.json"))
+        prov = (reference_revision = "r", reference_tree = "t",
+                config_sha256 = c.source_sha256, level_sha256 = level.level_sha256)
+        ckpt = PeggleSim.build_checkpoint(level, c; provenance = prov)
+        d = PeggleSim.checkpoint_to_dict(ckpt)["engine"]["bucket"]
+        @test sort(collect(keys(d))) == sort(["x", "prev_x", "top", "hole", "rim_width",
+            "rim_height", "ramp_width", "ramp_height", "height", "floor", "phase"])
+        parsed = PeggleSim.checkpoint_from_dict(PeggleSim.checkpoint_to_dict(ckpt))
+        @test PeggleSim.first_difference(parsed, ckpt) === nothing
+        sim = PeggleSim.sim_from_checkpoint(parsed)
+        fresh = PeggleSim.BucketState(level.virtual_width, level.virtual_height, c)
+        @test sim.engine.bucket.ramps
+        @test sim.engine.bucket.pieces == fresh.pieces
+        pieces = sim.engine.bucket.pieces
+        PeggleSim.restore!(sim, parsed)
+        @test sim.engine.bucket.pieces === pieces
+        @test pieces == fresh.pieces
+        # Classic config and ramp checkpoint are refused together.
+        classic = PeggleSim.load_config(BUCKET_CONFIG_PATH)
+        @test_throws ArgumentError PeggleSim.shot_engine(ckpt; config = classic, level = level)
+    end
+end

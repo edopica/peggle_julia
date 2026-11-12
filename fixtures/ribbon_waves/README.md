@@ -46,3 +46,12 @@ artifact provenance records the dev-tree revision/tree/config hashes; the
 working tree also carried uncommitted level edits (ribbon thickness 19.45/19.0),
 so the provenance revision is not a clean-tree claim. Artifact and trace
 hashes are stored in each expected record.
+
+## Status after peggle_evolved 10ee3a0
+
+This corpus was captured at `bbd8622` under the classic rules (classic bucket,
+two-ball multiball, launch speed 600, wall damping 1.0). Its config artifact
+still selects `RULES_CLASSIC`, and Julia replays it byte-identically. It is
+**stale relative to the dev tree** from `10ee3a0` onward: the `--check`
+capture fails, because the config, the artifact provenance and every shot
+changed. See [bucket ramps](../../wiki/context/bucket-ramps.md).

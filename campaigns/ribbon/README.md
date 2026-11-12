@@ -13,8 +13,15 @@ julia --project=julia/PeggleSim scripts/sync_campaign_config.jl --check
 luajit tools/capture_match_rules.lua > fixtures/matches/rules.v1.json
 ```
 
-The current values are gravity 700, launch speed 600 and wall damping 1.0.
-The first sync found no differences from the existing ribbon fixture config.
+The current config is synced from peggle_evolved `10ee3a0` ("Reshape bucket
+with side ramps, hold shot end after catch, fix multiball"): gravity 700,
+launch speed 400, wall damping 0.8, and the 10ee3a0 bucket keys
+(`bucket_rim_width`, `bucket_rim_height`, `bucket_ramp_slope_deg`,
+`bucket_catch_hold`, render-only `bucket_rim_color`; no `bucket_edge`). Those
+keys select `RULES_RAMP_BUCKET` in Julia: ramp bucket, catch hold and one-ball
+multiball (see [bucket ramps](../../wiki/context/bucket-ramps.md)).
+`provenance.json` lists every difference from the ribbon fixture config.
+The first sync (at `bbd8622`) found no differences from that fixture.
 Unlike that historical fixture, this directory is the current campaign input;
 future parameter changes should be synced here without rewriting trace goldens
 or previous benchmark inputs.

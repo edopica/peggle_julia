@@ -13,6 +13,47 @@
 # with their milestones. Trackers keep the full schema v1 field set so the
 # checkpoint is lossless.
 
+# One straight edge of a ramp-bucket piece (bucket.lua make_piece `edges[]`):
+# start vertex, unit direction, outward unit normal, length.
+struct BucketEdge
+    ax::Float64
+    ay::Float64
+    ux::Float64
+    uy::Float64
+    nx::Float64
+    ny::Float64
+    len::Float64
+end
+
+const BUCKET_EDGE_ZERO = BucketEdge(0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0)
+
+# Piece kinds (bucket.lua `kind`); render layering only, kept for tests.
+const BUCKET_PIECE_BODY = 0x01
+const BUCKET_PIECE_FLOOR = 0x02
+const BUCKET_PIECE_RIM = 0x03
+
+# One convex piece of the 10ee3a0 bucket in bucket-local coordinates (x from
+# the bucket center, y down from the rim top). Fixed-capacity and isbits so a
+# `Vector{BucketPiece}` stores pieces inline and rebuilding allocates nothing:
+# every piece the builder emits has 3 or 4 vertices. `verts` is Lua's flat
+# `{x1, y1, x2, y2, ...}` list (first `2 * nverts` entries used).
+struct BucketPiece
+    kind::UInt8
+    nverts::Int
+    verts::NTuple{8,Float64}
+    nedges::Int
+    edges::NTuple{4,BucketEdge}
+end
+
+# Bucket.new state. Both Lua bucket models share x/prev_x/top/hole/height/
+# phase; the model is fixed by `ramps` (RULES_RAMP_BUCKET), set from the
+# config at construction and carried through checkpoints by key presence.
+#
+#   classic (ramps = false): `edge`; the ramp fields are 0.0, `pieces` empty.
+#   ramps   (ramps = true):  rim_width/rim_height/ramp_width/ramp_height/
+#                            floor and the preallocated convex `pieces`
+#                            (Bucket.build_pieces order); `edge` is 0.0
+#                            (Lua's bucket has no `edge` field).
 mutable struct BucketState
     x::Float64
     prev_x::Float64
@@ -21,10 +62,60 @@ mutable struct BucketState
     edge::Float64
     height::Float64
     phase::Float64
+    ramps::Bool
+    rim_width::Float64
+    rim_height::Float64
+    ramp_width::Float64
+    ramp_height::Float64
+    floor::Float64
+    pieces::Vector{BucketPiece}
 end
 
-# Bucket.new: centered, opening at vh - margin - height, phase pi/2.
+# Classic bucket from its Lua fields.
+function BucketState(x::Float64, prev_x::Float64, top::Float64, hole::Float64,
+                     edge::Float64, height::Float64, phase::Float64)::BucketState
+    return BucketState(x, prev_x, top, hole, edge, height, phase,
+                       false, 0.0, 0.0, 0.0, 0.0, 0.0, BucketPiece[])
+end
+
+# Bucket.lua `nonneg`: non-numbers, NaN and negatives become 0.
+_bucket_nonneg(v::Float64)::Float64 = (v != v || v < 0) ? 0.0 : v
+
+# Bucket.new.
+#   classic: centered, opening at vh - margin - height, phase pi/2.
+#   ramps (10ee3a0): the rim top sits drop = height + floor above the lower
+#   border; the ramps fall that whole distance at bucket_ramp_slope_deg
+#   (clamped to [1, 89]), so their run is drop / tan(slope).
 function BucketState(vw::Float64, vh::Float64, c::SimConfig)::BucketState
+    if c.rules === RULES_RAMP_BUCKET
+        height = _bucket_nonneg(c.bucket_height)
+        floor = _bucket_nonneg(c.bucket_margin)
+        drop = height + floor
+        slope = c.bucket_ramp_slope_deg
+        if slope != slope
+            slope = 20.0
+        end
+        slope = max(1.0, min(89.0, slope))
+        bucket = BucketState(
+            vw / 2,                 # x
+            vw / 2,                 # prev_x
+            vh - drop,              # top (rim tops)
+            c.bucket_hole,
+            0.0,                    # edge (absent in Lua)
+            height,
+            pi / 2,                 # starts at center, moving right
+            true,
+            _bucket_nonneg(c.bucket_rim_width),
+            _bucket_nonneg(c.bucket_rim_height),
+            drop / DetMath.det_tan(slope * Float64(pi) / 180),
+            drop,                   # ramp_height
+            floor,
+            BucketPiece[],
+        )
+        sizehint!(bucket.pieces, 7)
+        bucket_build_pieces!(bucket)
+        return bucket
+    end
     return BucketState(
         vw / 2,                     # x
         vw / 2,                     # prev_x
@@ -95,12 +186,15 @@ mutable struct BallState
     radius::Float64
     launched::Bool
     scored_fever::Bool
+    # 10ee3a0 `b.bucket_caught`: caught by the ramp bucket, still falling out
+    # of view (no further bucket interaction). Never set under RULES_CLASSIC.
+    bucket_caught::Bool
 end
 
 # Ball.new: zero velocity, unlaunched, previous position at the spawn point.
-# `scored_fever` is set by the fever scoring path, never at construction.
+# `scored_fever`/`bucket_caught` are set by the engine, never at construction.
 function BallState(id::Int, x::Float64, y::Float64, radius::Float64)::BallState
-    return BallState(id, x, y, x, y, 0.0, 0.0, radius, false, false)
+    return BallState(id, x, y, x, y, 0.0, 0.0, radius, false, false, false)
 end
 
 # StyleShots chain base: the last scoring impact of a ball's chain.

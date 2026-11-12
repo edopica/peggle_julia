@@ -133,6 +133,13 @@ name (`c.fixed_dt`, `c.gravity`, `c.purple_pegs_per_turn`, ...), nested
 unknown or missing keys (`CONFIG_VALUE_KEYS`) because that means the pinned
 reference changed.
 
+Since the 10ee3a0 port, `SimConfig.rules::RuleSet` records which gameplay
+rules the artifact selects. `RULES_CLASSIC` comes from `bucket_edge` (pinned
+and older dev-tree configs). `RULES_RAMP_BUCKET` comes from the four 10ee3a0
+bucket keys and selects the ramp bucket, the catch hold and one-ball
+multiball. The rules are resolved once at load; see
+[bucket ramps](bucket-ramps.md).
+
 `load_level(path)` parses `interchange/levels/<name>.v1.json` into
 `LevelDefinition`:
 

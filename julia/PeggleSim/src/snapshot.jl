@@ -12,7 +12,12 @@
 #   * hit_order/multiplier_at_hit are omitted until the first hit.
 #   * circuit_id/circuit_t/circuit_state/circuit_timer/motion are omitted for
 #     static pegs (no motion record).
-#   * ball scored_fever is omitted while false.
+#   * ball scored_fever is omitted while false; ball bucket_caught (10ee3a0)
+#     likewise.
+#   * the bucket carries the fields of its model: classic `edge`, or the
+#     10ee3a0 rim_width/rim_height/ramp_width/ramp_height/floor.
+#   * catch_hold_until_step (10ee3a0) is omitted while nil (always, under
+#     RULES_CLASSIC).
 #   * copy_fever omits target_top and the divider is_divider flag.
 #   * line metadata is omitted when the peg has no line.
 
@@ -89,10 +94,26 @@ function _snapshot_ball(b::BallState)::Dict{String,Any}
         "launched" => b.launched,
     )
     b.scored_fever && (d["scored_fever"] = true)
+    b.bucket_caught && (d["bucket_caught"] = true)
     return d
 end
 
 function _snapshot_bucket(b::BucketState)::Dict{String,Any}
+    if b.ramps
+        return Dict{String,Any}(
+            "x" => b.x,
+            "prev_x" => b.prev_x,
+            "top" => b.top,
+            "hole" => b.hole,
+            "rim_width" => b.rim_width,
+            "rim_height" => b.rim_height,
+            "ramp_width" => b.ramp_width,
+            "ramp_height" => b.ramp_height,
+            "height" => b.height,
+            "floor" => b.floor,
+            "phase" => b.phase,
+        )
+    end
     return Dict{String,Any}(
         "x" => b.x,
         "prev_x" => b.prev_x,
@@ -133,7 +154,7 @@ function snapshot_capture(engine)::Dict{String,Any}
     balls = Any[_snapshot_ball(b) for b in e.balls]
     pegs = Any[_snapshot_peg(p) for p in e.pegs]
 
-    return Dict{String,Any}(
+    snap = Dict{String,Any}(
         "schema_version" => SNAPSHOT_SCHEMA_VERSION,
         "step_id" => e.step_id,
         "shot_id" => e.shot_id,
@@ -155,4 +176,7 @@ function snapshot_capture(engine)::Dict{String,Any}
         "fever_buckets" => _snapshot_fever(e.fever_buckets),
         "turn_pegs_hit" => copy(e.turn_pegs_hit),
     )
+    hold = engine.catch_hold_until_step
+    hold === nothing || (snap["catch_hold_until_step"] = hold)
+    return snap
 end

@@ -50,3 +50,22 @@ end
         end
     end
 end
+
+@testset "powers: 10ee3a0 one-ball multiball" begin
+    c = PeggleSim.load_config(joinpath(POWERS_REPO_ROOT, "campaigns", "ribbon", "config.v1.json"))
+    @test c.rules === PeggleSim.RULES_RAMP_BUCKET
+    peg = _powers_test_peg(1, 440.5, 310.25)
+    specs = PeggleSim.powers_activate(peg, c)
+    @test length(specs) == 1
+    @test specs[1] == PeggleSim.PowerSpawnSpec(440.5, 300.25, 150.0, -200.0)
+
+    # The engine form appends in place without allocating once grown.
+    classic = PeggleSim.load_config(POWERS_CONFIG_PATH)
+    dest = PeggleSim.PowerSpawnSpec[]
+    PeggleSim.powers_activate!(dest, peg, classic)
+    @test dest == PeggleSim.powers_activate(peg, classic)
+    PeggleSim.powers_activate!(dest, peg, c)
+    @test length(dest) == 3
+    empty!(dest)
+    @test (@allocated PeggleSim.powers_activate!(dest, peg, classic)) == 0
+end

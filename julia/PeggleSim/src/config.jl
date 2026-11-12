@@ -10,6 +10,30 @@
 #
 # The loader rejects unknown (or missing) value keys: an unknown config value
 # means the pinned reference advanced and the port must be revisited.
+#
+# Gameplay rule set. Some dev-tree revisions after the pin changed gameplay
+# rules together with the config keys that parameterize them. The config
+# artifact therefore selects the rules, and `load_config` resolves that
+# selection ONCE into the explicit `SimConfig.rules` field; the per-step code
+# branches on that field (an enum compare), never on dictionary lookups.
+#
+#   RULES_CLASSIC      pinned d17f6e7 .. peggle_evolved d40abc9. Selected by
+#                      `bucket_edge` (and none of the 10ee3a0 bucket keys):
+#                      three-rectangle bucket, instant catch removal, two
+#                      green-power balls.
+#   RULES_RAMP_BUCKET  peggle_evolved 10ee3a0 ("Reshape bucket with side
+#                      ramps, hold shot end after catch, fix multiball").
+#                      Selected by the presence of all of `bucket_rim_width`,
+#                      `bucket_rim_height`, `bucket_ramp_slope_deg` and
+#                      `bucket_catch_hold` (and no `bucket_edge`): rimmed
+#                      bucket with outer ramps and swept collision, caught
+#                      balls fall out of view before removal, shot end held
+#                      for `bucket_catch_hold`, one green-power ball.
+#
+# A config carrying keys of both sets, or only part of the 10ee3a0 set, is
+# rejected: it matches no Lua revision the port knows. See
+# wiki/context/bucket-ramps.md.
+@enum RuleSet::UInt8 RULES_CLASSIC RULES_RAMP_BUCKET
 
 struct PegTypeConfig
     color::NTuple{3,Float64}
@@ -33,7 +57,7 @@ struct SimConfig
     bucket_accel_multiplier::Float64
     bucket_bonus::Float64
     bucket_color::NTuple{3,Float64}
-    bucket_edge::Float64
+    bucket_edge::Float64            # RULES_CLASSIC only (0.0 under RULES_RAMP_BUCKET)
     bucket_height::Float64
     bucket_hole::Float64
     bucket_incremental_base::Float64
@@ -83,11 +107,24 @@ struct SimConfig
     wall_damping::Float64
     window_height::Int
     window_width::Int
+    # RULES_RAMP_BUCKET keys (0.0 under RULES_CLASSIC, where Lua has no such
+    # Config entries and never reads them).
+    bucket_catch_hold::Float64
+    bucket_ramp_slope_deg::Float64
+    bucket_rim_height::Float64
+    bucket_rim_width::Float64
+    # Resolved once at load (see RuleSet above).
+    rules::RuleSet
+    # core.lua step (12): math.ceil((Config.bucket_catch_hold or 0) /
+    # Config.fixed_dt), a constant per config; 0 under RULES_CLASSIC.
+    bucket_catch_hold_steps::Int
     source_sha256::String
 end
 
-# The exact key set of the pinned config artifact, in artifact (alphabetical)
-# order. The loader fails when the artifact gains, loses, or renames a value.
+# The value keys every supported config artifact carries, in artifact
+# (alphabetical) order. The loader fails when the artifact gains, loses, or
+# renames a value. The bucket-model keys that differ between rule sets are
+# listed separately below.
 const CONFIG_VALUE_KEYS = (
     :aim_angle_limit,
     :aim_discretization_steps,
@@ -105,7 +142,6 @@ const CONFIG_VALUE_KEYS = (
     :bucket_accel_multiplier,
     :bucket_bonus,
     :bucket_color,
-    :bucket_edge,
     :bucket_height,
     :bucket_hole,
     :bucket_incremental_base,
@@ -157,11 +193,23 @@ const CONFIG_VALUE_KEYS = (
     :window_width,
 )
 
+# Rule-set selecting keys (see RuleSet). Exactly one of these sets is present.
+const CONFIG_CLASSIC_BUCKET_KEYS = (
+    :bucket_edge,
+)
+const CONFIG_RAMP_BUCKET_KEYS = (       # peggle_evolved 10ee3a0
+    :bucket_catch_hold,
+    :bucket_ramp_slope_deg,
+    :bucket_rim_height,
+    :bucket_rim_width,
+)
+
 # Presentation-only keys added to the dev-tree config after the pin. They may
 # be present (dev-tree artifacts) or absent (pinned artifacts); the simulation
 # never reads them.
 const CONFIG_OPTIONAL_PRESENTATION_KEYS = (
     :peg_border_color, # ec4fcb3: peg outline color, render-only
+    :bucket_rim_color, # 10ee3a0: bucket rim color, render-only
 )
 
 const CONFIG_TOP_LEVEL_KEYS = ("format", "schema_version", "source_sha256", "values")
@@ -195,9 +243,11 @@ function _peg_types_config(x)::NamedTuple{(:blue, :green, :purple, :red),NTuple{
     )
 end
 
-function _check_config_keys(values::AbstractDict)
+function _check_config_keys(values::AbstractDict)::RuleSet
     for key in keys(values)
         (Symbol(key) in CONFIG_VALUE_KEYS ||
+         Symbol(key) in CONFIG_CLASSIC_BUCKET_KEYS ||
+         Symbol(key) in CONFIG_RAMP_BUCKET_KEYS ||
          Symbol(key) in CONFIG_OPTIONAL_PRESENTATION_KEYS) ||
             throw(ArgumentError(
                 "config: unknown value key '$(key)'; the pinned reference config advanced"))
@@ -206,7 +256,30 @@ function _check_config_keys(values::AbstractDict)
         haskey(values, String(key)) ||
             throw(ArgumentError("config: missing value key '$(key)'"))
     end
-    return nothing
+    return _select_rules(values)
+end
+
+# Resolve the rule set from the bucket keys the artifact carries.
+function _select_rules(values::AbstractDict)::RuleSet
+    classic = count(k -> haskey(values, String(k)), CONFIG_CLASSIC_BUCKET_KEYS)
+    ramp = count(k -> haskey(values, String(k)), CONFIG_RAMP_BUCKET_KEYS)
+    if classic == length(CONFIG_CLASSIC_BUCKET_KEYS) && ramp == 0
+        return RULES_CLASSIC
+    elseif classic == 0 && ramp == length(CONFIG_RAMP_BUCKET_KEYS)
+        return RULES_RAMP_BUCKET
+    end
+    throw(ArgumentError(
+        "config: bucket keys match no known rule set: classic needs " *
+        "$(collect(CONFIG_CLASSIC_BUCKET_KEYS)) alone, 10ee3a0 needs all of " *
+        "$(collect(CONFIG_RAMP_BUCKET_KEYS)) and no bucket_edge"))
+end
+
+# core.lua step (12): `math.ceil((Config.bucket_catch_hold or 0) / Config.fixed_dt)`.
+function _catch_hold_steps(hold::Float64, fixed_dt::Float64)::Int
+    steps = ceil(hold / fixed_dt)
+    isfinite(steps) || throw(ArgumentError(
+        "config: bucket_catch_hold / fixed_dt must be finite, got $(steps)"))
+    return Int(steps)
 end
 
 function load_config(path::AbstractString)::SimConfig
@@ -222,7 +295,8 @@ function load_config(path::AbstractString)::SimConfig
     source_sha256 = as_string(doc["source_sha256"], "source_sha256")
 
     values = as_object(doc["values"], "values")
-    _check_config_keys(values)
+    rules = _check_config_keys(values)
+    ramps = rules === RULES_RAMP_BUCKET
 
     f(k) = as_f64(values[String(k)], String(k))
     i(k) = as_int(values[String(k)], String(k))
@@ -246,7 +320,7 @@ function load_config(path::AbstractString)::SimConfig
         bucket_accel_multiplier = f(:bucket_accel_multiplier),
         bucket_bonus = f(:bucket_bonus),
         bucket_color = _color3(values["bucket_color"], "bucket_color"),
-        bucket_edge = f(:bucket_edge),
+        bucket_edge = ramps ? 0.0 : f(:bucket_edge),
         bucket_height = f(:bucket_height),
         bucket_hole = f(:bucket_hole),
         bucket_incremental_base = f(:bucket_incremental_base),
@@ -296,6 +370,13 @@ function load_config(path::AbstractString)::SimConfig
         wall_damping = f(:wall_damping),
         window_height = i(:window_height),
         window_width = i(:window_width),
+        bucket_catch_hold = ramps ? f(:bucket_catch_hold) : 0.0,
+        bucket_ramp_slope_deg = ramps ? f(:bucket_ramp_slope_deg) : 0.0,
+        bucket_rim_height = ramps ? f(:bucket_rim_height) : 0.0,
+        bucket_rim_width = ramps ? f(:bucket_rim_width) : 0.0,
+        rules = rules,
+        bucket_catch_hold_steps = ramps ?
+            _catch_hold_steps(f(:bucket_catch_hold), f(:fixed_dt)) : 0,
         source_sha256 = source_sha256,
     )
     return SimConfig(parsed...)

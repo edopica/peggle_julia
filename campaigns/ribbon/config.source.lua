@@ -13,7 +13,7 @@ local Config = {
 	fixed_dt = 1 / 60,
 	gravity = 700,
 	restitution = 0.8, -- Global bounce factor
-	wall_damping = 1.0, -- Speed retained when hitting a wall
+	wall_damping = 0.8, -- Speed retained when hitting a wall
 	bounce_min_normal_speed = 200, -- px/s: normal approach below which a contact settles (not classified as a bounce)
 	settle_restitution = 0.2, -- reduced restitution for settling contacts (non-zero so wedges still eject)
 	graze_tolerance = 0.5, -- Pixels of visual overlap to count as a hit without interrupting trajectory
@@ -27,7 +27,7 @@ local Config = {
 	-- Ball settings
 	ball_radius = 6,
 	ball_color = { 0.9, 0.9, 0.9 },
-	launch_speed = 600,
+	launch_speed = 400,
 	-- Ball-ball collisions: launched balls are swept against each other as
 	-- equal-mass circles. Set false to restore the legacy pass-through
 	-- behavior (A/B diagnostics).
@@ -72,12 +72,21 @@ local Config = {
 
 	-- Bucket: a catcher that slides back and forth along the (open) floor.
 	-- The ball falls through the bottom of the scene; landing in the hole scores a bonus.
-	bucket_hole = 70, -- width of the catch opening (the ball fits through here)
-	bucket_edge = 12, -- width of each solid side wall (edge size)
-	bucket_height = 26, -- vertical size of the bucket
+	-- Shape per side (mirrored): a flat top rim bounding the opening, then a
+	-- ramp sloping down and outward from the rim's top-outer corner (no step)
+	-- all the way to the level's lower border. See src/entities/bucket.lua.
+	bucket_hole = 105, -- width of the catch opening between the rims' inner edges
+	bucket_rim_width = 12, -- width of each flat top rim. The classic bucket's rim scales to ~3 px
+	-- here (nearly unhittable); wider rims reward shots aimed at the bucket edge.
+	bucket_rim_height = 4, -- vertical thickness of each rim (visual band)
+	bucket_ramp_slope_deg = 30, -- ramp angle from horizontal; the ramp runs from the rim top down to the
+	-- level's lower border, so its width is (bucket_height + bucket_margin) / tan(slope)
+	bucket_height = 10.4, -- depth of the catch opening (rim top to floor)
 	bucket_accel_multiplier = 0.15, -- multiplier for the level-generated acceleration
-	bucket_margin = 30, -- distance from the bottom of the screen to the bucket's top
+	bucket_margin = 4.8, -- floor thickness: gap between the bottom of the catch opening and the level's lower border
 	bucket_color = { 0.85, 0.72, 0.28 },
+	bucket_rim_color = { 1.00, 0.92, 0.60 }, -- rims drawn lighter so the hittable edge reads clearly
+	bucket_catch_hold = 1.5, -- seconds to wait after a caught ball drops out of view before the shot ends (shows the bucket popup)
 	bucket_bonus = 10000, -- extra points awarded for catching the ball
 	bucket_incremental_base = 2500, -- points per bucket catch in 1v1 mode (multiplied by catch count)
 	fever_bucket_raise_speed = 300, -- px/s, speed at which fever buckets rise from below the screen

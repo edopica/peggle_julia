@@ -8,9 +8,12 @@ using PeggleSim
     config_path = joinpath(root, "campaigns/ribbon/config.v1.json")
     config = PeggleSim.load_config(config_path)
     @test config.source_sha256 == bytes2hex(sha256(read(joinpath(root,"campaigns/ribbon/config.source.lua"))))
-    @test config.launch_speed == 600
+    # Synced from peggle_evolved 10ee3a0 (ramp bucket, catch hold, one-ball
+    # multiball; launch speed 400, wall damping 0.8).
+    @test config.launch_speed == 400
     @test config.gravity == 700
-    @test config.wall_damping == 1.0
+    @test config.wall_damping == 0.8
+    @test config.rules === PeggleSim.RULES_RAMP_BUCKET
     @test PeggleSim.CampaignOptions().mode == Symbol("1v1")
     @test_throws ArgumentError PeggleSim.validate_campaign(PeggleSim.CampaignOptions(mode=:other))
     level = PeggleSim.load_level(joinpath(root,"fixtures/ribbon_waves/artifact/ribbon_waves.v1.json"))

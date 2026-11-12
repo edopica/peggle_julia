@@ -202,6 +202,7 @@ mirrors `../peggle_evolved/wiki/` so material can move between the projects.
 | `wiki/context/julia-benchmark-harness.md` | Julia benchmark-execution harness: scope, files, commands, parity evidence, remaining Python | current |
 | `wiki/context/ribbon-waves.md` | Screenshot-reconstructed `ribbon_waves` level: extraction, Lua level, 3-shot trace corpus, mask checker, Julia tests | current |
 | `wiki/context/ribbon-pegs.md` | Dev-tree `ribbon` gameplay peg: Lua semantics, interchange, Julia port, imported-level corpus, per-match campaign colors | current |
+| `wiki/context/bucket-ramps.md` | Dev-tree `10ee3a0` rules: ramp bucket, catch hold, one-ball multiball; `SimConfig.rules` selection, Julia port, evidence, stale corpora | current |
 | `wiki/benchmarks/` | Measured performance and parity results | current |
 | `wiki/benchmarks/baseline-metrics.md` | M0 Lua candidate-sweep baseline and continuing-metric protocol | current |
 | `wiki/benchmarks/m2-checkpoint.md` | M2 checkpoint/reset benchmark and M0 init comparison | current |
@@ -250,6 +251,7 @@ Conventions:
 | How is the Julia side built? | `wiki/context/julia.md` |
 | How is a benchmark run executed and validated now? | `wiki/context/julia-benchmark-harness.md`, `wiki/context/benchmark-results.md` |
 | How are ribbon pegs and the imported screenshot levels ported? | `wiki/context/ribbon-pegs.md`, `fixtures/imported_levels/README.md` |
+| How are the ramp bucket, catch hold and one-ball multiball selected and ported? | `wiki/context/bucket-ramps.md` |
 | Which M3 fixtures exist, and how are they compared? | `wiki/context/m3-mustache.md` |
 | What M4 validated, and how it was closed? | `wiki/context/m4-validation.md` |
 | How do I collect the macOS/Windows qualification evidence? | `wiki/context/cross-platform-qualification.md` |

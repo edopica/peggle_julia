@@ -186,6 +186,10 @@ mutable struct ShotEngine
     restore_scratch::CheckpointRestoreScratch
     compact_geometry::Union{Nothing,PreparedGeometry}
     static_geometry::Bool
+    # 10ee3a0 Engine.catch_hold_until_step: after a caught ball falls out of
+    # view, shot end is held until this step (RULES_RAMP_BUCKET only; always
+    # `nothing` under RULES_CLASSIC). Reset with the turn (Engine:resetTurn).
+    catch_hold_until_step::Union{Nothing,Int}
 end
 
 # ---------------------------------------------------------------------------
@@ -253,10 +257,25 @@ function _fresh_shot_engine(sim::SimState, config::SimConfig, vw::Float64,
         Peg[], BallState[], 0,
         scratch,
         CheckpointRestoreScratch(), nothing, false,
+        nothing,
     )
+    _check_bucket_rules(eng)
     _split_peg_lists!(eng)
     return eng
 end
+
+# The bucket model travels with the checkpoint (key presence) while the
+# catch/multiball rules come from the config; refuse to mix them.
+function _check_bucket_rules(eng::ShotEngine)::Nothing
+    ramps = eng.config.rules === RULES_RAMP_BUCKET
+    eng.sim.engine.bucket.ramps == ramps || _bucket_rules_mismatch(ramps)
+    return nothing
+end
+
+@noinline _bucket_rules_mismatch(ramps::Bool) = throw(ArgumentError(
+    "checkpoint bucket model does not match config rules " *
+    (ramps ? "(config: RULES_RAMP_BUCKET, checkpoint: classic bucket)" :
+             "(config: RULES_CLASSIC, checkpoint: ramp bucket)")))
 
 # Build a shot engine from a ready-to-aim checkpoint. The level's virtual
 # width/height default to the config values but are passed explicitly by the
@@ -317,6 +336,7 @@ function reset_shot_engine!(eng::ShotEngine, ckpt::Union{Checkpoint,PreparedChec
         _split_peg_lists!(eng)
         eng.compact_geometry = nothing
     end
+    _check_bucket_rules(eng)
     reset!(eng.journal)
     reset!(eng.commands)
     reset_physics_context!(eng.scratch.physics, eng.sim.engine.balls,
@@ -331,6 +351,7 @@ function reset_shot_engine!(eng::ShotEngine, ckpt::Union{Checkpoint,PreparedChec
     eng.shot_final_step = 0
     eng.shot_end_reason = nothing
     eng.last_removal_reason = nothing
+    eng.catch_hold_until_step = nothing
     eng.shot_end_pending = false
     eng.scored_this_step = false
     eng.midturn_clear_started = false
@@ -485,7 +506,7 @@ function score_peg!(eng::ShotEngine, peg::Peg, ev::GameEvent)::Nothing
     push!(eng.buffered_peg_scored, ps)
 
     if peg.peg_type === :green
-        append!(eng.pending_spawn_specs, powers_activate(peg, eng.config))
+        powers_activate!(eng.pending_spawn_specs, peg, eng.config)
     elseif peg.peg_type === :purple
         on_purple_peg_hit!(eng.sim.colors, peg)
     end
@@ -885,6 +906,7 @@ function _take_spawn_ball!(eng::ShotEngine, spec::PowerSpawnSpec)::BallState
         nb.radius = radius
         nb.launched = false
         nb.scored_fever = false
+        nb.bucket_caught = false
         return nb
     end
     nb = BallState(0, spec.x, spec.y, radius)
@@ -1021,7 +1043,10 @@ function _step_body!(eng::ShotEngine, dt::Float64)::Nothing
         remove_ball = false
         caught = false
 
-        if e.is_fever
+        if b.bucket_caught
+            # Already caught (RULES_RAMP_BUCKET): the ball keeps falling
+            # through the bucket and out of view; no more bucket interaction.
+        elseif e.is_fever
             res = fever_resolve!(e.fever_buckets, b)
             if res.result === :caught && !b.scored_fever
                 e.bonus_score = e.bonus_score + res.value
@@ -1040,8 +1065,14 @@ function _step_body!(eng::ShotEngine, dt::Float64)::Nothing
             result = bucket_resolve!(e.bucket, b, eng.config)
             out_vx, out_vy = b.vx, b.vy
             if result === :caught
-                caught = true
-                remove_ball = true
+                if eng.config.rules === RULES_RAMP_BUCKET
+                    # Scored now, but the ball is not removed: it keeps
+                    # falling below the view and is removed at fall-out (12).
+                    b.bucket_caught = true
+                else
+                    caught = true
+                    remove_ball = true
+                end
                 emit_raw!(eng.journal, "bucket_caught_ball", EventFields(
                     ball_id = b.id,
                     x = b.x, y = b.y,
@@ -1063,14 +1094,27 @@ function _step_body!(eng::ShotEngine, dt::Float64)::Nothing
         end
 
         # (12) Fall-out detection (a caught ball must not also fell out).
+        # Classic: an instantly caught ball skips this (`caught`). Ramp
+        # bucket: `caught` is never set yet here; a `bucket_caught` ball that
+        # leaves the view is removed as caught and holds the shot end for
+        # bucket_catch_hold.
         if !caught &&
            b.y - b.radius > eng.virtual_height + eng.config.fall_out_margin
             remove_ball = true
-            emit_raw!(eng.journal, "ball_fell_out", EventFields(
-                ball_id = b.id,
-                x = b.x, y = b.y,
-                reason = "open_floor",
-            ))
+            if b.bucket_caught
+                caught = true
+                until_step = e.step_id + eng.config.bucket_catch_hold_steps
+                hold = eng.catch_hold_until_step
+                if hold === nothing || until_step > hold
+                    eng.catch_hold_until_step = until_step
+                end
+            else
+                emit_raw!(eng.journal, "ball_fell_out", EventFields(
+                    ball_id = b.id,
+                    x = b.x, y = b.y,
+                    reason = "open_floor",
+                ))
+            end
         end
 
         if remove_ball
@@ -1110,8 +1154,13 @@ function _step_body!(eng::ShotEngine, dt::Float64)::Nothing
         empty!(eng.pending_spawn_specs)
     end
 
-    # (15) Shot-end detection.
-    if isempty(e.balls)
+    # (15) Shot-end detection, held for bucket_catch_hold after a caught ball
+    # leaves the view (RULES_RAMP_BUCKET; the hold is never set otherwise).
+    hold = eng.catch_hold_until_step
+    if isempty(e.balls) && hold !== nothing && e.step_id < hold
+        # Waiting: nothing to simulate until the hold expires.
+    elseif isempty(e.balls)
+        eng.catch_hold_until_step = nothing
         skip_clearing = false
         cb = eng.callbacks.on_all_balls_depleted
         if cb !== nothing

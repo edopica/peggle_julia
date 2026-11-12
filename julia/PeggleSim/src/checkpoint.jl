@@ -43,6 +43,10 @@ struct CheckpointBall
     launched::Bool
 end
 
+# Lua bucket fields. The model is carried by key presence, like the Lua
+# snapshot `copy_bucket`: a classic bucket has `edge`; a 10ee3a0 ramp bucket
+# (`ramps`) has rim_width/rim_height/ramp_width/ramp_height/floor and no
+# `edge`. Unused fields of the other model are 0.0.
 struct CheckpointBucket
     x::Float64
     prev_x::Float64
@@ -51,6 +55,12 @@ struct CheckpointBucket
     edge::Float64
     height::Float64
     phase::Float64
+    ramps::Bool
+    rim_width::Float64
+    rim_height::Float64
+    ramp_width::Float64
+    ramp_height::Float64
+    floor::Float64
 end
 
 struct CheckpointFeverBucket
@@ -223,7 +233,8 @@ _checkpoint_ball(b::BallState) = CheckpointBall(
     b.id, b.x, b.y, b.prev_x, b.prev_y, b.vx, b.vy, b.radius, b.launched)
 
 _checkpoint_bucket(b::BucketState) = CheckpointBucket(
-    b.x, b.prev_x, b.top, b.hole, b.edge, b.height, b.phase)
+    b.x, b.prev_x, b.top, b.hole, b.edge, b.height, b.phase,
+    b.ramps, b.rim_width, b.rim_height, b.ramp_width, b.ramp_height, b.floor)
 
 _checkpoint_fever(f::FeverBucketsState) = CheckpointFeverBuckets(
     f.top, f.target_top, f.height, f.animating,
@@ -344,6 +355,15 @@ function _ball_to_dict(b::CheckpointBall)::Dict{String,Any}
 end
 
 function _bucket_to_dict(b::CheckpointBucket)::Dict{String,Any}
+    if b.ramps
+        return Dict{String,Any}(
+            "x" => b.x, "prev_x" => b.prev_x, "top" => b.top,
+            "hole" => b.hole, "rim_width" => b.rim_width,
+            "rim_height" => b.rim_height, "ramp_width" => b.ramp_width,
+            "ramp_height" => b.ramp_height, "height" => b.height,
+            "floor" => b.floor, "phase" => b.phase,
+        )
+    end
     return Dict{String,Any}(
         "x" => b.x, "prev_x" => b.prev_x, "top" => b.top,
         "hole" => b.hole, "edge" => b.edge, "height" => b.height,
@@ -582,6 +602,25 @@ function _parse_checkpoint_ball(d::AbstractDict)::CheckpointBall
 end
 
 function _parse_bucket(d::AbstractDict)::CheckpointBucket
+    if haskey(d, "rim_width")
+        haskey(d, "edge") && throw(ArgumentError(
+            "checkpoint: bucket carries both classic 'edge' and ramp-bucket fields"))
+        return CheckpointBucket(
+            as_f64(d["x"], "bucket.x"),
+            as_f64(d["prev_x"], "bucket.prev_x"),
+            as_f64(d["top"], "bucket.top"),
+            as_f64(d["hole"], "bucket.hole"),
+            0.0,
+            as_f64(d["height"], "bucket.height"),
+            as_f64(d["phase"], "bucket.phase"),
+            true,
+            as_f64(d["rim_width"], "bucket.rim_width"),
+            as_f64(d["rim_height"], "bucket.rim_height"),
+            as_f64(d["ramp_width"], "bucket.ramp_width"),
+            as_f64(d["ramp_height"], "bucket.ramp_height"),
+            as_f64(d["floor"], "bucket.floor"),
+        )
+    end
     return CheckpointBucket(
         as_f64(d["x"], "bucket.x"),
         as_f64(d["prev_x"], "bucket.prev_x"),
@@ -590,6 +629,7 @@ function _parse_bucket(d::AbstractDict)::CheckpointBucket
         as_f64(d["edge"], "bucket.edge"),
         as_f64(d["height"], "bucket.height"),
         as_f64(d["phase"], "bucket.phase"),
+        false, 0.0, 0.0, 0.0, 0.0, 0.0,
     )
 end
 
@@ -829,8 +869,7 @@ function _engine_from_checkpoint(ckpt::Checkpoint)::EngineState
     return EngineState(
         ce.step_id, ce.shot_id, ce.level_name, pegs, peg_by_id,
         balls, live_ball_ids, live_id_by_ball,
-        BucketState(ce.bucket.x, ce.bucket.prev_x, ce.bucket.top, ce.bucket.hole,
-                    ce.bucket.edge, ce.bucket.height, ce.bucket.phase),
+        _bucket_from_checkpoint(ce.bucket),
         fever,
         nothing,                    # clear_queue
         ce.clearing.is_end_of_turn,
@@ -840,6 +879,43 @@ function _engine_from_checkpoint(ckpt::Checkpoint)::EngineState
         ce.current_multiplier, ce.is_fever, ce.hit_counter,
         copy(ce.turn_pegs_hit), ce.next_ball_id, copy(ce.used_ball_ids),
     )
+end
+
+function _bucket_from_checkpoint(cb::CheckpointBucket)::BucketState
+    b = BucketState(cb.x, cb.prev_x, cb.top, cb.hole, cb.edge, cb.height, cb.phase)
+    sizehint!(b.pieces, 7)
+    _restore_bucket!(b, cb)
+    return b
+end
+
+# Copy the checkpoint bucket into a live one. Ramp-bucket pieces are pure
+# functions of the dimensions, so they are rebuilt (into the preallocated
+# vector) only when a dimension or the model changed; candidate resets of
+# one board never rebuild.
+function _restore_bucket!(dst::BucketState, b::CheckpointBucket)::BucketState
+    rebuild = b.ramps && (!dst.ramps || isempty(dst.pieces) ||
+        dst.hole !== b.hole || dst.height !== b.height ||
+        dst.rim_width !== b.rim_width || dst.rim_height !== b.rim_height ||
+        dst.ramp_width !== b.ramp_width || dst.floor !== b.floor)
+    dst.x = b.x
+    dst.prev_x = b.prev_x
+    dst.top = b.top
+    dst.hole = b.hole
+    dst.edge = b.edge
+    dst.height = b.height
+    dst.phase = b.phase
+    dst.ramps = b.ramps
+    dst.rim_width = b.rim_width
+    dst.rim_height = b.rim_height
+    dst.ramp_width = b.ramp_width
+    dst.ramp_height = b.ramp_height
+    dst.floor = b.floor
+    if rebuild
+        bucket_build_pieces!(dst)
+    elseif !b.ramps
+        empty!(dst.pieces)
+    end
+    return dst
 end
 
 function _match_from_checkpoint(ckpt::Checkpoint)::MatchState
@@ -974,6 +1050,7 @@ function _restore_ball!(b::BallState, cb::CheckpointBall)
     b.radius = cb.radius
     b.launched = cb.launched
     b.scored_fever = false
+    b.bucket_caught = false
     return b
 end
 
@@ -1035,14 +1112,7 @@ function _restore_checkpoint!(sim::SimState, ckpt::Checkpoint,
         e.live_id_by_ball[b] = b.id
     end
 
-    b = ce.bucket
-    e.bucket.x = b.x
-    e.bucket.prev_x = b.prev_x
-    e.bucket.top = b.top
-    e.bucket.hole = b.hole
-    e.bucket.edge = b.edge
-    e.bucket.height = b.height
-    e.bucket.phase = b.phase
+    _restore_bucket!(e.bucket, ce.bucket)
 
     cf = ce.fever_buckets
     e.fever_buckets.top = cf.top

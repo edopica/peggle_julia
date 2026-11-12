@@ -185,3 +185,160 @@ end
         @test summary_a.reason == "fell_out"
     end
 end
+
+# ---------------------------------------------------------------------------
+# 10ee3a0 rules (RULES_RAMP_BUCKET): one-ball multiball and the bucket catch
+# hold. Mirrors tests/test_engine_integration.lua @ 10ee3a0. The b2 imported
+# level plus the synced campaign config (exported from 10ee3a0) are used; the
+# full-shot step counts below were captured from the Lua dev tree at 10ee3a0
+# with the harness (scripts/capture_imported_levels.sh flow into a scratch
+# directory) and the Julia traces were byte-identical with snapshots.
+# ---------------------------------------------------------------------------
+
+const RAMP_ENGINE_CONFIG = joinpath(ENGINE_REPO_ROOT, "campaigns", "ribbon", "config.v1.json")
+const RAMP_ENGINE_LEVEL = joinpath(ENGINE_REPO_ROOT, "fixtures", "imported_levels",
+                                   "artifact", "b2.v1.json")
+
+function _ramp_engine(; callbacks = PeggleSim.harness_callbacks(), trace_path = nothing)
+    level = PeggleSim.load_level(RAMP_ENGINE_LEVEL)
+    config = PeggleSim.load_config(RAMP_ENGINE_CONFIG)
+    prov = (reference_revision = "10ee3a06eb6af3f79e502a2bd34d3e5697a6a2cc",
+            reference_tree = "t", config_sha256 = config.source_sha256,
+            level_sha256 = level.level_sha256)
+    ckpt = PeggleSim.build_checkpoint(level, config; balls = 1, mode = :solo, provenance = prov)
+    eng = PeggleSim.shot_engine(ckpt; config, callbacks, level)
+    if trace_path !== nothing
+        eng.trace = PeggleSim.trace_open(trace_path; include_snapshot = true)
+    end
+    return eng
+end
+
+function _trace_raw_counts(path)
+    counts = Dict{String,Int}()
+    for line in eachline(path)
+        rec = PeggleSim.JSON.parse(line)
+        get(rec, "kind", nothing) == "step" || continue
+        for ev in rec["raw_events"]
+            counts[ev["type"]] = get(counts, ev["type"], 0) + 1
+        end
+    end
+    return counts
+end
+
+@testset "engine: 10ee3a0 rules" begin
+    @testset "green peg hit spawns exactly one extra ball" begin
+        path = joinpath(mktempdir(), "spawn.jsonl")
+        eng = _ramp_engine(; trace_path = path)
+        @test eng.config.rules === PeggleSim.RULES_RAMP_BUCKET
+        PeggleSim.launch!(eng, 450)
+        max_live = 0
+        while !eng.shot_done && eng.steps_run < 3600
+            PeggleSim.update!(eng, eng.config.fixed_dt)
+            max_live = max(max_live, length(eng.sim.engine.balls))
+        end
+        PeggleSim.trace_close!(eng.trace)
+        summary = PeggleSim.shot_summary(eng)
+        # Lua 10ee3a0 harness capture (b2_right): 348 steps, fell_out, 15000.
+        @test summary.steps == 348
+        @test summary.reason == "fell_out"
+        @test summary.score == 15000.0
+        @test summary.spawned == 1
+        @test max_live == 2
+        @test _trace_raw_counts(path)["ball_spawned"] == 1
+        green_scored = 0
+        for line in eachline(path)
+            rec = PeggleSim.JSON.parse(line)
+            get(rec, "kind", nothing) == "step" || continue
+            for ev in rec["derived_events"]
+                ev["type"] == "peg_scored" && ev["peg_type"] == "green" && (green_scored += 1)
+            end
+        end
+        @test green_scored == 1
+    end
+
+    @testset "caught ball falls out of view, then shot end is held" begin
+        caught_step = Ref{Union{Nothing,Int}}(nothing)
+        turn_end_step = Ref{Union{Nothing,Int}}(nothing)
+        base = PeggleSim.harness_callbacks()
+        callbacks = PeggleSim.ShotCallbacks(
+            base.on_all_balls_depleted,
+            eng -> (caught_step[] = eng.sim.engine.step_id; base.on_bucket_catch(eng)),
+            base.on_style_shot,
+            eng -> (turn_end_step[] === nothing && (turn_end_step[] = eng.sim.engine.step_id); nothing),
+        )
+        path = joinpath(mktempdir(), "hold.jsonl")
+        eng = _ramp_engine(; callbacks, trace_path = path)
+        e = eng.sim.engine
+        PeggleSim.launch!(eng, 900)
+        # Drop the ball straight into the bucket (Lua test: 40 px above the
+        # rim top at vy = 400).
+        b = e.balls[1]
+        b.x = b.prev_x = e.bucket.x
+        b.y = b.prev_y = e.bucket.top - 40
+        b.vx = 0.0
+        b.vy = 400.0
+        removed_step = nothing
+        live_after_catch = false
+        hold_seen = nothing
+        while !eng.shot_done && eng.steps_run < 600
+            PeggleSim.update!(eng, eng.config.fixed_dt)
+            if caught_step[] !== nothing && removed_step === nothing
+                if length(e.balls) == 1 && e.step_id > caught_step[]
+                    live_after_catch = true
+                    @test e.balls[1].bucket_caught
+                end
+                if isempty(e.balls)
+                    removed_step = e.step_id
+                    hold_seen = eng.catch_hold_until_step
+                end
+            end
+        end
+        PeggleSim.trace_close!(eng.trace)
+        @test caught_step[] !== nothing
+        @test live_after_catch
+        @test removed_step !== nothing
+        @test b.y - b.radius > eng.virtual_height
+        counts = _trace_raw_counts(path)
+        @test get(counts, "ball_fell_out", 0) == 0
+        @test counts["bucket_caught_ball"] == 1
+        @test turn_end_step[] !== nothing
+        hold_steps = Int(ceil(eng.config.bucket_catch_hold / eng.config.fixed_dt))
+        @test hold_seen == removed_step + hold_steps
+        @test turn_end_step[] - removed_step >= hold_steps
+        @test turn_end_step[] == removed_step + hold_steps
+        @test eng.last_removal_reason == "bucket_caught"
+        @test eng.catch_hold_until_step === nothing
+        @test e.bonus_score == eng.config.bucket_bonus
+        # The snapshot carries the hold and the caught flag while they apply.
+        holds = 0
+        caught_flags = 0
+        for line in eachline(path)
+            rec = PeggleSim.JSON.parse(line)
+            get(rec, "kind", nothing) == "step" || continue
+            snap = rec["snapshot"]
+            haskey(snap, "catch_hold_until_step") && (holds += 1)
+            any(bb -> get(bb, "bucket_caught", false), snap["balls"]) && (caught_flags += 1)
+            @test !haskey(snap["bucket"], "edge")
+            @test haskey(snap["bucket"], "rim_width")
+        end
+        @test holds == hold_steps
+        @test caught_flags == removed_step - caught_step[]
+    end
+
+    @testset "real catch: b2 straight drop" begin
+        eng = _ramp_engine()
+        PeggleSim.launch!(eng, 900)
+        PeggleSim.run_shot!(eng)
+        summary = PeggleSim.shot_summary(eng)
+        # Lua 10ee3a0 harness capture (b2_center).
+        @test summary.steps == 528
+        @test summary.reason == "bucket_caught"
+        @test summary.score == 15170.0
+        # A reset clears the hold, as Engine:resetTurn does.
+        eng.catch_hold_until_step = 7
+        PeggleSim.reset_shot_engine!(eng, PeggleSim.capture_checkpoint(eng.sim;
+            provenance = (reference_revision = "r", reference_tree = "t",
+                          config_sha256 = "c", level_sha256 = "l")))
+        @test eng.catch_hold_until_step === nothing
+    end
+end

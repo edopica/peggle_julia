@@ -157,8 +157,13 @@
             "prev_x": { "type": "number" },
             "top": { "type": "number" },
             "hole": { "type": "number" },
-            "edge": { "type": "number" },
-            "height": { "type": "number" }
+            "edge": { "type": "number", "description": "classic bucket only" },
+            "height": { "type": "number" },
+            "rim_width": { "type": "number", "description": "10ee3a0 ramp bucket only" },
+            "rim_height": { "type": "number", "description": "10ee3a0 ramp bucket only" },
+            "ramp_width": { "type": "number", "description": "10ee3a0 ramp bucket only" },
+            "ramp_height": { "type": "number", "description": "10ee3a0 ramp bucket only" },
+            "floor": { "type": "number", "description": "10ee3a0 ramp bucket only" }
           }
         },
         "fever_buckets": {
