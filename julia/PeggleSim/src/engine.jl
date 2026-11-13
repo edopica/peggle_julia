@@ -204,7 +204,7 @@ end
 # Harness grid formula: AIM_MIN + (index / AIM_STEPS) * AIM_SPAN.
 function angle_for_index(index::Int, c::SimConfig)::Float64
     aim_mid = pi / 2
-    aim_limit = c.aim_angle_limit
+    aim_limit = aim_angle_limit(c)
     aim_min = aim_mid - aim_limit
     aim_span = 2 * aim_limit
     return aim_min + (index / c.aim_discretization_steps) * aim_span

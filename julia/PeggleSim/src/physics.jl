@@ -1605,10 +1605,11 @@ function physics_update!(
             # Only the ceiling bounces; the floor is open so the ball falls out
             # the bottom (and may be caught by the bucket).
             if move_y < 0
-                t = (ball.radius - ball.y) / move_y
-                if ball.y <= ball.radius
+                ceiling = config.ceiling_y
+                t = (ceiling + ball.radius - ball.y) / move_y
+                if ball.y <= ceiling + ball.radius
                     register_hit!(ctx, 0.0, 0.0, 1.0, "wall", nothing,
-                                  PRIORITY.wall, nothing, ball.radius - ball.y)
+                                  PRIORITY.wall, nothing, ceiling + ball.radius - ball.y)
                 elseif t >= 0
                     register_hit!(ctx, t, 0.0, 1.0, "wall", nothing,
                                   PRIORITY.wall, nothing, 0.0)
@@ -1858,7 +1859,7 @@ function get_snapped_aim_angle(angle::Float64, config::SimConfig)::Float64
     # typed config always carries an integer, so the guard is unreachable.
     steps = config.aim_discretization_steps
 
-    limit = config.aim_angle_limit
+    limit = aim_angle_limit(config)
     mid = pi / 2
 
     # Clamp the input angle just in case

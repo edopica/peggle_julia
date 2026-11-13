@@ -2,7 +2,7 @@
 # ../peggle_evolved/src/engine/core.lua.
 #
 # Every scene uses a real level through the checkpoint contract
-# (`build_checkpoint` -> `shot_engine`) with the campaign config, which selects
+# (`build_checkpoint` -> `shot_engine`) with the captured fixture config, which selects
 # the 10ee3a0 rules (RULES_RAMP_BUCKET). The assertions pin the full engine
 # pipeline: launch staging, physics integration, scoring, green power spawns,
 # the clearing cascade, and multi-worker determinism. Bench-rule step counts
@@ -23,7 +23,7 @@ const ENGINE_CENTER_STEPS = 491
 const ENGINE_CENTER_CLEARING_STEPS = 544
 
 _engine_level(name = "b1") = PeggleSim.load_level(ENGINE_RL.artifact_path(name))
-_engine_config() = PeggleSim.load_config(ENGINE_RL.config_path())
+_engine_config() = PeggleSim.load_config(ENGINE_RL.fixture_config_path("b1"))
 
 function _engine_checkpoint(level, config)
     return PeggleSim.build_checkpoint(
@@ -183,12 +183,12 @@ end
 # ---------------------------------------------------------------------------
 # 10ee3a0 rules (RULES_RAMP_BUCKET): one-ball multiball and the bucket catch
 # hold. Mirrors tests/test_engine_integration.lua @ 10ee3a0. The b2 imported
-# level plus the synced campaign config (exported from 10ee3a0) are used; the
+# level plus the captured fixture config (exported from 10ee3a0) are used; the
 # full-shot step counts below are the Lua 10ee3a0 records in
 # fixtures/imported_levels/expected (b2_right, b2_center).
 # ---------------------------------------------------------------------------
 
-const RAMP_ENGINE_CONFIG = ENGINE_RL.config_path()
+const RAMP_ENGINE_CONFIG = ENGINE_RL.fixture_config_path("b1")
 const RAMP_ENGINE_LEVEL = ENGINE_RL.artifact_path("b2")
 
 function _ramp_engine(; callbacks = PeggleSim.harness_callbacks(), trace_path = nothing)

@@ -16,7 +16,7 @@ const SNAP_RL = PeggleSim.RealLevels
 
 function _snap_engine(name::AbstractString)
     level = PeggleSim.load_level(SNAP_RL.artifact_path(name))
-    config = PeggleSim.load_config(SNAP_RL.config_path())
+    config = PeggleSim.load_config(SNAP_RL.fixture_config_path(name))
     ckpt = PeggleSim.build_checkpoint(
         level, config; balls = 1, mode = :solo,
         provenance = PeggleSim.campaign_provenance(level))

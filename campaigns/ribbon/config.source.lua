@@ -35,10 +35,12 @@ local Config = {
 	ball_ball_restitution = 0.6, -- restitution for ball-ball impacts
 
 	-- Aim settings
-	aim_angle_limit = math.rad(180 / 2), -- 85 degrees left and right from straight down
+	shooter_top_gap = 100, -- ball center is this many pixels above the level roof (y = -gap)
+	aim_angle_limit = math.rad(90), -- base angle on each side of straight down
+	aim_extra_angle = math.rad(15), -- extra angle per side beyond the base limit (0 restores horizontal)
 	aim_fine_adjust_speed = math.rad(30), -- radians per second for arrow keys
 	aim_wheel_adjust = math.rad(2), -- radians per wheel click
-	aim_discretization_steps = 1800, -- finite number of angles in the 180 degree arc (nil to disable)
+	aim_discretization_steps = 1800, -- finite number of intervals across the full configured aiming arc (nil to disable)
 
 	-- Peg settings
 	peg_radius = 10,

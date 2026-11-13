@@ -321,7 +321,7 @@ local AIM_STEPS = Config.aim_discretization_steps
 if not AIM_STEPS then
   error("reference Config.aim_discretization_steps is nil; the grid cannot be derived")
 end
-local AIM_LIMIT = Config.aim_angle_limit
+local AIM_LIMIT = Config.aim_angle_limit + (Config.aim_extra_angle or 0)
 local AIM_MID = math.pi / 2
 local AIM_MIN = AIM_MID - AIM_LIMIT
 local AIM_SPAN = 2 * AIM_LIMIT
@@ -468,7 +468,7 @@ local function run_candidate(workload, index, opts)
     initial_balls = {}
     for i = 1, registered_balls do
       local x = (i / (registered_balls + 1)) * LevelManager.virtual_width
-      initial_balls[#initial_balls + 1] = Ball.new(x, 50)
+      initial_balls[#initial_balls + 1] = Ball.new(x, Config.shooter_top_gap and -Config.shooter_top_gap or 50)
     end
   end
   engine:resetTurn(initial_balls)

@@ -151,7 +151,7 @@ finish_solo_turn!(eng::ShotEngine) = finish_match_turn!(eng).reason
 function prepare_match_turn!(eng::ShotEngine, provenance)
     e = eng.sim.engine
     isempty(e.balls) || throw(ArgumentError("previous balls still live"))
-    ball = register_ball!(e, BallState(0, eng.virtual_width / 2, 50.0, eng.config.ball_radius))
+    ball = register_ball!(e, BallState(0, eng.virtual_width / 2, eng.config.shooter_y, eng.config.ball_radius))
     # register_ball! registers identity; the collection is owned by the caller.
     push!(e.balls, ball)
     e.clear_queue = nothing

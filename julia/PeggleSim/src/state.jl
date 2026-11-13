@@ -502,7 +502,7 @@ function build_sim_state(
     fever = FeverBucketsState(c, level.virtual_width, level.virtual_height)
 
     initial_balls = BallState[
-        BallState(i, _initial_ball_x(i, balls, level.virtual_width), 50.0, c.ball_radius)
+        BallState(i, _initial_ball_x(i, balls, level.virtual_width), c.shooter_y, c.ball_radius)
         for i in 1:balls
     ]
     live_ball_ids = Dict(id => b for (id, b) in zip(1:balls, initial_balls))

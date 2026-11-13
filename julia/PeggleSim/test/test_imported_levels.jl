@@ -4,7 +4,7 @@
 # Four boards use the dev-tree `ribbon` gameplay peg; b2 is the
 # annular/rectangle control. The corpus is captured from peggle_evolved
 # 10ee3a0 with scripts/capture_imported_levels.sh; its config artifact selects
-# RULES_RAMP_BUCKET and is byte-identical to the campaign config.
+# RULES_RAMP_BUCKET and retains the captured shooter/aim defaults.
 
 using Test
 using JSON
@@ -57,9 +57,10 @@ function _il_replay(id::AbstractString)
 end
 
 @testset "imported levels" begin
-    @testset "corpus config is the 10ee3a0 campaign config" begin
+    @testset "corpus retains the 10ee3a0 configuration" begin
         @test PeggleSim.load_config(IL_CONFIG).rules === PeggleSim.RULES_RAMP_BUCKET
-        @test read(IL_CONFIG) == read(PeggleSim.RealLevels.config_path())
+        @test PeggleSim.load_config(IL_CONFIG).shooter_top_gap == 0.0
+    @test PeggleSim.load_config(IL_CONFIG).aim_extra_angle == 0.0
         @test all(n -> _il_artifact(n) == PeggleSim.RealLevels.artifact_path(n), IL_LEVELS)
     end
 

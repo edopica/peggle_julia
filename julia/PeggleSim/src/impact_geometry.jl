@@ -124,12 +124,12 @@ end
 
 # `virtual_width` replaces the Lua `LevelManager.virtual_width` global.
 function wall_separation(hit_nx::Float64, hit_ny::Float64, icx::Float64,
-                         icy::Float64, r::Float64, virtual_width::Float64)::Float64
+                         icy::Float64, r::Float64, virtual_width::Float64, ceiling_y::Float64 = 0.0)::Float64
     if hit_nx > 0
         return icx - r # left wall
     elseif hit_nx < 0
         return virtual_width - icx - r # right wall
     else
-        return icy - r # ceiling
+        return icy - r - ceiling_y # ceiling
     end
 end

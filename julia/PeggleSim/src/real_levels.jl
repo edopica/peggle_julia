@@ -2,9 +2,9 @@
 #
 # Tests, campaigns and benchmarks use only these boards. Five are the imported
 # screenshot levels (fixtures/imported_levels); the sixth is ribbon_waves
-# (fixtures/ribbon_waves). Both corpora are captured from the peggle_evolved
-# dev tree, and their config artifacts are byte-identical to the campaign
-# config (campaigns/ribbon/config.v1.json, RULES_RAMP_BUCKET).
+# (fixtures/ribbon_waves). Both corpora retain their captured dev-tree configs.
+# Campaigns use the current config (campaigns/ribbon/config.v1.json);
+# historical trace tests use fixture_config_path to preserve their oracle.
 #
 # The module has no dependencies, so scripts that do not load PeggleSim (for
 # example scripts/run_campaign_benchmark.jl) can `include` this file and use

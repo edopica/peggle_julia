@@ -1,54 +1,18 @@
 {
   "game_source_sha256": "5317b0656239a6ed1b67c8a24f59ab481671d6b885a79e2b54ab06adb1512feb",
   "source": "../peggle_evolved/src/config.lua",
-  "lua_config_dirty": false,
-  "source_sha256": "e40d659e6b31d14478349cc6c1ba58df24c5e268488886cc3069f904b2455794",
+  "lua_config_dirty": true,
+  "source_sha256": "bd002d0f83a78fe2b1ac34f1d6a372a83fd2a1febcf3cda32d1d45e2e4dd2f33",
   "changes_from_ribbon_fixture": {
-    "bucket_catch_hold": {
+    "shooter_top_gap": {
       "previous": null,
-      "current": 1.5
+      "current": 100
     },
-    "wall_damping": {
-      "previous": 1,
-      "current": 0.8
-    },
-    "bucket_rim_height": {
+    "aim_extra_angle": {
       "previous": null,
-      "current": 4
-    },
-    "launch_speed": {
-      "previous": 600,
-      "current": 400
-    },
-    "bucket_height": {
-      "previous": 26,
-      "current": 10.4
-    },
-    "bucket_hole": {
-      "previous": 70,
-      "current": 105
-    },
-    "bucket_ramp_slope_deg": {
-      "previous": null,
-      "current": 30
-    },
-    "bucket_rim_color": {
-      "previous": null,
-      "current": [
-        1,
-        0.92,
-        0.6
-      ]
-    },
-    "bucket_rim_width": {
-      "previous": null,
-      "current": 12
-    },
-    "bucket_margin": {
-      "previous": 30,
-      "current": 4.8
+      "current": 0.2617993877991494
     }
   },
-  "lua_revision": "10ee3a06eb6af3f79e502a2bd34d3e5697a6a2cc"
+  "lua_revision": "b5be62eb77ba57772188e2bad5e3e9a7c12b5d8d"
 }
 
