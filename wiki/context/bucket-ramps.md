@@ -156,3 +156,20 @@ the six real levels that tests, campaigns and benchmarks use
 ([testing](testing.md)). The full-grid sweep reports under
 `results/ribbon_port/` were measured against the classic-rule captures and
 remain historical.
+
+## Conservative broad phase (2026-11-13)
+
+Both the live Lua game and Julia now skip ramp-bucket resolution when the
+entire swept circle is above, left of, or right of the bucket's local bounds.
+The check uses both endpoints in the moving bucket's frame, with padding
+`ball.radius + 1`. The narrow-phase calculations and their order are unchanged.
+`collision_half_span` is derived alongside the convex pieces. Julia checkpoint
+restores rebuild it when dimensions change; it is not serialized.
+
+The [validation and timing record](../../results/analysis/bucket-broadphase.json)
+records the directed resolver oracle, full-grid Lua/Julia comparisons,
+multi-turn traces, allocation gates and deathstar measurements. Julia uses
+1.12.6 with `system_libm`; the timing protocol is one thread, CPU 2, a full
+1,801-candidate warmup and the best of three prepared sweeps. The before/after
+ns/step are b1 12,196 → 11,375, b2 3,936 → 3,034 and m1 8,082 → 7,254.
+These include the complete candidate sweep and reset cost.

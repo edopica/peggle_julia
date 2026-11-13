@@ -261,6 +261,7 @@ function bucket_build_pieces!(bucket::BucketState)::Vector{BucketPiece}
     bottom = depth + bucket.floor   # local y of the level's lower border
     rim_h = min(rim_h, bottom)
     ramp_w = bucket.ramp_width
+    bucket.collision_half_span = hh + rim_w + ramp_w
 
     xi = -hh                        # inner edge (opening side)
     xo = xi - rim_w                 # outer edge of the flat rim (= ramp top)
@@ -466,6 +467,16 @@ function ramp_bucket_resolve!(bucket::BucketState, ball::BallState,
     p1y = ball.y - top
     p0x = ball.prev_x - bx0
     p0y = ball.prev_y - top
+
+    # Broad phase in the moving bucket's frame. Inflate by the radius plus
+    # one pixel so only swept circles safely clear of every piece are skipped.
+    slack = r + 1.0
+    half_span = bucket.collision_half_span
+    if max(p0y, p1y) < -slack ||
+       min(p0x, p1x) > half_span + slack ||
+       max(p0x, p1x) < -half_span - slack
+        return :none
+    end
 
     # Swept contact (only when the step started separated from the bucket).
     if !_bucket_overlaps_any(pieces, p0x, p0y, r)

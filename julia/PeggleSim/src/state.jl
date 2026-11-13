@@ -68,6 +68,7 @@ mutable struct BucketState
     ramp_width::Float64
     ramp_height::Float64
     floor::Float64
+    collision_half_span::Float64 # derived with pieces, never serialized
     pieces::Vector{BucketPiece}
 end
 
@@ -75,7 +76,7 @@ end
 function BucketState(x::Float64, prev_x::Float64, top::Float64, hole::Float64,
                      edge::Float64, height::Float64, phase::Float64)::BucketState
     return BucketState(x, prev_x, top, hole, edge, height, phase,
-                       false, 0.0, 0.0, 0.0, 0.0, 0.0, BucketPiece[])
+                       false, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, BucketPiece[])
 end
 
 # Bucket.lua `nonneg`: non-numbers, NaN and negatives become 0.
@@ -110,6 +111,7 @@ function BucketState(vw::Float64, vh::Float64, c::SimConfig)::BucketState
             drop / DetMath.det_tan(slope * Float64(pi) / 180),
             drop,                   # ramp_height
             floor,
+            0.0,                    # collision half-span (built with pieces)
             BucketPiece[],
         )
         sizehint!(bucket.pieces, 7)

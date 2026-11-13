@@ -1,0 +1,136 @@
+{
+  "date": "2026-11-13",
+  "julia_revision": "d148684521e2a0ecf59c6df3dc30822222bb9bbb",
+  "lua_revision": "10ee3a06eb6af3f79e502a2bd34d3e5697a6a2cc",
+  "julia_source_sha256": {
+    "julia/PeggleSim/src/bucket.jl": "1021b0ba3de7d7be8053a4d343474026325c4491b0c83f5e4e5e056b7206988d",
+    "julia/PeggleSim/src/state.jl": "d680544f56ce82aab48aa4bc0c24e79e90452e6d2fa4dcb95481cae5015fc8e9",
+    "julia/PeggleSim/src/checkpoint.jl": "016926d97387464c282f10710c642ecdcc832e687f738321bbe5198e6211930c"
+  },
+  "julia_tests": {
+    "host": "deathstar",
+    "runtime": "1.12.6",
+    "passed": 36767,
+    "failed": 0
+  },
+  "lua_tests": {
+    "bucket_tests_passed": 13,
+    "full_suite_passed": 508,
+    "full_suite_failed": 7,
+    "failures_identical_with_original_resolver": true,
+    "failures": [
+      "test_advanced_circuits.lua::test_contacts_stay_in_bounds_and_velocities_stay_finite: tests/test_advanced_circuits.lua:234: assert_true failed: no teleport-scale ball impulses (max 1798.1843562443)",
+      "test_replay_compat.lua::test_bucket_state_capture_restore_round_trip_via_file: tests/test_replay_compat.lua:320: assert_true failed: captured phase matches engine",
+      "test_replay_compat.lua::test_capture_includes_ball_ids: tests/test_replay_compat.lua:198: attempt to index a nil value",
+      "test_replay_compat.lua::test_capture_writes_bucket_phase_x_with_full_precision: tests/test_replay_compat.lua:357: assert_true failed: file contains the full %.17g phase digits",
+      "test_replay_compat.lua::test_max_integer_ball_id_round_trips_exactly: tests/test_replay_compat.lua:219: assert_true failed: file contains the full id digits, not a shortened form",
+      "test_replay_compat.lua::test_old_capture_end_to_end_via_file: tests/test_replay_compat.lua:390: attempt to index local 'f' (a nil value)",
+      "test_replay_compat.lua::test_schema2_capture_round_trip_with_line_metadata: tests/test_replay_compat.lua:1111: attempt to index field 'line' (a nil value)"
+    ]
+  },
+  "resolver_oracle": {
+    "cases": 181440,
+    "configs": 5,
+    "mismatches": 0,
+    "comparison": "Original Lua vs optimized Lua vs optimized Julia; exact result and bit patterns of x/y/vx/vy. Directed boundary, radius, displacement and bucket-motion grid; regenerated oracle, not the unavailable earlier session script."
+  },
+  "sweeps": {
+    "candidates": 12607,
+    "expected_candidates": 12607,
+    "counts": {
+      "b1": 1801,
+      "b2": 1801,
+      "g1": 1801,
+      "m1": 1801,
+      "m2": 1801,
+      "ribbon_waves": 1801,
+      "g1x3": 1801
+    },
+    "fields_per_candidate": 19,
+    "mismatches": 0,
+    "complete": true
+  },
+  "sweep_comparison_notes": "17 shot-result fields plus level and event-trace SHA-256 (19 total); empty style maps normalized to the trace encoder empty-array representation. Snapshot capture disabled only in the scratch Lua harness; snapshot-free event encoding unchanged. Six real levels plus g1 with three balls, all aims 0:1800.",
+  "multiturn": {
+    "levels": 6,
+    "turns_per_level": 5,
+    "byte_identical_before_after": true
+  },
+  "allocation": {
+    "plain": {
+      "workloads": 12,
+      "total_step_bytes": 0,
+      "max_step_bytes": 0
+    },
+    "prepared": {
+      "workloads": 12,
+      "total_step_bytes": 0,
+      "max_step_bytes": 0
+    }
+  },
+  "benchmark": {
+    "host": "deathstar",
+    "julia": "1.12.6",
+    "math_backend": "system_libm",
+    "threads": 1,
+    "cpu_affinity": 2,
+    "aims": 1801,
+    "warmup_full_sweeps": 1,
+    "measured_sweeps": 3,
+    "aggregation": "best",
+    "prepared": true,
+    "includes": "Complete sweep time (reset, launch and stepping) divided by simulation steps",
+    "measurements": {
+      "b1": {
+        "baseline": {
+          "ns_per_step": 12196,
+          "candidates_per_second": 234.0,
+          "steps_per_second": 81997,
+          "mean_steps": 350.5
+        },
+        "source": {
+          "ns_per_step": 11375,
+          "candidates_per_second": 250.9,
+          "steps_per_second": 87914,
+          "mean_steps": 350.5
+        },
+        "ns_per_step_reduction_percent": 6.73
+      },
+      "b2": {
+        "baseline": {
+          "ns_per_step": 3936,
+          "candidates_per_second": 756.1,
+          "steps_per_second": 254054,
+          "mean_steps": 336.0
+        },
+        "source": {
+          "ns_per_step": 3034,
+          "candidates_per_second": 980.9,
+          "steps_per_second": 329606,
+          "mean_steps": 336.0
+        },
+        "ns_per_step_reduction_percent": 22.92
+      },
+      "m1": {
+        "baseline": {
+          "ns_per_step": 8082,
+          "candidates_per_second": 356.4,
+          "steps_per_second": 123728,
+          "mean_steps": 347.2
+        },
+        "source": {
+          "ns_per_step": 7254,
+          "candidates_per_second": 397.0,
+          "steps_per_second": 137848,
+          "mean_steps": 347.2
+        },
+        "ns_per_step_reduction_percent": 10.24
+      }
+    }
+  },
+  "evidence": {
+    "local": "tmp/bucket-broadphase/",
+    "remote": "deathstar:~/projects/bucket-broadphase-20261113/",
+    "retention": "Scratch logs and drivers are not committed; this summary is retained."
+  }
+}

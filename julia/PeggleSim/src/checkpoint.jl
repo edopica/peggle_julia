@@ -913,6 +913,7 @@ function _restore_bucket!(dst::BucketState, b::CheckpointBucket)::BucketState
     if rebuild
         bucket_build_pieces!(dst)
     elseif !b.ramps
+        dst.collision_half_span = 0.0
         empty!(dst.pieces)
     end
     return dst

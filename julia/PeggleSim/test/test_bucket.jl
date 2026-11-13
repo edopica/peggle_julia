@@ -335,6 +335,50 @@ _bounds(p) = (minimum(_piece_xs(p)), maximum(_piece_xs(p)),
         @test dist >= R - 1e-6
     end
 
+    @testset "broad phase misses leave the ball unchanged" begin
+        bucket = _ramp_setup(c)
+        half = PeggleSim.bucket_half_span(bucket)
+        for delta in (-1e-7, 0.0, 1e-7)
+            for side in (-1, 1)
+                x = bucket.x + side * (half + R + 1 + delta)
+                y = bucket.top + bucket.height / 2
+                b = _ramp_ball(c, x, y, x, y, -side * 120, 200)
+                @test PeggleSim.bucket_resolve!(bucket, b, c) === :none
+                @test (b.x, b.y, b.vx, b.vy) == (x, y, -side * 120, 200)
+            end
+            for gap in (R + 1 + delta, 2 * R + 1 + delta)
+                x, y = bucket.x, bucket.top - gap
+                b = _ramp_ball(c, x, y - 20, x, y, 120, 200)
+                @test PeggleSim.bucket_resolve!(bucket, b, c) === :none
+                @test (b.x, b.y, b.vx, b.vy) == (x, y, 120, 200)
+            end
+        end
+    end
+
+    @testset "broad phase keeps crossings and start overlaps" begin
+        bucket = _ramp_setup(c)
+        half = PeggleSim.bucket_half_span(bucket)
+        for side in (-1, 1)
+            # Both endpoints miss, but the swept circle crosses the bucket.
+            x0 = bucket.x + side * (half + R + 10)
+            x1 = bucket.x - side * (half + R + 10)
+            y = bucket.top + bucket.height / 2
+            b = _ramp_ball(c, x0, y, x1, y, -side * 9000, 0)
+            @test PeggleSim.bucket_resolve!(bucket, b, c) === :bounced
+            # An overlap at the start suppresses the sweep even when the
+            # current position has moved safely above the broad phase box.
+            x = bucket.x + side * (bucket.hole / 2 + bucket.rim_width / 2)
+            b = _ramp_ball(c, x, bucket.top + 1, x, bucket.top - R - 2, 0, -900)
+            @test PeggleSim.bucket_resolve!(bucket, b, c) === :none
+        end
+        # A stationary ball crossed by a moving bucket uses bucket.prev_x.
+        bucket.prev_x = bucket.x - 2 * (half + R + 10)
+        x = (bucket.x + bucket.prev_x) / 2
+        y = bucket.top + bucket.height / 2
+        b = _ramp_ball(c, x, y, x, y, 0, 0)
+        @test PeggleSim.bucket_resolve!(bucket, b, c) === :bounced
+    end
+
     @testset "resolution is deterministic and allocation-free" begin
         function run()
             bucket = _ramp_setup(c)
@@ -370,10 +414,19 @@ _bounds(p) = (minimum(_piece_xs(p)), maximum(_piece_xs(p)),
         fresh = PeggleSim.BucketState(level.virtual_width, level.virtual_height, c)
         @test sim.engine.bucket.ramps
         @test sim.engine.bucket.pieces == fresh.pieces
+        @test sim.engine.bucket.collision_half_span == PeggleSim.bucket_half_span(fresh)
         pieces = sim.engine.bucket.pieces
         PeggleSim.restore!(sim, parsed)
         @test sim.engine.bucket.pieces === pieces
         @test pieces == fresh.pieces
+        # A different checkpoint's dimensions rebuild the derived bounds too.
+        wide_c = _ramp_config(bucket_rim_width = 30.0)
+        wide_ckpt = PeggleSim.build_checkpoint(level, wide_c; provenance = prov)
+        PeggleSim.restore!(sim, wide_ckpt)
+        @test sim.engine.bucket.collision_half_span == PeggleSim.bucket_half_span(sim.engine.bucket)
+        @test sim.engine.bucket.collision_half_span > fresh.collision_half_span
+        PeggleSim.restore!(sim, parsed)
+        @test sim.engine.bucket.collision_half_span == fresh.collision_half_span
         # Classic config and ramp checkpoint are refused together.
         classic = PeggleSim.load_config(BUCKET_CONFIG_PATH)
         @test_throws ArgumentError PeggleSim.shot_engine(ckpt; config = classic, level = level)
