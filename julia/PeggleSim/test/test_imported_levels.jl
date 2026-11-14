@@ -59,8 +59,7 @@ end
 @testset "imported levels" begin
     @testset "corpus retains the 10ee3a0 configuration" begin
         @test PeggleSim.load_config(IL_CONFIG).rules === PeggleSim.RULES_RAMP_BUCKET
-        @test PeggleSim.load_config(IL_CONFIG).shooter_top_gap == 0.0
-    @test PeggleSim.load_config(IL_CONFIG).aim_extra_angle == 0.0
+        @test PeggleSim.load_config(IL_CONFIG).aim_extra_angle == 0.0
         @test all(n -> _il_artifact(n) == PeggleSim.RealLevels.artifact_path(n), IL_LEVELS)
     end
 

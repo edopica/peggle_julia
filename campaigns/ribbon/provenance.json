@@ -2,17 +2,13 @@
   "game_source_sha256": "5317b0656239a6ed1b67c8a24f59ab481671d6b885a79e2b54ab06adb1512feb",
   "source": "../peggle_evolved/src/config.lua",
   "lua_config_dirty": true,
-  "source_sha256": "bd002d0f83a78fe2b1ac34f1d6a372a83fd2a1febcf3cda32d1d45e2e4dd2f33",
+  "source_sha256": "50d8be98d567fbfaf065fbee044f880b50b5c175f42c7c18b3bb2bc28036888c",
   "changes_from_ribbon_fixture": {
-    "shooter_top_gap": {
-      "previous": null,
-      "current": 100
-    },
     "aim_extra_angle": {
       "previous": null,
-      "current": 0.2617993877991494
+      "current": 0.7853981633974483
     }
   },
-  "lua_revision": "b5be62eb77ba57772188e2bad5e3e9a7c12b5d8d"
+  "lua_revision": "89844a8e9e964e59116b5b2fccdf2ee71994ade4"
 }
 

@@ -41,9 +41,6 @@ struct PegTypeConfig
 end
 
 struct SimConfig
-    shooter_y::Float64
-    ceiling_y::Float64
-    shooter_top_gap::Float64
     aim_extra_angle::Float64
     aim_angle_limit::Float64
     aim_discretization_steps::Int
@@ -216,7 +213,7 @@ const CONFIG_OPTIONAL_PRESENTATION_KEYS = (
     :bucket_rim_color, # 10ee3a0: bucket rim color, render-only
 )
 
-const CONFIG_OPTIONAL_SHOOTER_KEYS = (:shooter_top_gap, :aim_extra_angle)
+const CONFIG_OPTIONAL_SHOOTER_KEYS = (:aim_extra_angle,)
 
 aim_angle_limit(c::SimConfig) = c.aim_angle_limit + c.aim_extra_angle
 
@@ -312,17 +309,11 @@ function load_config(path::AbstractString)::SimConfig
     b(k) = as_bool(values[String(k)], String(k))
     s(k) = as_string(values[String(k)], String(k))
 
-    gap = haskey(values, "shooter_top_gap") ? f(:shooter_top_gap) : 0.0
     extra = haskey(values, "aim_extra_angle") ? f(:aim_extra_angle) : 0.0
-    isfinite(gap) && gap >= 0 || throw(ArgumentError("config: shooter_top_gap must be finite and nonnegative"))
     isfinite(extra) && extra >= 0 && 0 < f(:aim_angle_limit) + extra < pi ||
         throw(ArgumentError("config: total aim limit must be between 0 and pi, with nonnegative extra room"))
 
-    shooter_y = haskey(values, "shooter_top_gap") ? -gap : 50.0
     parsed = (
-        shooter_y = shooter_y,
-        ceiling_y = min(0.0, shooter_y - 50.0),
-        shooter_top_gap = gap,
         aim_extra_angle = extra,
         aim_angle_limit = f(:aim_angle_limit),
         aim_discretization_steps = i(:aim_discretization_steps),

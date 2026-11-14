@@ -597,7 +597,7 @@ local function build_ready_to_aim(level_name, balls)
     initial_balls = {}
     for i = 1, balls do
       local x = (i / (balls + 1)) * LevelManager.virtual_width
-      initial_balls[#initial_balls + 1] = Ball.new(x, Config.shooter_top_gap and -Config.shooter_top_gap or 50)
+      initial_balls[#initial_balls + 1] = Ball.new(x, 50)
     end
   end
   engine:resetTurn(initial_balls)

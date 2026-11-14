@@ -71,7 +71,6 @@ end
 
 @testset "ribbon_waves fixture" begin
     @test PeggleSim.load_config(RW_CONFIG).rules === PeggleSim.RULES_RAMP_BUCKET
-    @test PeggleSim.load_config(RW_CONFIG).shooter_top_gap == 0.0
     @test PeggleSim.load_config(RW_CONFIG).aim_extra_angle == 0.0
     @test RW_ARTIFACT == PeggleSim.RealLevels.artifact_path("ribbon_waves")
 

@@ -1605,11 +1605,10 @@ function physics_update!(
             # Only the ceiling bounces; the floor is open so the ball falls out
             # the bottom (and may be caught by the bucket).
             if move_y < 0
-                ceiling = config.ceiling_y
-                t = (ceiling + ball.radius - ball.y) / move_y
-                if ball.y <= ceiling + ball.radius
+                t = (ball.radius - ball.y) / move_y
+                if ball.y <= ball.radius
                     register_hit!(ctx, 0.0, 0.0, 1.0, "wall", nothing,
-                                  PRIORITY.wall, nothing, ceiling + ball.radius - ball.y)
+                                  PRIORITY.wall, nothing, ball.radius - ball.y)
                 elseif t >= 0
                     register_hit!(ctx, t, 0.0, 1.0, "wall", nothing,
                                   PRIORITY.wall, nothing, 0.0)
